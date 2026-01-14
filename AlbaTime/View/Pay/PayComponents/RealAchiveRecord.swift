@@ -37,7 +37,8 @@ struct RealAchiveRecord: View {
                         
                         Spacer()
                         
-                        Text("₩\((Int(record.actualAmount) ?? 0).formatted())")                            .font(.title3)
+                        Text("₩\((Int(record.actualAmount) ?? 0).formatted())")
+                            .font(.title3)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.theme.primary)
                     }

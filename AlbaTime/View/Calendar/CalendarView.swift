@@ -18,6 +18,14 @@ struct CalendarView: View {
         VStack(spacing: 0) {
             
             HStack {
+                Text("캘린더")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.horizontal)
+                Spacer()
+            }
+            
+            HStack {
                 Button(action: { cvm.changeMonth(by: -1) }) {
                     Image(systemName: "chevron.left").foregroundColor(.black)
                 }

@@ -26,6 +26,14 @@ class NotificationManager {
         
         let dayStrings = workplace.defaultDays.components(separatedBy: "/")
         
+        
+        let isAppAlarmOn = UserDefaults.standard.bool(forKey: "isAppAlarmOn")
+        
+        guard isAppAlarmOn else {
+            print("앱 알림이 꺼져있어 \(workplace.name) 알람을 등록하지 않습니다.")
+            return
+        }
+        
         // iOS 기준 요일 매핑 (일=1)
         let weekdayMap: [String: Int] = [
             "일": 1,

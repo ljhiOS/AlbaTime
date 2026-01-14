@@ -12,10 +12,13 @@ struct WorkEditView: View {
     
     @Bindable var job: Workplace
     
-//    @Environment(\.modelContext) var modelContext
+    @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     
     let stateName: String = "근무 수정"
+    
+    @State var showAlert: Bool = false
+    @State var errorMessage: String = ""
 
     var body: some View {
         
@@ -60,12 +63,13 @@ struct WorkEditView: View {
                         .font(.callout)
                         .padding(.horizontal)
                     
-                    TextField("예) 10030", value: $job.hourlyWage, format: .number.grouping(.never))
+                    TextField("예) 10320", value: $job.hourlyWage, format: .number.grouping(.never))
                         .keyboardType(.numberPad)
                         .padding(10)
                         .background(Color.gray.opacity(0.08))
                         .cornerRadius(8)
                         .padding(.horizontal)
+                        .keyboardType(.numberPad)
                 } //:VStack
                 
                 VStack(alignment: .leading) {
@@ -132,6 +136,7 @@ struct WorkEditView: View {
                         .background(Color.gray.opacity(0.08))
                         .cornerRadius(8)
                         .padding(.trailing)
+                        .keyboardType(.numberPad)
                         
                         Text("분")
                             .font(.system(size: 18))
@@ -183,12 +188,21 @@ struct WorkEditView: View {
                 
                 // 수정 완료 버튼
                 Button {
-                    // 1. 기존 알림 제거
-                    NotificationManager.shared.removeNotifications(for: job)
-                    
-                    // 2. 수정된 내용으로 알림 재등록
-                    NotificationManager.shared.scheduleWorkNotification(for: job)
-                    dismiss()
+                    if job.name.trimmingCharacters(in: .whitespaces).isEmpty {
+                        errorMessage = "매장명을 입력해주세요."
+                        showAlert = true
+                    } else if job.hourlyWage <= 0 {
+                        errorMessage = "올바른 시급을 입력해주세요."
+                        showAlert = true
+                    } else if job.defaultDays.isEmpty {
+                        errorMessage = "근무 요일을 하나 이상 선택해주세요."
+                        showAlert = true
+                    } else {
+                        try? modelContext.save()
+                        NotificationManager.shared.removeNotifications(for: job)
+                        NotificationManager.shared.scheduleWorkNotification(for: job)
+                        dismiss()
+                    }
                 } label: {
                     Text("수정 완료")
                         .foregroundStyle(.white)
@@ -199,6 +213,10 @@ struct WorkEditView: View {
                         .padding(.trailing)
                         .padding(.bottom)
                         .shadow(radius: 2)
+                }.alert("알림", isPresented: $showAlert) {
+                    Button("확인", role: .cancel) {}
+                } message: {
+                    Text(errorMessage)
                 }
                 Spacer()
             }

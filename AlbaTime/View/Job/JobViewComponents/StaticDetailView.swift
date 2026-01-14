@@ -8,6 +8,10 @@
 import SwiftUI
 
 struct StaticDetailView: View {
+    var totalDays: Int
+    var totalHours: Double
+    var totalWage: Int
+    
     var body: some View {
         VStack(alignment: .leading) {
             Text("이번 달 통계")
@@ -17,11 +21,12 @@ struct StaticDetailView: View {
             
             HStack {
                 Spacer()
-                StaticDetailComponents(icon: "calendar", title: "근무일수", caption: "12일")
+                StaticDetailComponents(icon: "calendar", title: "근무일수", caption: "\(totalDays)일", color: .blue)
                 Spacer()
-                StaticDetailComponents(icon: "calendar", title: "근무일수", caption: "12일")
+                StaticDetailComponents(icon: "clock.fill", title: "총 시간", caption: String(format: "%.f시간", totalHours), color: .green)
                 Spacer()
-                StaticDetailComponents(icon: "calendar", title: "근무일수", caption: "12일")
+                StaticDetailComponents(icon: "wonsign.circle.fill", title: "예상 급여", caption: "\(totalWage / 10000)만원", color: .red
+                )
                 Spacer()
             } //:HStack
             .padding()
@@ -38,16 +43,17 @@ struct StaticDetailComponents: View {
     let icon: String
     let title: String
     let caption: String
+    let color: Color
     var body: some View {
         VStack {
             Image(systemName: icon)
                 .resizable()
-                .foregroundStyle(.blue)
+                .foregroundStyle(color)
                 .frame(width: 20, height: 20)
                 .padding(10)
                 .background(
                     Circle()
-                        .fill(Color.blue.opacity(0.2))
+                        .fill(color.opacity(0.2))
                 )
             
             Text(title)
@@ -61,5 +67,5 @@ struct StaticDetailComponents: View {
 }
 
 #Preview {
-    StaticDetailView()
+    StaticDetailView(totalDays: 12, totalHours: 45.5, totalWage: 540000)
 }

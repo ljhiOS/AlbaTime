@@ -63,11 +63,12 @@ struct AddJobView: View {
                         .font(.callout)
                         .padding(.horizontal)
                     
-                    TextField("예) 10030", text: $ajvm.wage)
+                    TextField("예) 10320", text: $ajvm.wage)
                         .padding(10)
                         .background(Color.gray.opacity(0.08))
                         .cornerRadius(8)
                         .padding(.horizontal)
+                        .keyboardType(.numberPad) // UX 고려 변경 업데이트
                 } //:VStack
                 
                 VStack(alignment: .leading) {
@@ -130,6 +131,7 @@ struct AddJobView: View {
                             .background(Color.gray.opacity(0.08))
                             .cornerRadius(8)
                             .padding(.trailing)
+                            .keyboardType(.numberPad) // UX 고려 변경 업데이트
                         
                         
                         Text("분")

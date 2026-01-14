@@ -26,7 +26,7 @@ struct JobListView: View {
         
         VStack() {
             HStack {
-                Text("알바목록")
+                Text("알바 목록")
                     .font(.largeTitle)
                     .bold()
                     .padding()

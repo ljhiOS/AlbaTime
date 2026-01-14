@@ -14,6 +14,14 @@ struct DetailView: View {
     
     @Environment(\.dismiss) var dismiss
     
+    var salaryData: SalaryBreakdown {
+            // [핵심] 여기서 계산기를 돌려서 결과 꾸러미를 받아옵니다.
+            return SalaryCalculator.calculateExpectedMonthlyPay(
+                workplaces: [job],
+                targetMonth: Date()
+            )
+        }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
@@ -36,7 +44,11 @@ struct DetailView: View {
                 
                 WorkCardDetail(job: job)
                 
-                StaticDetailView()
+                StaticDetailView(
+                    totalDays: salaryData.workingDays,  // 뷰모델의 일수 변수
+                    totalHours: salaryData.totalHours,       // 계산된 총 근무 시간
+                    totalWage: salaryData.totalPay   // 뷰모델의 급여 변수
+                )
                 
                 PlusInfo(job: job)
                 

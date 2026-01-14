@@ -29,7 +29,7 @@ struct CustomButton_day: View {
                     .foregroundStyle(.white)
                     .padding(10)
                     .padding(.horizontal, 3)
-                    .background(Color.blue)
+                    .background(Color.theme.primary)
                     .cornerRadius(8)
             } else {
                 Text(day)
@@ -66,7 +66,7 @@ struct ingButtonStyle: ButtonStyle {
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
                     .stroke(style: StrokeStyle(lineWidth: 2, dash: [5]))
-                    .foregroundStyle(configuration.isPressed ? .blue : .gray)
+                    .foregroundStyle(configuration.isPressed ? Color.theme.primary : .gray)
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
@@ -93,7 +93,7 @@ struct PlusButton: View {
                         .foregroundStyle(.gray.opacity(0.08))
                         .overlay (
                             Image(systemName: "plus")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Color.theme.primary)
                         )
                         .frame(width: 50, height: 50)
                 }
@@ -153,7 +153,7 @@ struct TimePickerButton: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(20)
-                .background(Color.blue)
+                .background(Color.theme.primary)
                 .foregroundColor(.white)
                 .cornerRadius(12)
                 .padding()

@@ -31,7 +31,7 @@ struct PayDetailCard: View {
             HStack(alignment: .top) {
                 Text("예상 근무 일수")
                     .font(.body)
-                    .foregroundColor(.secondary)
+                    
                 Spacer()
                 Text("\(workingDays)일")
                     .font(.body)
