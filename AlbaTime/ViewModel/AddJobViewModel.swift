@@ -44,11 +44,11 @@ class AddJobViewModel: ObservableObject {
         let dayString = sortedDays.joined(separator: "/")
         // 여기까지
         
-        let hourWage = Int(wage) ?? 0
-        let rest = Int(restTime) ?? 0
         
-        if hourWage <= 0 {
+        let rest = Int(restTime) ?? 0
+        guard let hourWage = Int(wage), hourWage > 0 else {
             print("시급 요건에 맞지 않는 형식입니다")
+            return
         }
         
         if dayString.isEmpty {

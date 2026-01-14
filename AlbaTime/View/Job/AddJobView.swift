@@ -166,9 +166,6 @@ struct AddJobView: View {
                         if ajvm.placeName.trimmingCharacters(in: .whitespaces).isEmpty {
                             errorMessage = "매장명을 입력해주세요."
                             showAlert = true
-                        } else if (Int(ajvm.wage) ?? 0) <= 0 {
-                            errorMessage = "올바른 시급을 입력해주세요."
-                            showAlert = true
                         } else if ajvm.selectedDate.isEmpty {
                             errorMessage = "근무 요일을 하나 이상 선택해주세요."
                             showAlert = true
@@ -176,6 +173,13 @@ struct AddJobView: View {
                             ajvm.saveJob(context: modelContext)
                             dismiss()
                         }
+                        
+                        guard let wage = Int(ajvm.wage), wage > 0 else {
+                            errorMessage = "올바른 시급을 입력해주세요."
+                            showAlert = true
+                            return
+                        }
+                        
                     } label: {
                         Text("저장하기")
                             .foregroundStyle(.white)

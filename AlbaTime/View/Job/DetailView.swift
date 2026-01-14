@@ -42,7 +42,7 @@ struct DetailView: View {
                 } //:HStack
                 .padding()
                 
-                WorkCardDetail(job: job)
+                WorkCardDetail(job: job, hours: salaryData.totalHours)
                 
                 StaticDetailView(
                     totalDays: salaryData.workingDays,  // 뷰모델의 일수 변수
@@ -60,7 +60,7 @@ struct DetailView: View {
 #Preview {
     DetailView(job: Workplace(
         name: "GS25 강남점",
-        hourlyWage: 10030,
+        hourlyWage: 10320,
         defaultDays: "월/수/금",
         defaultStartTime: Date.makeTime(9, 0),
         defaultEndTime: Date.makeTime(18, 0)

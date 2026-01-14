@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct WorkCardDetail: View {
+    
     let job: Workplace
+    let hours: Double
+    
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -66,19 +69,22 @@ struct WorkCardDetail: View {
                         .font(.subheadline)
                         .foregroundStyle(.white)
                     
-                    Text("48시간")
+                    Text(String(format: "%.1f시간", hours))
                         .foregroundStyle(.white)
                         .font(.system(size: 20))
-                        .bold(true)
+                        .bold()
                     
-                    Text("휴게시간")
-                        .font(.subheadline)
-                        .foregroundStyle(.white)
-                    
-                    Text("1시간")
-                        .foregroundStyle(.white)
-                        .font(.system(size: 20))
-                        .bold(true)
+                    if let restTime = job.defaultRestTime {
+                        
+                        Text("휴게시간")
+                            .font(.subheadline)
+                            .foregroundStyle(.white)
+                        
+                        Text("\(restTime)분")
+                            .foregroundStyle(.white)
+                            .font(.system(size: 20))
+                            .bold()
+                    }
                 }
                 
                 Spacer()
@@ -90,13 +96,33 @@ struct WorkCardDetail: View {
     }
 }
 
-#Preview {
-    WorkCardDetail(job: Workplace(
-        name: "GS25 강남점",
-        hourlyWage: 10030,
-        defaultDays: "월,수,금",
-        defaultStartTime: Date.makeTime(9, 0),
-        defaultEndTime: Date.makeTime(18, 0),
-//        allTimes: "48시간"
-    ))
+#Preview("휴게시간 있음") {
+    
+    // 2. 휴게시간 있는 버전 (예: 60분)
+    WorkCardDetail(
+        job: Workplace(
+            name: "GS25 강남점 (휴게O)",
+            hourlyWage: 10030,
+            defaultDays: "월,수,금",
+            defaultStartTime: Date.makeTime(9, 0),
+            defaultEndTime: Date.makeTime(18, 0),
+            defaultRestTime: 60, // 여기에 값을 입력
+            taxType: .none
+        ),
+        hours: 48
+    )
+}
+#Preview("휴게시간 없음") {
+    WorkCardDetail(
+        job: Workplace(
+            name: "GS25 강남점 (휴게X)",
+            hourlyWage: 10030,
+            defaultDays: "월,수,금",
+            defaultStartTime: Date.makeTime(9, 0),
+            defaultEndTime: Date.makeTime(18, 0),
+            defaultRestTime: 60, // 여기를 nil로 설정
+            taxType: .none
+        ),
+        hours: 48
+    )
 }

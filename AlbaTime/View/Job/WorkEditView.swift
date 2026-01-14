@@ -191,11 +191,11 @@ struct WorkEditView: View {
                     if job.name.trimmingCharacters(in: .whitespaces).isEmpty {
                         errorMessage = "매장명을 입력해주세요."
                         showAlert = true
-                    } else if job.hourlyWage <= 0 {
-                        errorMessage = "올바른 시급을 입력해주세요."
-                        showAlert = true
                     } else if job.defaultDays.isEmpty {
                         errorMessage = "근무 요일을 하나 이상 선택해주세요."
+                        showAlert = true
+                    } else if job.hourlyWage <= 0 {
+                        errorMessage = "올바른 시급을 입력해주세요."
                         showAlert = true
                     } else {
                         try? modelContext.save()
@@ -203,6 +203,7 @@ struct WorkEditView: View {
                         NotificationManager.shared.scheduleWorkNotification(for: job)
                         dismiss()
                     }
+                    
                 } label: {
                     Text("수정 완료")
                         .foregroundStyle(.white)
