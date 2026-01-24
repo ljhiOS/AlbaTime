@@ -74,21 +74,16 @@ struct ingButtonStyle: ButtonStyle {
     }
 }
 
+
 struct PlusButton: View {
     
-    @State var isShowingSheet = false
-    @State var isColor = false
-    @State var isPresented: Bool = false
+    // 밖에서 버튼을 눌렀을 때 실행할 행동을 전달받습니다.
+    var action: () -> Void
     
     var body: some View {
-        Button {
-            isShowingSheet = true
-            isColor = true
-            
-        } label: {
+        Button(action: action) {
             VStack(spacing: 20) {
                 ZStack {
-                    
                     Circle()
                         .foregroundStyle(.gray.opacity(0.08))
                         .overlay (
@@ -101,14 +96,10 @@ struct PlusButton: View {
                 Text("새 알바 추가하기")
                     .foregroundStyle(.gray)
             }
-        } //:Button
+        }
         .buttonStyle(ingButtonStyle())
-        .sheet(isPresented: $isShowingSheet) {
-            AddJobView(stateName: "알바 등록")
-        } //:List
     }
 }
-
 struct TimePickerButton: View {
     let title: String
     @Binding var time: Date
@@ -181,7 +172,7 @@ struct TimePickerButton: View {
 }
 
 #Preview("PlusButton") {
-    PlusButton()
+    PlusButton{print("버튼 눌림")}
 }
 
 #Preview("시간 입력 UI 테스트") {

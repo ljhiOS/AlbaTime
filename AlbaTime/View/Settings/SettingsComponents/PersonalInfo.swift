@@ -64,7 +64,14 @@ struct PersonalInfo: View {
                     // 3. 권한 안내
                     PolicySectionView(
                         title: "3. 권한 사용 안내",
-                        content: "본 앱은 기능 수행을 위해 최소한의 권한만을 요청합니다.\n\n• 알림(Notifications): 사용자가 설정한 출근 시간 알림을 발송하기 위해 사용됩니다. 이 알림은 기기 내부에서만 작동하며 외부로 정보를 보내지 않습니다."
+                        content: """
+                            본 앱은 기능 수행을 위해 최소한의 권한만을 요청합니다.
+                            
+                            • 알림(Notifications): 근무 시간 알림 발송을 위해 사용됩니다.
+                            • 사진(Photos): AI 스케줄 인식을 위한 근무표 사진 선택 시에만 사용됩니다.
+                            
+                            위 권한은 사용자가 허용하지 않아도 앱의 기본 기능은 이용할 수 있습니다.
+                            """
                     )
                     
                     // 4. 문의처
@@ -78,11 +85,10 @@ struct PersonalInfo: View {
         }
         .navigationTitle("개인정보처리방침")
         .navigationBarTitleDisplayMode(.inline)
-        .background(Color(uiColor: .systemGroupedBackground)) // 설정 화면과 비슷한 배경색
+        .background(Color(uiColor: .systemGroupedBackground))
     }
 }
 
-// 🎨 재사용 가능한 정책 섹션 카드 디자인
 struct PolicySectionView: View {
     let title: String
     let content: String

@@ -28,12 +28,12 @@ class RealAchiveRecordViewModel: ObservableObject {
         if let existRecord = existingRecords.first(where: { $0.year == year && $0.month == month }) {
             // 있으면 금액만 업데이트 (덮어쓰기)
             existRecord.actualAmount = amountString
-            print("📝 기존 기록 수정 완료: \(year)년 \(month)월")
+            print("기존 기록 수정 완료: \(year)년 \(month)월")
         } else {
             // 없으면 새로 생성
             let newRecord = MonthlyRecord(year: year, month: month, actualAmount: amountString)
             context.insert(newRecord)
-            print("✨ 새 기록 추가 완료: \(year)년 \(month)월")
+            print("새 기록 추가 완료: \(year)년 \(month)월")
         }
             
         // 2. 입력창 닫기 및 초기화

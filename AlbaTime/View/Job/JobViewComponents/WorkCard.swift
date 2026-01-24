@@ -1,5 +1,5 @@
 //
-//  WorkCardView.swift
+//  WorkCard.swift
 //  AlbaTime
 //
 //  Created by 이준희 on 12/8/25.
@@ -20,7 +20,7 @@ struct WorkCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             
-            // 1. [상단 영역] 이름(좌) vs 시간정보(우)
+            // 1. [상단 영역] 이름(좌) vs 시급+메뉴(우)
             HStack(alignment: .top) {
                 // (좌) 가게 이름
                 HStack(spacing: 8) {
@@ -46,115 +46,74 @@ struct WorkCard: View {
                         .fontWeight(.bold)
                         .foregroundColor(.orange)
                     
-                    // 점 3개 메뉴 (터치 영역 확장 적용됨)
+                    // 점 3개 메뉴
                     Image(systemName: "ellipsis")
                         .rotationEffect(.degrees(90))
                         .font(.title2)
                         .foregroundColor(Color.theme.primary)
                         .overlay {
                             Menu {
-                                Button {
-                                    onPin()
-                                } label: {
-                                    Label(job.isPinned ? "고정 해제" : "상단 고정",
-                                          systemImage: job.isPinned ? "pin.slash" : "pin")
+                                Button { onPin() } label: {
+                                    Label(job.isPinned ? "고정 해제" : "상단 고정", systemImage: job.isPinned ? "pin.slash" : "pin")
                                 }
-                                
-                                Button(role: .destructive) {
-                                    onDelete()
-                                } label: {
+                                Button(role: .destructive) { onDelete() } label: {
                                     Label("삭제", systemImage: "trash")
                                 }
-                                
                                 Button {
                                     job.isAlarmEnabled.toggle()
-                                    
-                                    // 2. 실제 시스템 알림 동기화
-                                    if job.isAlarmEnabled {
-                                        NotificationManager.shared.scheduleWorkNotification(for: job)
-                                        print("🔔 \(job.name) 알림 ON")
-                                    } else {
-                                        NotificationManager.shared.removeNotifications(for: job)
-                                        print("🔕 \(job.name) 알림 OFF")
-                                    }
-                                    
-                                    // 햅틱 피드백
                                     let generator = UIImpactFeedbackGenerator(style: .medium)
                                     generator.impactOccurred()
-                                    
                                 } label: {
-                                    Label(job.isAlarmEnabled ? "알람 해제" : "알람 허용",
-                                          systemImage: job.isAlarmEnabled ? "bell.slash" : "bell")
+                                    Label(job.isAlarmEnabled ? "알람 해제" : "알람 허용", systemImage: job.isAlarmEnabled ? "bell.slash" : "bell")
                                 }
                             } label: {
-                                // 투명 터치 영역
-                                Color.clear
-                                    .frame(width: 44, height: 44)
+                                Color.clear.frame(width: 44, height: 44)
                             }
                         }
                 }
-                .layoutPriority(1) // 우측 정보가 밀리지 않도록 우선순위 높임
+                .layoutPriority(1)
             }
             
-            // 2. 구분선 (Rectangle로 교체하여 잘 보이게 수정)
+            // 2. 구분선
             Rectangle()
                 .frame(height: 1)
                 .foregroundColor(Color.gray.opacity(0.3))
             
-            // 3. [정보 영역] 아이콘 + 텍스트
-            VStack(alignment: .leading, spacing: 8) {
-                // 시간 정보
-                HStack(spacing: 8) {
-                    Image(systemName: "clock")
-                        .foregroundColor(.gray)
-                    Text("\(job.defaultDays) \(job.defaultStartTime.format("HH:mm"))-\(job.defaultEndTime.format("HH:mm"))")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
+            // 3. [정보 영역] 아이콘 + 그룹화된 스케줄 텍스트
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "clock")
+                    .foregroundColor(.gray)
+                    .padding(.top, 2)
+                
+                // [핵심] 요일 순서대로 정렬된 텍스트 표시
+                Text(getUnifiedScheduleText())
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
             }
             
             // 4. [버튼 영역]
             HStack(spacing: 10) {
                 // 상세보기 버튼
-                Button {
-                    isDetailShowing = true
-                    print("상세보기 클릭")
-                } label: {
+                Button { isDetailShowing = true } label: {
                     Text("상세보기")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.white)
-                        .cornerRadius(8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
+                        .font(.subheadline).fontWeight(.semibold).foregroundColor(.black)
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(Color.white).cornerRadius(8)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2), lineWidth: 1))
                 }
-                .sheet(isPresented: $isDetailShowing) {
-                    DetailView(job: job)
-                }
+                .sheet(isPresented: $isDetailShowing) { DetailView(job: job) }
                 .buttonStyle(.plain)
                 
                 // 근무 수정 버튼
-                Button {
-                    isShiftShowing = true
-                    print("근무 수정 클릭")
-                } label: {
+                Button { isShiftShowing = true } label: {
                     Text("근무 수정")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.theme.primary)
-                        .cornerRadius(8)
+                        .font(.subheadline).fontWeight(.semibold).foregroundColor(.white)
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(Color.theme.primary).cornerRadius(8)
                 }
-                .sheet(isPresented: $isShiftShowing) {
-                    WorkEditView(job: job)
-                }
+                .sheet(isPresented: $isShiftShowing) { AddJobView(job: job) }
                 .buttonStyle(.plain)
             }
         }
@@ -164,18 +123,112 @@ struct WorkCard: View {
         .shadow(color: .black.opacity(0.088), radius: 10, x: 0, y: 4)
         .padding(.horizontal)
     }
+        
+    // MARK: - Logic (스케줄 텍스트 표시)
+        
+    private func getUnifiedScheduleText() -> String {
+        let calendar = Calendar.current
+        
+        // [A] 자율 근무 (Flexible)
+        if job.workType == .flexible {
+            // 이번 주 데이터 필터링
+            // 날짜 계산 최적화를 위해 DateCompontents 활용
+            let now = Date()
+            let weekday = calendar.component(.weekday, from: now) // 1(일)~7(토)
+            
+            // 이번 주 월요일 계산 (월요일 시작 기준)
+            let daysToSubtract = (weekday + 5) % 7
+            guard let monday = calendar.date(byAdding: .day, value: -daysToSubtract, to: now),
+                  let startOfWeek = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: monday),
+                  let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek)?.addingTimeInterval(86399)
+            else { return "날짜 계산 오류" }
+            
+            // 이번 주 스케줄 찾기
+            let thisWeekSchedules = job.workSchedules.filter {
+                $0.date >= startOfWeek && $0.date <= endOfWeek
+            }
+            
+            // 1. 이번 주 기록이 없으면 -> 목표 표시 (요구사항)
+            if thisWeekSchedules.isEmpty {
+                let count = job.targetWeeklyCount ?? 0
+                let hours = job.expectedDailyHours ?? 0
+                return "주 \(count)회 / 일 평균 \(String(format: "%.1f", hours))시간"
+            }
+            
+            // 2. 기록이 있으면 -> 요일별 시간 표시
+            var timeGroups: [String: Set<String>] = [:]
+            let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+            
+            for schedule in thisWeekSchedules {
+                let weekdayIndex = calendar.component(.weekday, from: schedule.date) - 1
+                let dayName = weekdays[weekdayIndex]
+                let timeStr = "\(formatTime(schedule.startTime)) ~ \(formatTime(schedule.endTime))"
+                
+                timeGroups[timeStr, default: []].insert(dayName)
+            }
+            
+            return formatGroupsToText(timeGroups)
+        }
+        
+        // [B] 고정 근무 (Fixed) - 기존 로직 유지 (요구사항 3)
+        else {
+            var timeGroups: [String: Set<String>] = [:]
+            
+            for schedule in job.regularSchedules {
+                let timeStr = "\(formatTime(schedule.startTime)) ~ \(formatTime(schedule.endTime))"
+                timeGroups[timeStr, default: []].insert(schedule.dayOfWeek)
+            }
+            
+            if timeGroups.isEmpty && !job.defaultDays.isEmpty {
+                let start = formatTime(job.defaultStartTime)
+                let end = formatTime(job.defaultEndTime)
+                return "\(job.defaultDays): \(start) ~ \(end)"
+            }
+            
+            if timeGroups.isEmpty { return "설정된 근무가 없습니다" }
+            
+            return formatGroupsToText(timeGroups)
+        }
+    }
+    
+    // 공통: 그룹화된 데이터를 텍스트로 변환 (월,화,수 정렬 포함)
+    private func formatGroupsToText(_ groups: [String: Set<String>]) -> String {
+        let dayOrder = ["월", "화", "수", "목", "금", "토", "일"]
+        
+        let sortedLines = groups.compactMap { (time, daysSet) -> (String, Int)? in
+            // 요일 내부 정렬 (월,수,금)
+            let sortedDays = daysSet.sorted {
+                (dayOrder.firstIndex(of: $0) ?? 99) < (dayOrder.firstIndex(of: $1) ?? 99)
+            }
+            guard let firstDay = sortedDays.first else { return nil }
+            
+            // 줄 정렬 기준 (가장 빠른 요일)
+            let sortIndex = dayOrder.firstIndex(of: firstDay) ?? 99
+            
+            let text = "\(sortedDays.joined(separator: "/")): \(time)"
+            return (text, sortIndex)
+        }
+        
+        return sortedLines
+            .sorted { $0.1 < $1.1 }
+            .map { $0.0 }
+            .joined(separator: "\n")
+    }
+    
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
 }
 
 #Preview {
-    WorkCard(job: Workplace(
+    let job = Workplace(
         name: "GS25 강남점",
         hourlyWage: 10030,
-        defaultDays: "월,수,금",
-        defaultStartTime: Date.makeTime(9, 0),
-        defaultEndTime: Date.makeTime(18, 0)
-    ), onDelete: {
-        print("삭제")
-    }, onPin: {
-        print("상단 고정")
-    })
+        defaultDays: "",
+        defaultStartTime: Date(),
+        defaultEndTime: Date()
+    )
+    return WorkCard(job: job, onDelete: {}, onPin: {})
 }

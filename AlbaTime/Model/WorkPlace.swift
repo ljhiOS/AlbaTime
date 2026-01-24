@@ -1,36 +1,85 @@
 //
-//  Job.swift
+//  Workplace.swift
 //  AlbaTime
 //
 //  Created by 이준희 on 12/8/25.
 //
 
-
-
 import Foundation
 import SwiftData
 
+// MARK: - Enums
+enum TaxType: String, Codable, CaseIterable {
+    case none = "세금 없음"
+    case threePointThree = "3.3% (사업소득세)"
+    case fourMajor = "4대보험 (약 9.32%)"
+    
+    var rate: Double {
+        switch self {
+        case .none: return 0.0
+        case .threePointThree: return 0.033
+        case .fourMajor: return 0.0932
+        }
+    }
+}
+
+enum WorkType: String, Codable, CaseIterable, Identifiable {
+    case fixed = "요일 고정"
+    case flexible = "횟수/시간 중심"
+    var id: Self { self }
+}
+
+// MARK: - Workplace Model
 @Model
 class Workplace {
     var id: UUID
-    var name: String        // 가게 이름 (예: GS25 강남점)
-    var hourlyWage: Int     // 시급 (예: 9860)
-    var createdAt: Date     // 생성일
+    var name: String
+    var hourlyWage: Int
+    var createdAt: Date
     
-    var defaultDays: String      // 근무 요일 (예: "월,수,금")
-    var defaultStartTime: Date // 시작 시간 (예: "09:00")
-    var defaultEndTime: Date  // 종료 시간 (예: "18:00")
-//    v/*ar allTimes: String        // 총 근무 시간*/
+    // 고정 근무용 설정
+    var defaultDays: String      // "월,수,금"
+    var defaultStartTime: Date
+    var defaultEndTime: Date
+    
     var defaultMemo: String?
     var defaultRestTime: Int?
     
-    var isPinned: Bool = false // 상단 고정용 변수
+    var isPinned: Bool = false
+    var isAlarmEnabled: Bool = true
     
-    var isAlarmEnabled: Bool = true // 알람 설정용 변수
+    // Enum 저장
+    var taxTypeRaw: String = TaxType.none.rawValue
+    var workTypeRaw: String = WorkType.fixed.rawValue
     
-    var taxType: TaxType = TaxType.none
+    // 자율 근무용 설정
+    var targetWeeklyCount: Int?
+    var expectedDailyHours: Double?
     
-    init(name: String, hourlyWage: Int, defaultDays: String, defaultStartTime: Date, defaultEndTime: Date /*, allTimes: String*/, defaultRestTime: Int? = nil, defaultMemo: String? = nil, isAlarmEnabled: Bool = true, taxType: TaxType = .none) {
+    // Relationships
+    @Relationship(deleteRule: .cascade, inverse: \WorkSchedule.workplace)
+    var workSchedules: [WorkSchedule] = []
+    
+    @Relationship(deleteRule: .cascade, inverse: \WorkTimePreset.workplace)
+    var timePresets: [WorkTimePreset] = []
+    
+    @Relationship(deleteRule: .cascade, inverse: \RegularSchedule.workplace)
+    var regularSchedules: [RegularSchedule] = []
+    
+    init(
+        name: String,
+        hourlyWage: Int,
+        defaultDays: String,
+        defaultStartTime: Date,
+        defaultEndTime: Date,
+        defaultRestTime: Int? = nil,
+        defaultMemo: String? = nil,
+        isAlarmEnabled: Bool = true,
+        taxType: TaxType = .none,
+        workType: WorkType = .fixed,
+        targetWeeklyCount: Int? = nil,
+        expectedDailyHours: Double? = nil
+    ) {
         self.id = UUID()
         self.name = name
         self.hourlyWage = hourlyWage
@@ -41,53 +90,64 @@ class Workplace {
         self.defaultRestTime = defaultRestTime
         self.defaultMemo = defaultMemo ?? ""
         self.isAlarmEnabled = isAlarmEnabled
-        self.taxType = taxType
-//        self.allTimes = allTimes
+        self.taxTypeRaw = taxType.rawValue
+        self.workTypeRaw = workType.rawValue
+        self.targetWeeklyCount = targetWeeklyCount
+        self.expectedDailyHours = expectedDailyHours
+    }
+    
+    var taxType: TaxType {
+        get { TaxType(rawValue: taxTypeRaw) ?? .none }
+        set { taxTypeRaw = newValue.rawValue }
+    }
+    
+    var workType: WorkType {
+        get { WorkType(rawValue: workTypeRaw) ?? .fixed }
+        set { workTypeRaw = newValue.rawValue }
     }
 }
 
-// 정한 날짜 수정을 위한 익스텐션.. ux 고려하기 이렇게 힘들다니
+// MARK: - Logic Extension (충돌 해결의 핵심)
 extension Workplace {
-    private var dayOrder: [String: Int] {
-        ["일": 7, "월": 2, "화": 3, "수": 4, "목": 5, "금": 6, "토": 7]
-    }
     
-    func isDaySelected(_ day: String) -> Bool {
-        return self.defaultDays.components(separatedBy: "/").contains(day)
-    }
-    
-    func toggleDay(_ day: String) {
-        var currentDays = self.defaultDays.components(separatedBy: "/").filter { !$0.isEmpty }
+    /// 📅 [핵심 로직] 특정 날짜에 근무가 있는지 판단
+    /// - 1순위: AI/수기로 저장된 기록 (무조건 최우선)
+    /// - 2순위: 고정 근무 패턴 (자율 근무제는 해당 없음)
+    func getSchedule(for date: Date) -> (startTime: Date, endTime: Date, title: String?)? {
+        let calendar = Calendar.current
         
-        if currentDays.contains(day) {
-            currentDays.removeAll { $0 == day }
-        } else {
-            currentDays.append(day)
+        // 1. 개별 기록(AI/수기) 확인 -> 자율/고정 모두 최우선 적용
+        if let actualRecord = workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: date) }) {
+            return (actualRecord.startTime, actualRecord.endTime, actualRecord.memo)
         }
         
-        currentDays.sort {
-            (dayOrder[$0] ?? 99) < (dayOrder[$1] ?? 99)
+        // 2. 고정 근무 패턴 확인 (자율 근무는 여기서 탈락)
+        if workType == .fixed {
+            let weekdayStr = date.koreanWeekday
+            
+            // A. 상세 요일 설정
+            if let regular = regularSchedules.first(where: { $0.dayOfWeek == weekdayStr }) {
+                let start = combineDateAndTime(date: date, time: regular.startTime)
+                var end = combineDateAndTime(date: date, time: regular.endTime)
+                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end)! }
+                return (start, end, nil)
+            }
+            
+            // B. 간편 요일 설정
+            else if regularSchedules.isEmpty && defaultDays.contains(weekdayStr) {
+                let start = combineDateAndTime(date: date, time: defaultStartTime)
+                var end = combineDateAndTime(date: date, time: defaultEndTime)
+                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end)! }
+                return (start, end, nil)
+            }
         }
         
-        if currentDays.isEmpty {
-            self.defaultDays = ""
-        } else {
-            self.defaultDays = currentDays.joined(separator: "/")
-        }
+        return nil
     }
-}
-
-enum TaxType: String, Codable, CaseIterable {
-    case none = "세금 없음"
-    case threePointThree = "3.3% (사업소득세)"
-    case fourMajor = "4대보험 (약 9.32%)"
     
-    // 세율 계산용 프로퍼티
-    var rate: Double {
-        switch self {
-        case .none: return 0.0
-        case .threePointThree: return 0.033
-        case .fourMajor: return 0.0932 // 2024년 기준 근로자 부담분 대략적 합계 (국민+건강+요양+고용)
-        }
+    private func combineDateAndTime(date: Date, time: Date) -> Date {
+        let calendar = Calendar.current
+        let timeComp = calendar.dateComponents([.hour, .minute], from: time)
+        return calendar.date(bySettingHour: timeComp.hour ?? 0, minute: timeComp.minute ?? 0, second: 0, of: date) ?? date
     }
 }

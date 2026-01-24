@@ -16,7 +16,7 @@ struct DetailView: View {
     
     var salaryData: SalaryBreakdown {
             // [핵심] 여기서 계산기를 돌려서 결과 꾸러미를 받아옵니다.
-            return SalaryCalculator.calculateExpectedMonthlyPay(
+            return SalaryCalculator.calculateTotalMonthlyPay(
                 workplaces: [job],
                 targetMonth: Date()
             )

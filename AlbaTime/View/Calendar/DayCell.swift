@@ -20,7 +20,7 @@ struct DayCell: View {
                 .fontWeight(isSelected ? .bold : .regular)
                 .foregroundColor(isSelected ? Color.theme.primary : .black)
                 .frame(width: 30, height: 30)
-                .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
+                .background(isSelected ? Color.theme.primary.opacity(0.1) : Color.clear)
                 .clipShape(Circle())
             
             if !todayJobs.isEmpty {

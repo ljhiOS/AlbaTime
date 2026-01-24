@@ -10,15 +10,16 @@ import SwiftData
 
 struct ScheduleDetailCard: View {
     @ObservedObject var cvm: CalendarViewModel
-    var allWorkplaces: [Workplace] // 전체 가게 목록을 받음
+    var allWorkplaces: [Workplace]
     
     var body: some View {
-        // 오늘 해야할 일
+        // 뷰모델을 통해 해당 날짜의 알바 목록과 급여를 가져옴
         let scheduledJobs = cvm.getScheduledWorkplaces(for: cvm.selectedDate, allWorkplaces: allWorkplaces)
         let totalPay = cvm.getTotalEstimatedPay(for: cvm.selectedDate, allWorkplaces: allWorkplaces)
         
         VStack(alignment: .leading, spacing: 16) {
             
+            // 헤더 영역 (날짜 + 총 급여)
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(cvm.selectedDate.format("M월 d일 (E)"))
@@ -34,13 +35,13 @@ struct ScheduleDetailCard: View {
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
-                } //:VStack
+                }
                 
                 Spacer()
                 
                 if !scheduledJobs.isEmpty {
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text("₩\(totalPay)")
+                        Text("₩\(totalPay.formatted())")
                             .font(.title3)
                             .fontWeight(.bold)
                             .foregroundColor(.orange)
@@ -48,12 +49,13 @@ struct ScheduleDetailCard: View {
                         Text("오늘의 예상 급여")
                             .font(.caption)
                             .foregroundColor(.gray)
-                    } //:VStack
+                    }
                 }
-            } //:HStack
+            }
             
             Divider()
             
+            // 본문 영역 (리스트 or 빈 화면)
             if scheduledJobs.isEmpty {
                 HStack {
                     Spacer()
@@ -66,7 +68,7 @@ struct ScheduleDetailCard: View {
                     }
                     .padding(.vertical, 30)
                     Spacer()
-                } //:HStack
+                }
             } else {
                 ScrollView {
                     VStack(spacing: 12) {
@@ -76,34 +78,37 @@ struct ScheduleDetailCard: View {
                                     Text(job.name)
                                         .font(.headline)
                                     
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "clock")
-                                        Text(cvm.getWorkTimeRange(for: job))
-                                    } //:HStack
+                                    HStack(spacing: 6) {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "clock")
+                                            // 🔥 뷰모델의 getWorkTimeRange 사용
+                                            Text(cvm.getWorkTimeRange(for: job, on: cvm.selectedDate))
+                                        }
+                                    }
                                     .font(.caption)
                                     .foregroundColor(.gray)
-                                } //:VStack
+                                }
                                 
                                 Spacer()
                                 
                                 VStack(alignment: .trailing, spacing: 2) {
-                                    
-                                    Text("₩\(SalaryCalculator.calculateExpectedPay(workplace: job))")
+                                    // 뷰모델의 getEstimatedPay 사용
+                                    Text("₩\(cvm.getEstimatedPay(for: job, on: cvm.selectedDate).formatted())")
                                         .fontWeight(.semibold)
                                     
-                                    Text("시급 \(job.hourlyWage)원")
+                                    Text("시급 \(job.hourlyWage.formatted())원")
                                         .font(.caption2)
                                         .foregroundColor(.gray.opacity(0.8))
-                                } //:VStack
-                            } //:HStack
+                                }
+                            }
                             .padding()
                             .background(Color.white)
                             .cornerRadius(12)
                             .shadow(color: .black.opacity(0.03), radius: 2, x: 0, y: 1)
-                        } //:Loop
-                    } //:VStack
+                        }
+                    }
                     .padding(.top, 4)
-                } //:ScrollViewEnd
+                }
                 .frame(maxHeight: 250)
             }
         }
@@ -114,21 +119,82 @@ struct ScheduleDetailCard: View {
     }
 }
 
-#Preview("상세 카드") {
-    // 1. 뷰모델 준비
+// MARK: - Preview
+
+#Preview("근무 있음") {
+    // 1. 메모리 전용 DB 컨테이너 생성
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Workplace.self, RegularSchedule.self, WorkSchedule.self, WorkTimePreset.self, configurations: config)
+    
+    // 2. 가짜 데이터 생성
+    // Case A: 편의점 (고정 근무)
+    let job1 = Workplace(
+        name: "GS25 강남점",
+        hourlyWage: 9860,
+        defaultDays: "월,수,금",
+        defaultStartTime: Date.makeTime(9, 0),
+        defaultEndTime: Date.makeTime(14, 0),
+        defaultRestTime: 30,
+        workType: .fixed
+    )
+    
+    // Case B: 카페 (자율 근무 + 메모 포함)
+    let job2 = Workplace(
+        name: "스타벅스",
+        hourlyWage: 11000,
+        defaultDays: "",
+        defaultStartTime: Date.makeTime(18, 0),
+        defaultEndTime: Date.makeTime(22, 0),
+        workType: .flexible
+    )
+    
+    container.mainContext.insert(job1)
+    container.mainContext.insert(job2)
+    
+    // 3. 오늘 날짜에 스케줄 강제 주입 (프리뷰에서 항상 보이게 하기 위함)
+    let today = Date()
+    
+    // 편의점 스케줄 (09:00 - 14:00)
+    let schedule1 = WorkSchedule(
+        date: today,
+        startTime: Date.makeTime(9, 0),
+        endTime: Date.makeTime(14, 0),
+        breakTime: 30,
+        workplace: job1
+    )
+    job1.workSchedules.append(schedule1)
+    
+    // 카페 스케줄 (18:00 - 22:00, 오픈 메모)
+    let schedule2 = WorkSchedule(
+        date: today,
+        startTime: Date.makeTime(18, 0),
+        endTime: Date.makeTime(22, 0),
+        breakTime: 0,
+        memo: "마감 대타",
+        workplace: job2
+    )
+    job2.workSchedules.append(schedule2)
+    
+    // 4. 뷰모델 설정 및 캐시 업데이트
     let cvm = CalendarViewModel()
-    cvm.selectedDate = Date() // 오늘 날짜
+    cvm.selectedDate = today
+    // 🔥 중요: 뷰모델의 캐시를 수동으로 업데이트해야 화면에 뜹니다.
+    cvm.updateCache(workplaces: [job1, job2])
     
-    // 2. 데이터 준비 (PreviewHelper 컨테이너 사용)
-    let container = PreviewHelper.container
-    let context = container.mainContext
+    return ZStack {
+        Color.gray.opacity(0.1).ignoresSafeArea() // 배경색 확인용
+        
+        ScheduleDetailCard(cvm: cvm, allWorkplaces: [job1, job2])
+    }
+    .modelContainer(container)
+}
+
+#Preview("근무 없음 (빈 상태)") {
+    let cvm = CalendarViewModel()
+    cvm.selectedDate = Date()
     
-    // 데이터 가져오기 (에러 방지를 위해 try? 사용하고 실패시 빈 배열 반환)
-    let workplaces = (try? context.fetch(FetchDescriptor<Workplace>())) ?? []
-    
-    return ScheduleDetailCard(cvm: cvm, allWorkplaces: workplaces)
-        .padding()
-        .background(Color.white)
-        // 중요: 프리뷰가 안정적으로 돌도록 컨테이너 주입
-        .modelContainer(container)
+    return ZStack {
+        Color.gray.opacity(0.1).ignoresSafeArea()
+        ScheduleDetailCard(cvm: cvm, allWorkplaces: [])
+    }
 }

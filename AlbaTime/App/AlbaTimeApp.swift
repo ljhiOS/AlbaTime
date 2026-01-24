@@ -22,7 +22,10 @@ struct AlbaTimeApp: App {
         }
         .modelContainer(for: [
             Workplace.self,
-            MonthlyRecord.self
+            MonthlyRecord.self,
+            RegularSchedule.self,
+            WorkSchedule.self,
+            WorkTimePreset.self
         ])
     }
 }
