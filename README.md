@@ -34,9 +34,12 @@ Database: SwiftData (iOS 17+)
 Tools: Xcode 16.0+
 ```
 ```text
-5. 아키텍처 및 데이터 흐름 (Architecture & Data Flow)
+5. AI OCR 엔진 탑재
+VisionAI 기반 OCR 엔진을 탑재하여 자동으로 스케줄이 인식되도록 함
+```
+```text
+6. 아키텍처 및 데이터 흐름 (Architecture & Data Flow)
 이 프로젝트는 MVVM 패턴을 준수하며, SwiftData를 사용하여 데이터를 관리합니다.
-
 폴더 구조 (Folder Structure)
 
 AlbaTime
@@ -60,9 +63,8 @@ AlbaTime
     └── Date+Helper.swift
 ```
 
-<img width="500" height="400" alt="이미지 2026  1  14  오후 6 43" src="https://github.com/user-attachments/assets/a5bd655e-2c4a-42a7-b984-ae1ea5f33a9a" />
-
-<img width="500" height="400" alt="이미지 2026  1  14  오후 6 44" src="https://github.com/user-attachments/assets/bcd8a855-76b8-49dc-ac31-d84d7043f301" />
+<img width="1300" height="1000" alt="Untitled diagram-2026-01-24-111206" src="https://github.com/user-attachments/assets/e0294aba-4e14-430a-a923-04d58ed31c18" />
+<img width="300" height="800" alt="Untitled diagram-2026-01-24-132737" src="https://github.com/user-attachments/assets/d0264250-28aa-4449-bfa0-c6b6e57617fa" />
 
 ## 실제 구현 화면
 
@@ -72,3 +74,10 @@ AlbaTime
 
 ## V1.0 앱스토어 배포 기간
 2025.12.8 ~ 2025.1.13
+
+## V1.1.0 앱 스토어 배포기간
+2025.1.13 ~ 2025.1.24
+
+업데이트
+1. visionAi 기반 ai ocr engine 탑재
+2. 고정, 자율 스케줄 따로 저장가능하도록 업데이트
