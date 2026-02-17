@@ -1,0 +1,32 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Settings/SettingsComponents/AccountDetail.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "계정",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 16
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림설정",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 33
+        }
+      }
+    ]
+  },
+  "version": 1
+}

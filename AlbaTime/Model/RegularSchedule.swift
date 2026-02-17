@@ -8,8 +8,7 @@
 import Foundation
 import SwiftData
 
-// 존재 이유: 고정 근무 계획표
-// 고정 근무와 자율 근무제 중 고정 근무를 표시하는 모델
+// 고정 근무 요일/시간 설정 모델
 @Model
 class RegularSchedule {
     var id: UUID
@@ -20,7 +19,7 @@ class RegularSchedule {
     
     var workplace: Workplace?
     
-    // 🔥 breakTime까지 포함된 init이 필요합니다.
+    // 휴게시간을 함께 저장한다.
     init(dayOfWeek: String, startTime: Date, endTime: Date, breakTime: Int = 60) {
         self.id = UUID()
         self.dayOfWeek = dayOfWeek

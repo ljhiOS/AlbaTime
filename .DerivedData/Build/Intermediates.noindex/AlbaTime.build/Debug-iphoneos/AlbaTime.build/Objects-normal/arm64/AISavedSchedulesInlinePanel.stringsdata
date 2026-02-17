@@ -1,0 +1,64 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AiViewComponents/AiScheduleComponents/AISavedSchedulesInlinePanel.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "알림",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "이 근무지에 저장된 AI 스케줄이 없습니다.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "선택한 주차에 저장된 스케줄이 없습니다.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 49
+        }
+      },
+      {
+        "comment": "",
+        "key": "선택한 주차 수정사항 저장",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld건",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "저장된 AI 스케줄",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "확인",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 86
+        }
+      }
+    ]
+  },
+  "version": 1
+}

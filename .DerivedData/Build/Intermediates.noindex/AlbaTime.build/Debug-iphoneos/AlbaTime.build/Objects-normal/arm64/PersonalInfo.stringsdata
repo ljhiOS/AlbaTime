@@ -1,0 +1,64 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Settings/SettingsComponents/PersonalInfo.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "개인정보처리방침",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "AlbaTime\n개인정보처리방침",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "최종 수정일: 2026년 1월 11일",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "4. 문의처",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "본 앱의 개인정보 처리와 관련하여 문의사항이 있으신 경우 아래 연락처로 문의해 주시기 바랍니다.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "복사됨",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 152
+        }
+      },
+      {
+        "comment": "",
+        "key": "복사",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 152
+        }
+      }
+    ]
+  },
+  "version": 1
+}

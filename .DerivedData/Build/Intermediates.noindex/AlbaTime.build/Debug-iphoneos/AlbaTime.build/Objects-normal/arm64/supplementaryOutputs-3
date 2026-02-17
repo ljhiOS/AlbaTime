@@ -1,0 +1,30 @@
+{
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AddJobViewComponents/FlexibleInfoGroup.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/FlexibleInfoGroup.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/FlexibleInfoGroup.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/FlexibleInfoGroup.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/FlexibleInfoGroup.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/FlexibleInfoGroup.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AddJobViewComponents/HeaderView.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/HeaderView.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/HeaderView.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/HeaderView.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/HeaderView.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/HeaderView.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AddJobViewComponents/PresetGroup.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PresetGroup.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PresetGroup.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PresetGroup.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PresetGroup.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PresetGroup.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AddJobViewComponents/ScheduleGroup.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ScheduleGroup.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ScheduleGroup.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ScheduleGroup.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ScheduleGroup.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ScheduleGroup.swiftdeps"
+  }
+}

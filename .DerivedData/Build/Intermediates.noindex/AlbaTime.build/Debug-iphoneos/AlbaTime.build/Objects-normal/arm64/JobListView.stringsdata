@@ -1,0 +1,72 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/JobListView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "근무 형태를 선택해주세요",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 94
+        }
+      },
+      {
+        "comment": "",
+        "key": "하단 버튼을 눌러\n새로운 알바를 추가해주세요!",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "등록된 알바가 없어요...",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "근무지 목록",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "고정됨",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "요일 고정 알바",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "자율/횟수 중심 알바",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 98
+        }
+      },
+      {
+        "comment": "",
+        "key": "취소",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 101
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -5,34 +5,26 @@
 //  Created by 이준희 on 1/17/26.
 //
 
-// 존재 이유: OCR의 단어 좌표들 한줄 텍스트로 복원, 사람 시각 모델링
-
 import Foundation
 
-// x축 기반으로 인식률 높이기 위해 추가
 struct TextElement {
     let text: String
     let midX: CGFloat
 }
 
-/// 같은 라인(행)에 있는 텍스트 박스들의 묶음 (구조화 단계에서 사용)
+/// OCR 텍스트를 파서에서 다루기 쉬운 행 단위로 묶은 구조
 struct TextRow {
     let elements: [TextElement]
     
-    // 행 전체 텍스트 반환 (공백으로 연결)
     var fullText: String {
-        return elements.map {$0.text}.joined(separator: " ")
+        elements.map { $0.text }.joined(separator: " ")
     }
 }
 
-// 존재 이유: OCR은 기본적으로 단어 조각 단위로 나오기에 내가 필요한 날짜, 시간, 이름이 있는 한줄을 얻지 못하여 존재
-// 파서를 위한 중간 구조
-
 final class TextLayoutAnalyzer {
     
-    /// 뒤죽박죽인 텍스트 박스들을 '행(Row)' 단위로 그룹화 // 텍스트 박스들 같은 줄인지 다른 줄인지 판단
+    /// 위치 기반 OCR 결과를 같은 행(Row) 기준으로 그룹화한다.
     static func groupByRow(_ boxes: [RawTextBox]) -> [TextRow] {
-        
         guard !boxes.isEmpty else { return [] }
         
         let validBoxes = boxes.filter {
@@ -48,7 +40,8 @@ final class TextLayoutAnalyzer {
         
         for box in sortedByY {
             if let index = rows.firstIndex(where: {
-                isSameLine($0.first!.boundingBox, box.boundingBox)
+                guard let first = $0.first else { return false }
+                return isSameLine(first.boundingBox, box.boundingBox)
             }) {
                 rows[index].append(box)
             } else {
@@ -69,9 +62,12 @@ final class TextLayoutAnalyzer {
     }
     
     private static func isSameLine(_ a: CGRect, _ b: CGRect) -> Bool {
+        // 기울기/원근이 있는 사진에서도 줄 묶음이 흔들리지 않도록
+        // Y 중심 거리와 겹침 비율을 함께 사용한다.
+        let yCenterDiff = abs(a.midY - b.midY)
+        let dynamic = max(a.height, b.height) * 0.8
         let overlap = min(a.maxY, b.maxY) - max(a.minY, b.minY)
-        return overlap > min(a.height, b.height) * 0.5
+        return yCenterDiff <= dynamic || overlap > min(a.height, b.height) * 0.35
     }
 }
-
 

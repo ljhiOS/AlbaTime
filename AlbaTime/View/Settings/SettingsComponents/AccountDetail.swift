@@ -39,15 +39,12 @@ struct AccountDetail: View {
                                for place in workplaces {
                                    // 기존에 알림 켜둔 알바처만 다시 등록
                                    if place.isAlarmEnabled {
-                                       NotificationManager.shared.scheduleWorkNotification(for: place)
+                                       NotificationManager.shared.refreshNotifications(for: place)
                                    }
                                }
                            } else {
                                print("앱 알림 해제")
-                               // 나중에 여기에 모든 알림 취소하는 로직 추가 가능
-                               UNUserNotificationCenter
-                                   .current()
-                                   .removeAllPendingNotificationRequests()
+                               NotificationManager.shared.removeAllNotifications()
                            }
                        }
             }

@@ -2,7 +2,7 @@ import SwiftUI
 
 extension Date {
     
-    // 🔥 [핵심] static으로 선언해서 포맷터를 '한 번만' 생성 (속도 100배 향상)
+    // 포맷터 재사용으로 생성 비용을 줄인다.
     private static let kWeekdayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "ko_KR")

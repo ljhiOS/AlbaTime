@@ -1,0 +1,40 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/JobViewComponents/DayScheduleRow.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "휴무",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "~",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 59
+        }
+      }
+    ]
+  },
+  "version": 1
+}

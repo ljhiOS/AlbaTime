@@ -11,6 +11,7 @@ import SwiftData
 struct CalendarView: View {
     @StateObject private var cvm = CalendarViewModel()
     @Query var workplaces: [Workplace] // 데이터베이스 감지
+    @Query var workSchedules: [WorkSchedule]
     
     let weekDays = ["일", "월", "화", "수", "목", "금", "토"]
     
@@ -87,6 +88,9 @@ struct CalendarView: View {
         .background(Color.white)
         .onAppear { cvm.updateCache(workplaces: workplaces) }
         .onChange(of: workplaces) { _, newValue in cvm.updateCache(workplaces: newValue) }
+        .onChange(of: workSchedules.count) { _, _ in
+            cvm.updateCache(workplaces: workplaces)
+        }
         .onChange(of: cvm.currentMonth) { _, _ in cvm.updateCache(workplaces: workplaces) }
     }
 }

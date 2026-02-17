@@ -1,0 +1,30 @@
+{
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/App/MainTabView.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/MainTabView.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/MainTabView.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/MainTabView.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/MainTabView.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/MainTabView.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/App/SplashView.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SplashView.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SplashView.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SplashView.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SplashView.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SplashView.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Calendar/CalendarView.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CalendarView.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CalendarView.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CalendarView.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CalendarView.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CalendarView.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Calendar/DayCell.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/DayCell.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/DayCell.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/DayCell.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/DayCell.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/DayCell.swiftdeps"
+  }
+}

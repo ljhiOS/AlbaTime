@@ -1,0 +1,4 @@
+Target dependency graph (2 targets)
+Target 'AlbaTime' in project 'AlbaTime'
+➜ Explicit dependency on target 'AlbaTimeWidgetExtension' in project 'AlbaTime'
+Target 'AlbaTimeWidgetExtension' in project 'AlbaTime' (no dependencies)

@@ -46,7 +46,7 @@ struct ScheduleDetailCard: View {
                             .fontWeight(.bold)
                             .foregroundColor(.orange)
                         
-                        Text("오늘의 예상 급여")
+                        Text("선택한 날짜의 예상 급여")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -63,7 +63,7 @@ struct ScheduleDetailCard: View {
                         Image(systemName: "calendar.badge.minus")
                             .font(.largeTitle)
                             .foregroundColor(.gray.opacity(0.5))
-                        Text("오늘은 쉬는 날이에요! 🎉")
+                        Text("오늘은 쉬는 날이에요!")
                             .foregroundColor(.gray)
                     }
                     .padding(.vertical, 30)
@@ -81,7 +81,7 @@ struct ScheduleDetailCard: View {
                                     HStack(spacing: 6) {
                                         HStack(spacing: 4) {
                                             Image(systemName: "clock")
-                                            // 🔥 뷰모델의 getWorkTimeRange 사용
+                                            // 선택 날짜 기준 근무 시간대
                                             Text(cvm.getWorkTimeRange(for: job, on: cvm.selectedDate))
                                         }
                                     }
@@ -178,7 +178,7 @@ struct ScheduleDetailCard: View {
     // 4. 뷰모델 설정 및 캐시 업데이트
     let cvm = CalendarViewModel()
     cvm.selectedDate = today
-    // 🔥 중요: 뷰모델의 캐시를 수동으로 업데이트해야 화면에 뜹니다.
+    // 프리뷰에서는 캐시를 수동으로 갱신한다.
     cvm.updateCache(workplaces: [job1, job2])
     
     return ZStack {

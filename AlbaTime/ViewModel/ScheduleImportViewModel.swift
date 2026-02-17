@@ -140,17 +140,23 @@ class ScheduleImportViewModel: ObservableObject {
         parsedSchedules.sort { $0.date < $1.date }
     }
     
-    func saveToWorkplace(context: ModelContext) {
-        guard let job = targetJob else { return }
+    func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil) -> Bool {
+        guard let job = targetJob else {
+            errorMessage = "근무지 정보가 없습니다."
+            showAlert = true
+            return false
+        }
         let calendar = Calendar.current
+        let batchID = UUID().uuidString
         
         if job.modelContext == nil {
             context.insert(job)
         }
         
         for parsed in parsedSchedules {
-            let finalStart = combineDateAndTime(date: parsed.date, time: parsed.startTime)
-            var finalEnd = combineDateAndTime(date: parsed.date, time: parsed.endTime)
+            let mappedDate = mappedDateForTargetWeek(originalDate: parsed.date, targetWeekStart: targetWeekStart)
+            let finalStart = combineDateAndTime(date: mappedDate, time: parsed.startTime)
+            var finalEnd = combineDateAndTime(date: mappedDate, time: parsed.endTime)
             
             if finalEnd < finalStart {
                 finalEnd = calendar.date(byAdding: .day, value: 1, to: finalEnd)!
@@ -158,7 +164,7 @@ class ScheduleImportViewModel: ObservableObject {
             
             // 배열을 직접 건드리지 말고, DB에서 삭제 명령만 내림
             let duplicates = job.workSchedules.filter {
-                calendar.isDate($0.date, inSameDayAs: parsed.date)
+                calendar.isDate($0.date, inSameDayAs: mappedDate)
             }
             
             for dup in duplicates {
@@ -167,25 +173,36 @@ class ScheduleImportViewModel: ObservableObject {
             
             // 새 스케줄 생성
             let newSchedule = WorkSchedule(
-                date: parsed.date,
+                date: mappedDate,
                 startTime: finalStart,
                 endTime: finalEnd,
                 breakTime: job.defaultRestTime ?? 0,
-                memo: parsed.scheduleName
+                memo: parsed.scheduleName,
+                isFromAIImport: true,
+                aiImportBatchID: batchID,
+                isEditedAfterAIImport: false
             )
             
             newSchedule.workplace = job
-            // job.workSchedules.append(newSchedule)
+            if !job.workSchedules.contains(where: { $0.id == newSchedule.id }) {
+                job.workSchedules.append(newSchedule)
+            }
             context.insert(newSchedule)
         }
         
+        NotificationManager.shared.refreshNotifications(for: job)
+        
         do {
             try context.save()
+            let workplaces = try context.fetch(FetchDescriptor<Workplace>())
+            NextShiftSyncService.sync(workplaces: workplaces)
             print("✅ DB 저장 완료")
+            return true
         } catch {
             print("❌ DB 저장 실패: \(error)")
             errorMessage = "저장 중 오류가 발생했습니다."
             showAlert = true
+            return false
         }
     }
     
@@ -194,6 +211,15 @@ class ScheduleImportViewModel: ObservableObject {
         let calendar = Calendar.current
         let timeComp = calendar.dateComponents([.hour, .minute], from: time)
         return calendar.date(bySettingHour: timeComp.hour ?? 0, minute: timeComp.minute ?? 0, second: 0, of: date) ?? date
+    }
+
+    private func mappedDateForTargetWeek(originalDate: Date, targetWeekStart: Date?) -> Date {
+        guard let targetWeekStart else { return originalDate }
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: originalDate) // 1:일 ... 7:토
+        let mondayBasedOffset = (weekday + 5) % 7 // 월:0 ... 일:6
+        let start = calendar.startOfDay(for: targetWeekStart)
+        return calendar.date(byAdding: .day, value: mondayBasedOffset, to: start) ?? originalDate
     }
     
     func addEmptySchedule() {

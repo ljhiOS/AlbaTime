@@ -1,0 +1,23 @@
+{
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Pay/PayComponents/PayDetailCard.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PayDetailCard.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PayDetailCard.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PayDetailCard.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PayDetailCard.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/PayDetailCard.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Pay/PayComponents/RealAchivePay.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchivePay.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchivePay.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchivePay.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchivePay.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchivePay.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Pay/PayComponents/RealAchiveRecord.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchiveRecord.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchiveRecord.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchiveRecord.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchiveRecord.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/RealAchiveRecord.swiftdeps"
+  }
+}

@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1C427212F359C2C00441D23 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1C427202F359C2C00441D23 /* WidgetKit.framework */; };
+		A1C427232F359C2C00441D23 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1C427222F359C2C00441D23 /* SwiftUI.framework */; };
+		A1C427342F359C2C00441D23 /* AlbaTimeWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1C4271E2F359C2C00441D23 /* AlbaTimeWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A16722FD2F137C5E00EFBBE9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,11 +20,35 @@
 			remoteGlobalIDString = A16196872EE6C671008485EB;
 			remoteInfo = AlbaTime;
 		};
+		A1C427322F359C2C00441D23 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A16196802EE6C671008485EB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1C4271D2F359C2C00441D23;
+			remoteInfo = AlbaTimeWodgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1C427392F359C2C00441D23 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1C427342F359C2C00441D23 /* AlbaTimeWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A16196882EE6C671008485EB /* AlbaTime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlbaTime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A16722F92F137C5E00EFBBE9 /* AlbaTimeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlbaTimeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1C4271E2F359C2C00441D23 /* AlbaTimeWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AlbaTimeWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1C427202F359C2C00441D23 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		A1C427222F359C2C00441D23 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -28,6 +58,13 @@
 				Info.plist,
 			);
 			target = A16196872EE6C671008485EB /* AlbaTime */;
+		};
+		A1C427382F359C2C00441D23 /* Exceptions for "AlbaTimeWidget" folder in "AlbaTimeWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A1C4271D2F359C2C00441D23 /* AlbaTimeWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -43,6 +80,14 @@
 		A16722FA2F137C5E00EFBBE9 /* AlbaTimeTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AlbaTimeTests;
+			sourceTree = "<group>";
+		};
+		A1C427242F359C2C00441D23 /* AlbaTimeWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1C427382F359C2C00441D23 /* Exceptions for "AlbaTimeWidget" folder in "AlbaTimeWidgetExtension" target */,
+			);
+			path = AlbaTimeWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,6 +107,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1C4271B2F359C2C00441D23 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1C427232F359C2C00441D23 /* SwiftUI.framework in Frameworks */,
+				A1C427212F359C2C00441D23 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -70,6 +124,8 @@
 			children = (
 				A161968A2EE6C671008485EB /* AlbaTime */,
 				A16722FA2F137C5E00EFBBE9 /* AlbaTimeTests */,
+				A1C427242F359C2C00441D23 /* AlbaTimeWidget */,
+				A1C4271F2F359C2C00441D23 /* Frameworks */,
 				A16196892EE6C671008485EB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -79,8 +135,18 @@
 			children = (
 				A16196882EE6C671008485EB /* AlbaTime.app */,
 				A16722F92F137C5E00EFBBE9 /* AlbaTimeTests.xctest */,
+				A1C4271E2F359C2C00441D23 /* AlbaTimeWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A1C4271F2F359C2C00441D23 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A1C427202F359C2C00441D23 /* WidgetKit.framework */,
+				A1C427222F359C2C00441D23 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -93,10 +159,12 @@
 				A16196842EE6C671008485EB /* Sources */,
 				A16196852EE6C671008485EB /* Frameworks */,
 				A16196862EE6C671008485EB /* Resources */,
+				A1C427392F359C2C00441D23 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A1C427332F359C2C00441D23 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A161968A2EE6C671008485EB /* AlbaTime */,
@@ -131,6 +199,28 @@
 			productReference = A16722F92F137C5E00EFBBE9 /* AlbaTimeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		A1C4271D2F359C2C00441D23 /* AlbaTimeWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1C427352F359C2C00441D23 /* Build configuration list for PBXNativeTarget "AlbaTimeWidgetExtension" */;
+			buildPhases = (
+				A1C4271A2F359C2C00441D23 /* Sources */,
+				A1C4271B2F359C2C00441D23 /* Frameworks */,
+				A1C4271C2F359C2C00441D23 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A1C427242F359C2C00441D23 /* AlbaTimeWidget */,
+			);
+			name = AlbaTimeWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = AlbaTimeWodgetExtension;
+			productReference = A1C4271E2F359C2C00441D23 /* AlbaTimeWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -147,6 +237,9 @@
 					A16722F82F137C5E00EFBBE9 = {
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = A16196872EE6C671008485EB;
+					};
+					A1C4271D2F359C2C00441D23 = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -166,6 +259,7 @@
 			targets = (
 				A16196872EE6C671008485EB /* AlbaTime */,
 				A16722F82F137C5E00EFBBE9 /* AlbaTimeTests */,
+				A1C4271D2F359C2C00441D23 /* AlbaTimeWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -179,6 +273,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A16722F72F137C5E00EFBBE9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1C4271C2F359C2C00441D23 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -202,6 +303,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1C4271A2F359C2C00441D23 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -209,6 +317,11 @@
 			isa = PBXTargetDependency;
 			target = A16196872EE6C671008485EB /* AlbaTime */;
 			targetProxy = A16722FD2F137C5E00EFBBE9 /* PBXContainerItemProxy */;
+		};
+		A1C427332F359C2C00441D23 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1C4271D2F359C2C00441D23 /* AlbaTimeWidgetExtension */;
+			targetProxy = A1C427322F359C2C00441D23 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -341,8 +454,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AlbaTime/AlbaTime.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AlbaTime/Info.plist;
@@ -356,7 +470,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -374,8 +488,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AlbaTime/AlbaTime.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AlbaTime/Info.plist;
@@ -389,7 +504,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -409,7 +524,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTimeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -430,7 +545,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTimeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -441,6 +556,76 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AlbaTime.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AlbaTime";
+			};
+			name = Release;
+		};
+		A1C427362F359C2C00441D23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = AlbaTimeWidget/AlbaTimeWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AlbaTimeWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AlbaTimeWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTime.AlbaTimeWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A1C427372F359C2C00441D23 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = AlbaTimeWidget/AlbaTimeWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AlbaTimeWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AlbaTimeWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTime.AlbaTimeWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -470,6 +655,15 @@
 			buildConfigurations = (
 				A16723002F137C5E00EFBBE9 /* Debug */,
 				A16723012F137C5E00EFBBE9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1C427352F359C2C00441D23 /* Build configuration list for PBXNativeTarget "AlbaTimeWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1C427362F359C2C00441D23 /* Debug */,
+				A1C427372F359C2C00441D23 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

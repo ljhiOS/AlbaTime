@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  DetailView.swift
 //  AlbaTime
 //
 //  Created by 이준희 on 12/9/25.
@@ -12,13 +12,12 @@ import SwiftUI
 struct DetailView: View {
     let job: Workplace
     
-    @Environment(\.dismiss) var dismiss
-    
     var salaryData: SalaryBreakdown {
-            // [핵심] 여기서 계산기를 돌려서 결과 꾸러미를 받아옵니다.
-            return SalaryCalculator.calculateTotalMonthlyPay(
+            // 단일 근무지 기준 이번 달 누적 급여를 계산한다.
+            return SalaryCalculator.calculateAccruedMonthlyPay(
                 workplaces: [job],
-                targetMonth: Date()
+                targetMonth: Date(),
+                asOf: Date()
             )
         }
     
@@ -31,14 +30,6 @@ struct DetailView: View {
                         .fontWeight(.bold)
                     
                     Spacer()
-                    
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(.black)
-                            .font(.title)
-                    }
                 } //:HStack
                 .padding()
                 
@@ -54,6 +45,7 @@ struct DetailView: View {
                 
             } //:VStack
         } //:ScrollViewEnd
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 

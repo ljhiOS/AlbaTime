@@ -17,12 +17,11 @@ struct PayCard: View {
         VStack(alignment: .leading) {
             
             VStack(alignment: .leading) {
-                Text("이번 달 예상 급여")
+                Text("이번 달 누적 급여")
                     .font(.subheadline)
                     .foregroundStyle(.white)
                     .padding(.top)
-                
-                
+            
                 Text("\(totalPay.formatted())원")
                     .foregroundStyle(.yellow)
                     .font(.title)

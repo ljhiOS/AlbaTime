@@ -23,6 +23,21 @@ enum TaxType: String, Codable, CaseIterable {
     }
 }
 
+enum AllowanceType: String, Codable, CaseIterable {
+    case none = "수당 없음"
+    case holiday = "주휴수당"
+    case night = "야간수당"
+    case both = "주휴 + 야간"
+
+    var includesHoliday: Bool {
+        self == .holiday || self == .both
+    }
+
+    var includesNight: Bool {
+        self == .night || self == .both
+    }
+}
+
 enum WorkType: String, Codable, CaseIterable, Identifiable {
     case fixed = "요일 고정"
     case flexible = "횟수/시간 중심"
@@ -50,6 +65,7 @@ class Workplace {
     
     // Enum 저장
     var taxTypeRaw: String = TaxType.none.rawValue
+    var allowanceTypeRaw: String = AllowanceType.none.rawValue
     var workTypeRaw: String = WorkType.fixed.rawValue
     
     // 자율 근무용 설정
@@ -76,6 +92,7 @@ class Workplace {
         defaultMemo: String? = nil,
         isAlarmEnabled: Bool = true,
         taxType: TaxType = .none,
+        allowanceType: AllowanceType = .none,
         workType: WorkType = .fixed,
         targetWeeklyCount: Int? = nil,
         expectedDailyHours: Double? = nil
@@ -91,6 +108,7 @@ class Workplace {
         self.defaultMemo = defaultMemo ?? ""
         self.isAlarmEnabled = isAlarmEnabled
         self.taxTypeRaw = taxType.rawValue
+        self.allowanceTypeRaw = allowanceType.rawValue
         self.workTypeRaw = workType.rawValue
         self.targetWeeklyCount = targetWeeklyCount
         self.expectedDailyHours = expectedDailyHours
@@ -105,12 +123,17 @@ class Workplace {
         get { WorkType(rawValue: workTypeRaw) ?? .fixed }
         set { workTypeRaw = newValue.rawValue }
     }
+
+    var allowanceType: AllowanceType {
+        get { AllowanceType(rawValue: allowanceTypeRaw) ?? .none }
+        set { allowanceTypeRaw = newValue.rawValue }
+    }
 }
 
 // MARK: - Logic Extension (충돌 해결의 핵심)
 extension Workplace {
     
-    /// 📅 [핵심 로직] 특정 날짜에 근무가 있는지 판단
+    /// [핵심 로직] 특정 날짜에 근무가 있는지 판단
     /// - 1순위: AI/수기로 저장된 기록 (무조건 최우선)
     /// - 2순위: 고정 근무 패턴 (자율 근무제는 해당 없음)
     func getSchedule(for date: Date) -> (startTime: Date, endTime: Date, title: String?)? {
@@ -129,7 +152,7 @@ extension Workplace {
             if let regular = regularSchedules.first(where: { $0.dayOfWeek == weekdayStr }) {
                 let start = combineDateAndTime(date: date, time: regular.startTime)
                 var end = combineDateAndTime(date: date, time: regular.endTime)
-                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end)! }
+                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end) ?? end }
                 return (start, end, nil)
             }
             
@@ -137,7 +160,7 @@ extension Workplace {
             else if regularSchedules.isEmpty && defaultDays.contains(weekdayStr) {
                 let start = combineDateAndTime(date: date, time: defaultStartTime)
                 var end = combineDateAndTime(date: date, time: defaultEndTime)
-                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end)! }
+                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end) ?? end }
                 return (start, end, nil)
             }
         }

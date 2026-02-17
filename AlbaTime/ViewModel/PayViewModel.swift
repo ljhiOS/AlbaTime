@@ -19,10 +19,10 @@ class PayViewModel: ObservableObject {
     
     // MARK: - Logic
     func updateData(workplaces: [Workplace]) {
-        // [수정] 기존 calculateExpectedMonthlyPay 대신 하이브리드 로직 사용
-        let breakdown = SalaryCalculator.calculateTotalMonthlyPay(
+        let breakdown = SalaryCalculator.calculateAccruedMonthlyPay(
             workplaces: workplaces,
-            targetMonth: currentMonth
+            targetMonth: currentMonth,
+            asOf: Date()
         )
         
         self.salaryData = breakdown

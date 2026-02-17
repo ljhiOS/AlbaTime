@@ -1,0 +1,64 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Calendar/ScheduleDetailCard.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "예정된 근무가 없습니다",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 30
+        }
+      },
+      {
+        "comment": "",
+        "key": "총 %lld개의 알바",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "₩%@",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "선택한 날짜의 예상 급여",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 49
+        }
+      },
+      {
+        "comment": "",
+        "key": "오늘은 쉬는 날이에요!",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 66
+        }
+      },
+      {
+        "comment": "",
+        "key": "₩%@",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "시급 %@원",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 99
+        }
+      }
+    ]
+  },
+  "version": 1
+}

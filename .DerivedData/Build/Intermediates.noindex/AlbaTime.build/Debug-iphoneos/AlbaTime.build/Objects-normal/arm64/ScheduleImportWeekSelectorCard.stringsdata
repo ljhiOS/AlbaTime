@@ -1,0 +1,48 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AiViewComponents/ScheduleImportWeekSelectorCard.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "저장 기준 주차 (월~일)",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@년",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@년",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld월",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld월",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 58
+        }
+      }
+    ]
+  },
+  "version": 1
+}

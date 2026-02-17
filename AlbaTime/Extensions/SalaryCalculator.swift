@@ -8,16 +8,101 @@
 import Foundation
 
 struct SalaryCalculator {
-    
-    // MARK: - 1. 하루 급여 계산 (캘린더 상세용)
-    static func calculateDailyPay(schedule: WorkSchedule, hourlyWage: Int) -> Int {
-        let hours = calculateWorkingHours(start: schedule.startTime, end: schedule.endTime, restTime: schedule.breakTime)
-        let payData = calculatePayFromHours(hours: hours, hourlyWage: hourlyWage)
-        return payData.totalPay
+    private struct WeekKey: Hashable {
+        let yearForWeekOfYear: Int
+        let weekOfYear: Int
     }
     
-    // MARK: - 2. [핵심] 이번 달 총 예상 급여 시뮬레이션
-    // 원칙: 기록된 스케줄(AI/수기)은 100% 반영하고, 설정된 목표보다 부족할 때만 예측값으로 채움
+    // MARK: - Daily Pay
+    static func calculateDailyPay(
+        schedule: WorkSchedule,
+        hourlyWage: Int,
+        includeNightAllowance: Bool = true
+    ) -> Int {
+        let hours = calculateWorkingHours(start: schedule.startTime, end: schedule.endTime, restTime: schedule.breakTime)
+        let payData = calculatePayFromHours(
+            hours: hours,
+            hourlyWage: hourlyWage,
+            includeNightAllowance: includeNightAllowance
+        )
+        return payData.totalPay
+    }
+
+    // MARK: - Accrued Monthly Pay
+    // 이번 달 1일부터 기준일(asOf)까지의 스케줄만 반영한다.
+    static func calculateAccruedMonthlyPay(
+        workplaces: [Workplace],
+        targetMonth: Date,
+        asOf: Date = Date()
+    ) -> SalaryBreakdown {
+        var grandTotal = SalaryBreakdown.empty
+        let calendar = Calendar.current
+
+        guard let monthInterval = calendar.dateInterval(of: .month, for: targetMonth) else { return .empty }
+        let startOfMonth = monthInterval.start
+        let endOfMonth = calendar.date(byAdding: .second, value: -1, to: monthInterval.end) ?? monthInterval.end
+
+        let cutoffDate = min(asOf, endOfMonth)
+        let cutoffDay = calendar.startOfDay(for: cutoffDate)
+
+        for job in workplaces {
+            var jobBreakdown = SalaryBreakdown.empty
+            var weeklyHours: [WeekKey: Double] = [:]
+
+            var day = startOfMonth
+            while day <= cutoffDay {
+                if let schedule = job.getSchedule(for: day) {
+                    let start = schedule.startTime
+                    var end = schedule.endTime
+                    if end < start {
+                        end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
+                    }
+
+                    // 해당 근무의 종료 시각이 기준 시각(asOf) 이전일 때만 누적 반영
+                    guard end <= cutoffDate else {
+                        guard let nextDay = calendar.date(byAdding: .day, value: 1, to: day) else {
+                            break
+                        }
+                        day = nextDay
+                        continue
+                    }
+
+                    let restMinutes = resolvedRestMinutes(job: job, day: day)
+                    let worked = calculateWorkingHours(start: start, end: end, restTime: restMinutes)
+                    jobBreakdown.add(
+                        calculatePayFromHours(
+                            hours: worked,
+                            hourlyWage: job.hourlyWage,
+                            includeNightAllowance: job.allowanceType.includesNight
+                        )
+                    )
+                    addWeeklyHours(worked.total, on: day, calendar: calendar, bucket: &weeklyHours)
+                }
+
+                guard let nextDay = calendar.date(byAdding: .day, value: 1, to: day) else {
+                    break
+                }
+                day = nextDay
+            }
+
+            if job.allowanceType.includesHoliday {
+                jobBreakdown.holidayPay = holidayPayFromWeeklyHours(weeklyHours, hourlyWage: job.hourlyWage)
+            } else {
+                jobBreakdown.holidayPay = 0
+            }
+            let gross = jobBreakdown.basicPay + jobBreakdown.nightPay + jobBreakdown.holidayPay
+            let tax = Int(Double(gross) * job.taxType.rate)
+            jobBreakdown.taxAmount = tax
+            jobBreakdown.totalPay = gross - tax
+
+            grandTotal.add(jobBreakdown)
+        }
+
+        return grandTotal
+    }
+    
+    // MARK: - Monthly Pay
+    // 실제 기록을 우선 반영하고, 부족한 구간만 예측치로 보완한다.
     static func calculateTotalMonthlyPay(workplaces: [Workplace], targetMonth: Date) -> SalaryBreakdown {
         var grandTotal = SalaryBreakdown.empty
         let calendar = Calendar.current
@@ -28,85 +113,112 @@ struct SalaryCalculator {
         
         for job in workplaces {
             var jobBreakdown = SalaryBreakdown.empty
+            var weeklyHours: [WeekKey: Double] = [:]
             
-            // A. 이번 달에 기록된(AI/수기) 모든 스케줄 가져오기
-            // (SwiftData에 저장된 실제 데이터)
+            // 이번 달 실제 근무 기록
             let actualSchedules = job.workSchedules.filter {
                 calendar.isDate($0.date, equalTo: targetMonth, toGranularity: .month)
             }
             
-            // ---------------------------------------------------
-            // [Case 1] 고정 근무 (Fixed): 1일부터 말일까지 하루씩 돌면서 체크
-            // ---------------------------------------------------
+            // 고정 근무: 월 전체 일자 순회
             if job.workType == .fixed {
-                // 기록된 날짜들 (중복 계산 방지용)
+                // 실제 기록이 있는 날짜(예측 중복 방지)
                 let recordedDates = Set(actualSchedules.map { calendar.startOfDay(for: $0.date) })
                 
-                // 1. 실제 기록된 스케줄 계산 (우선 순위 1)
+                // 실제 기록 반영
                 for schedule in actualSchedules {
-                    let pay = calculateSchedulePay(schedule, hourlyWage: job.hourlyWage)
-                    jobBreakdown.add(pay)
+                    let worked = calculateWorkingHours(
+                        start: schedule.startTime,
+                        end: schedule.endTime,
+                        restTime: schedule.breakTime
+                    )
+                    jobBreakdown.add(
+                        calculatePayFromHours(
+                            hours: worked,
+                            hourlyWage: job.hourlyWage,
+                            includeNightAllowance: job.allowanceType.includesNight
+                        )
+                    )
+                    addWeeklyHours(worked.total, on: schedule.date, calendar: calendar, bucket: &weeklyHours)
                 }
                 
-                // 2. 기록이 없는 날은 설정(RegularSchedule)으로 예측 (우선 순위 2)
+                // 기록이 없는 날만 고정 패턴으로 예측
                 var currentDate = startOfMonth
                 while currentDate < endOfMonth {
-                    // 기록이 없는 날만 예측값 적용
                     if !recordedDates.contains(calendar.startOfDay(for: currentDate)) {
                         let weekday = currentDate.koreanWeekday
                         
-                        // (A) 상세 요일 설정 확인
+                        // 요일별 상세 설정
                         if let regular = job.regularSchedules.first(where: { $0.dayOfWeek == weekday }) {
                             let hours = calculateWorkingHours(
                                 start: regular.startTime,
                                 end: regular.endTime,
                                 restTime: job.defaultRestTime ?? 0
                             )
-                            jobBreakdown.add(calculatePayFromHours(hours: hours, hourlyWage: job.hourlyWage))
+                            jobBreakdown.add(
+                                calculatePayFromHours(
+                                    hours: hours,
+                                    hourlyWage: job.hourlyWage,
+                                    includeNightAllowance: job.allowanceType.includesNight
+                                )
+                            )
+                            addWeeklyHours(hours.total, on: currentDate, calendar: calendar, bucket: &weeklyHours)
                         }
-                        // (B) 간편 요일 설정 확인
+                        // 간편 요일 설정
                         else if job.regularSchedules.isEmpty && job.defaultDays.contains(weekday) {
                             let hours = calculateWorkingHours(
                                 start: job.defaultStartTime,
                                 end: job.defaultEndTime,
                                 restTime: job.defaultRestTime ?? 0
                             )
-                            jobBreakdown.add(calculatePayFromHours(hours: hours, hourlyWage: job.hourlyWage))
+                            jobBreakdown.add(
+                                calculatePayFromHours(
+                                    hours: hours,
+                                    hourlyWage: job.hourlyWage,
+                                    includeNightAllowance: job.allowanceType.includesNight
+                                )
+                            )
+                            addWeeklyHours(hours.total, on: currentDate, calendar: calendar, bucket: &weeklyHours)
                         }
                     }
                     currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
                 }
             }
             
-            // ---------------------------------------------------
-            // [Case 2] 자율 근무 (Flexible): 주(Week) 단위 하이브리드 계산
-            // ---------------------------------------------------
+            // 자율 근무: 주 단위로 실제+예측 혼합 계산
             else {
-                // 이번 달의 주(Week) 범위를 순회
                 if let weekRange = calendar.range(of: .weekOfMonth, in: .month, for: targetMonth) {
                     let targetCount = job.targetWeeklyCount ?? 0
                     let avgHours = job.expectedDailyHours ?? 0.0
                     
                     for week in weekRange {
-                        // 1. 이 주(Week)에 실제로 일한 기록들 찾기
+                        // 해당 주의 실제 기록
                         let schedulesInThisWeek = actualSchedules.filter {
                             calendar.component(.weekOfMonth, from: $0.date) == week
                         }
                         
-                        // 2. 🔥 [중요] 실제 기록된 건 횟수 제한 없이 무조건 다 더함
-                        // (예: 목표가 3회여도, 5회 일했으면 5회분 급여 인정)
+                        // 실제 기록은 목표 횟수와 무관하게 전부 반영
                         for schedule in schedulesInThisWeek {
-                            let pay = calculateSchedulePay(schedule, hourlyWage: job.hourlyWage)
-                            jobBreakdown.add(pay)
+                            let worked = calculateWorkingHours(
+                                start: schedule.startTime,
+                                end: schedule.endTime,
+                                restTime: schedule.breakTime
+                            )
+                            jobBreakdown.add(
+                                calculatePayFromHours(
+                                    hours: worked,
+                                    hourlyWage: job.hourlyWage,
+                                    includeNightAllowance: job.allowanceType.includesNight
+                                )
+                            )
+                            addWeeklyHours(worked.total, on: schedule.date, calendar: calendar, bucket: &weeklyHours)
                         }
                         
-                        // 3. 모자란 횟수 확인 (Target - Actual)
-                        // (예: 목표 3회 - 실제 1회 = 2회 부족 -> 2회만 예측값 추가)
-                        // (예: 목표 3회 - 실제 5회 = -2 -> 0회 추가 -> 예측값 없음)
+                        // 목표 대비 부족 횟수 계산
                         let workedCount = schedulesInThisWeek.count
                         let remainingCount = max(0, targetCount - workedCount)
                         
-                        // 4. 부족한 만큼만 평균 시간으로 채워넣기
+                        // 부족분만 예측치 반영
                         if remainingCount > 0 {
                             let predictedBasicPay = Int(Double(remainingCount) * avgHours * Double(job.hourlyWage))
                             let predictedHours = Double(remainingCount) * avgHours
@@ -114,15 +226,22 @@ struct SalaryCalculator {
                             jobBreakdown.basicPay += predictedBasicPay
                             jobBreakdown.totalHours += predictedHours
                             jobBreakdown.workingDays += remainingCount
+
+                            let weekDate = schedulesInThisWeek.first?.date
+                                ?? representativeDate(forWeekOfMonth: week, in: targetMonth, calendar: calendar)
+                            addWeeklyHours(predictedHours, on: weekDate, calendar: calendar, bucket: &weeklyHours)
                         }
                     }
                 }
             }
             
-            // ---------------------------------------------------
-            // [Step 3] 세금 및 합계 처리
-            // ---------------------------------------------------
-            let gross = jobBreakdown.basicPay + jobBreakdown.nightPay + jobBreakdown.overtimePay + jobBreakdown.holidayPay
+            // 주휴수당, 세금, 실수령액 계산
+            if job.allowanceType.includesHoliday {
+                jobBreakdown.holidayPay = holidayPayFromWeeklyHours(weeklyHours, hourlyWage: job.hourlyWage)
+            } else {
+                jobBreakdown.holidayPay = 0
+            }
+            let gross = jobBreakdown.basicPay + jobBreakdown.nightPay + jobBreakdown.holidayPay
             let tax = Int(Double(gross) * job.taxType.rate)
             jobBreakdown.taxAmount = tax
             jobBreakdown.totalPay = gross - tax
@@ -133,26 +252,81 @@ struct SalaryCalculator {
         return grandTotal
     }
     
-    // MARK: - Helpers (계산 보조)
+    // MARK: - Helpers
     
     static func calculateAverageWage(basicPay: Int, totalHours: Double) -> Int {
         guard totalHours > 0 else { return 0 }
-        // 기본급 / 총 시간 = 평균 시급
         return Int(Double(basicPay) / totalHours)
     }
-    
-    // 스케줄 객체 하나 급여 계산 (래퍼 함수)
-    private static func calculateSchedulePay(_ schedule: WorkSchedule, hourlyWage: Int) -> SalaryBreakdown {
-        let hours = calculateWorkingHours(
-            start: schedule.startTime,
-            end: schedule.endTime,
-            restTime: schedule.breakTime
+
+    private static func weekKey(for date: Date, calendar: Calendar) -> WeekKey {
+        let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        return WeekKey(
+            yearForWeekOfYear: comps.yearForWeekOfYear ?? 0,
+            weekOfYear: comps.weekOfYear ?? 0
         )
-        return calculatePayFromHours(hours: hours, hourlyWage: hourlyWage)
+    }
+
+    private static func addWeeklyHours(
+        _ hours: Double,
+        on date: Date,
+        calendar: Calendar,
+        bucket: inout [WeekKey: Double]
+    ) {
+        guard hours > 0 else { return }
+        let key = weekKey(for: date, calendar: calendar)
+        bucket[key, default: 0] += hours
+    }
+
+    private static func holidayPayFromWeeklyHours(
+        _ weeklyHours: [WeekKey: Double],
+        hourlyWage: Int
+    ) -> Int {
+        weeklyHours.values.reduce(0) { partial, hours in
+            guard hours >= 15 else { return partial }
+            let weeklyHolidayHours = (hours / 40.0) * 8.0
+            return partial + Int(weeklyHolidayHours * Double(hourlyWage))
+        }
+    }
+
+    private static func representativeDate(
+        forWeekOfMonth weekOfMonth: Int,
+        in month: Date,
+        calendar: Calendar
+    ) -> Date {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else {
+            return month
+        }
+
+        var day = monthInterval.start
+        while day < monthInterval.end {
+            if calendar.component(.weekOfMonth, from: day) == weekOfMonth {
+                return day
+            }
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: day) else {
+                break
+            }
+            day = nextDay
+        }
+        return month
+    }
+
+    private static func resolvedRestMinutes(job: Workplace, day: Date) -> Int {
+        let calendar = Calendar.current
+
+        if let actual = job.workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: day) }) {
+            return max(0, actual.breakTime)
+        }
+
+        if let regular = job.regularSchedules.first(where: { $0.dayOfWeek == day.koreanWeekday }) {
+            return max(0, regular.breakTime)
+        }
+
+        return max(0, job.defaultRestTime ?? 0)
     }
     
-    // 근무 시간 계산 로직 (야간, 연장, 휴게시간 포함)
-    private static func calculateWorkingHours(start: Date, end: Date, restTime: Int) -> (total: Double, night: Double, overtime: Double) {
+    // 야간/휴게시간을 포함한 근무시간 계산
+    private static func calculateWorkingHours(start: Date, end: Date, restTime: Int) -> (total: Double, night: Double) {
         let calendar = Calendar.current
         let startH = calendar.component(.hour, from: start)
         let startM = calendar.component(.minute, from: start)
@@ -161,43 +335,41 @@ struct SalaryCalculator {
         
         let startMins = startH * 60 + startM
         var endMins = endH * 60 + endM
-        // 날짜 넘어가는 경우(새벽 퇴근) 처리
+        // 자정을 넘기는 종료 시간 처리
         if endMins < startMins { endMins += 1440 }
         
         let rawDiffMins = Double(endMins - startMins)
         let netDiffMins = max(0, rawDiffMins - Double(restTime))
         let totalHours = netDiffMins / 60.0
         
-        // 연장 근무 (8시간 초과분)
-        let overtimeHours = max(0, totalHours - 8.0)
-        
-        // 야간 근무 (22:00 ~ 06:00)
+        // 야간 근무(22:00 ~ 06:00)
         var nightMinsCount = 0
         for t in startMins..<endMins {
             let normalized = t % 1440
-            // 0~360분(00시~06시) 또는 1320분 이상(22시~24시)
             if normalized < 360 || normalized >= 1320 { nightMinsCount += 1 }
         }
         
-        // 휴게시간 비율만큼 야간시간도 차감
+        // 총 근무 대비 비율로 야간시간 보정
         let ratio = rawDiffMins > 0 ? netDiffMins / rawDiffMins : 1.0
         let nightHours = (Double(nightMinsCount) * ratio) / 60.0
         
-        return (totalHours, nightHours, overtimeHours)
+        return (totalHours, nightHours)
     }
     
-    // 시간 정보 -> 금액 정보 변환 (시급 적용)
-    private static func calculatePayFromHours(hours: (total: Double, night: Double, overtime: Double), hourlyWage: Int) -> SalaryBreakdown {
+    // 시간 정보를 급여 명세로 변환
+    private static func calculatePayFromHours(
+        hours: (total: Double, night: Double),
+        hourlyWage: Int,
+        includeNightAllowance: Bool
+    ) -> SalaryBreakdown {
         let wage = Double(hourlyWage)
         let basic = Int(hours.total * wage)
-        let night = Int(hours.night * wage * 0.5)    // 0.5배 가산
-        let overtime = Int(hours.overtime * wage * 0.5) // 0.5배 가산
-        let total = basic + night + overtime
+        let night = includeNightAllowance ? Int(hours.night * wage * 0.5) : 0
+        let total = basic + night
         
         return SalaryBreakdown(
             basicPay: basic,
             nightPay: night,
-            overtimePay: overtime,
             holidayPay: 0,
             taxAmount: 0,
             totalPay: total,

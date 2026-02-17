@@ -1,0 +1,64 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/ScheduleImportView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "AI 스케줄",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 37
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "앨범 선택",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "수기로 입력하기",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "확인",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "표에 적힌 내 이름 (선택)",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 166
+        }
+      },
+      {
+        "comment": "",
+        "key": "예: 홍길동 (비워두면 전체 인식)",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 169
+        }
+      }
+    ]
+  },
+  "version": 1
+}

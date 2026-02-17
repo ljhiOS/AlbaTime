@@ -1,0 +1,48 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Pay/PayComponents/PayCard.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "이번 달 누적 급여",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 20
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@원",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 25
+        }
+      },
+      {
+        "comment": "",
+        "key": "총 근무 시간",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "평균 시급",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@원",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 55
+        }
+      }
+    ]
+  },
+  "version": 1
+}

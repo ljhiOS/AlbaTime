@@ -1,0 +1,48 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AddJobViewComponents/EtcGroup.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "휴게 시간 (선택)",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "분",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "예) 60",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "메모 (선택)",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 37
+        }
+      },
+      {
+        "comment": "",
+        "key": "특이사항 입력",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 38
+        }
+      }
+    ]
+  },
+  "version": 1
+}

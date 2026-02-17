@@ -31,68 +31,59 @@ struct AddJobView: View {
     }
 
     var body: some View {
-        @Bindable var job = ajvm.job
-        
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 30) {
-                    
-                    HeaderView(title: stateName, dismiss: dismiss)
-                    
-                    Divider().padding(.horizontal)
-                    
-                    // 1. 기본 정보
-                    BasicInfoGroup(job: ajvm.job)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 30) {
+
+                BasicInfoGroup(job: ajvm.job)
+                
+                Divider().padding(.horizontal)
+
+                if ajvm.job.workType == .fixed {
+                    ScheduleGroup(ajvm: ajvm)
                     
                     Divider().padding(.horizontal)
                     
-                    // 2. 근무 형태에 따른 UI 자동 분기
-                    if ajvm.job.workType == .fixed {
-                        ScheduleGroup(ajvm: ajvm)
-                    } else {
-                        FlexibleInfoGroup(ajvm: ajvm)
-                    }
-                    
-                    Divider().padding(.horizontal)
-                    
-                    // 3. 프리셋
+                    PresetGroup(ajvm: ajvm)
+                } else {
                     PresetGroup(ajvm: ajvm)
                     
                     Divider().padding(.horizontal)
                     
-                    // 4. 기타
-                    EtcGroup(job: ajvm.job)
-                    
-                    Spacer()
+                    FlexibleInfoGroup(ajvm: ajvm)
                 }
-                .padding(.vertical)
+
+                Divider().padding(.horizontal)
+
+                EtcGroup(job: ajvm.job)
+                
+                Spacer()
             }
-            .scrollDismissesKeyboard(.interactively)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        ajvm.validateAndOpenAI()
-                    } label: {
-                        HStack(spacing: 4) { Image(systemName: "sparkles"); Text("AI 스케줄") }
-                            .font(.caption).bold()
-                            .foregroundStyle(Color.theme.primary)
-                            .padding(6)
-                            .background(Color.theme.primary.opacity(0.1))
-                            .cornerRadius(20)
-                    }
+            .padding(.vertical)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    ajvm.validateAndOpenAI()
+                } label: {
+                    HStack(spacing: 4) { Image(systemName: "sparkles"); Text("AI 스케줄") }
+                        .font(.caption).bold()
+                        .foregroundStyle(Color.theme.primary)
+                        .padding(6)
+                        .background(Color.theme.primary.opacity(0.1))
+                        .cornerRadius(20)
                 }
             }
-            .sheet(isPresented: $ajvm.isAIImportPresented, onDismiss: {
-                ajvm.refreshSchedulesFromAI(context: modelContext)
-            }) {
-                ScheduleImportView(targetJob: ajvm.job)
-            }
-            .safeAreaInset(edge: .bottom) {
-                BottomButton(title: "저장하기", action: {
-                    if ajvm.saveJob(context: modelContext) { dismiss() }
-                })
-            }
+        }
+        .navigationTitle(stateName)
+        .navigationDestination(isPresented: $ajvm.isAIImportPresented) {
+            ScheduleImportView(targetJob: ajvm.job)
+        }
+        .safeAreaInset(edge: .bottom) {
+            BottomButton(title: "저장하기", action: {
+                if ajvm.saveJob(context: modelContext) { dismiss() }
+            })
         }
         .alert("알림", isPresented: $ajvm.showAlert) {
             Button("확인", role: .cancel) {}
@@ -103,11 +94,18 @@ struct AddJobView: View {
 }
 
 // MARK: - Preview
-#Preview {
+#Preview("고정 근무") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: Workplace.self, RegularSchedule.self, WorkTimePreset.self, configurations: config)
     
-    // 프리뷰 수정
     return AddJobView(stateName: "알바 등록", selectedType: .fixed)
+        .modelContainer(container)
+}
+
+#Preview("비고정 근무") {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Workplace.self, RegularSchedule.self, WorkTimePreset.self, configurations: config)
+    
+    return AddJobView(stateName: "알바 등록", selectedType: .flexible)
         .modelContainer(container)
 }

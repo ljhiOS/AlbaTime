@@ -11,7 +11,6 @@ struct PayDetailCard: View {
     // 외부에서 데이터를 받도록 변수 추가
     var basicPay: Int
     var nightPay: Int
-    var overtimePay: Int
     var holidayPay: Int
     var taxAmount: Int
     var totalPay: Int
@@ -29,7 +28,7 @@ struct PayDetailCard: View {
             .padding(.bottom, 10)
             
             HStack(alignment: .top) {
-                Text("예상 근무 일수")
+                Text("이번 달 누적 근무 일수")
                     .font(.body)
                     
                 Spacer()
@@ -68,21 +67,6 @@ struct PayDetailCard: View {
                 }
             }
             
-            if overtimePay > 0 {
-                HStack {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("연장 수당") // 8시간 초과분
-                            .font(.body)
-                        Text("근무 시간 8시간 초과")
-                            .font(.footnote)
-                            .foregroundColor(.gray)
-                    }
-                    Spacer()
-                    Text("₩\(overtimePay)")
-                        .font(.body)
-                }
-            }
-            
             // 주휴 수당
             if holidayPay > 0 {
                 HStack(alignment: .top) {
@@ -105,7 +89,7 @@ struct PayDetailCard: View {
                                     Text("세금 공제")
                                         .font(.body)
                                         .foregroundColor(.red)
-                                    Text("예상 공제액")
+                                    Text("누적 공제액")
                                         .font(.footnote)
                                         .foregroundColor(.gray)
                                 }
@@ -141,7 +125,6 @@ struct PayDetailCard: View {
         PayDetailCard(
             basicPay: 960000,   
             nightPay: 50000,
-            overtimePay: 30000,
             holidayPay: 35000,
             taxAmount: 90000,
             totalPay: 1045000,

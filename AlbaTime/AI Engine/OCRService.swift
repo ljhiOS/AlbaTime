@@ -5,97 +5,240 @@
 //  Created by 이준희 on 1/17/26.
 //
 
-// 용도: 이미지에서 텍스트를 안정적으로 추출하기 위한 OCR 전용 계층
-// Clean Architecture: 단일 책임 원칙(SRP)
+import UIKit
+import Vision
+import CoreImage
+import CoreImage.CIFilterBuiltins
 
-import UIKit //func recognize(from image: UIImage) 때문에 임포트 필요(Vision은 UIImage를 직접 받지 않기 때문에)
-import Vision // vn~~~ OCR 핵심 엔진 / 이미지 -> 텍스트 추출하는 AI 엔진
-import CoreImage // CI~~ GPU 가속 지원, 이미지 전처리 / 필터 / 변환 프레임 워크 / OCR전 이미지 품질 높이려고 임포트
-import CoreImage.CIFilterBuiltins // CoreImage 필터를 타입 안전하게 쓰게 해주는 모듈 / 이미지 필터를 안전하고 간결하게 쓰기 위한 확장 모듈
-
-// MARK: - Data Models
-
-/// OCR이 인식한 원시 텍스트 박스 데이터 (위치 정보 포함)
 struct RawTextBox {
     let text: String
-    let boundingBox: CGRect // 정규화된 좌표 (0~1)
+    let boundingBox: CGRect
 }
-// 존재 이유: VNRecognizedTextObservation 타입의 문제점 1) Vision에 강하게 의존 2) 테스트 어려움 3) 파서가 Vision 타입을 직접 알게 됨 X
-// 이라는 문제점을 보완하기 위해 Vision 결과를 앱 도메인 모델로 변환 OCRService 이후 단계는 Vision을 전혀 모른채 텍스트로만 다룰 수 있음 -> 계층 분리 설계
 
-// MARK: - Service
+final class OCRService {
+    private struct CandidateBox {
+        let text: String
+        let boundingBox: CGRect
+        let confidence: Float
+    }
 
-final class OCRService { // final인 이유: 1) 상속 의도 없음, 2) 서비스객체, 3) 성능 최적화 가능
-    
-    static let shared = OCRService() // Static인 이유: 1) 상태 업음 2) 여러 View에서 동일하게 사용 3) 무거운 초기화 없음
+    static let shared = OCRService()
     private init() {}
-    
-    /// 이미지에서 텍스트를 추출하여 RawTextBox 배열로 반환
-    /// async -> OCR은 비동기 작업, throws -> Vision 실패 가능 핸들링
+
+    /// 멀티패스 OCR:
+    /// 1) 기본 패스를 먼저 실행하고 품질이 충분하면 종료
+    /// 2) 부족할 때만 보조 패스를 병렬 실행해 정확도를 보완
     func recognize(from image: UIImage) async throws -> [RawTextBox] {
-        // 1. 이미지 전처리 (대비 강화 -> 인식률 상승 핵심)
-        guard let cgImage = preprocess(image).cgImage else { return [] }
-        // Vision은 CGImage 및 CVPixelBuffer만 처리 가능하기에 이 코드가 없다면 Vision 요청 자체가 불가능, OCR 정확도 급락(전처리 자체가 없기에)
-        // 도메인 모델
-        return try await withCheckedThrowingContinuation { cont in // 왜 필요할까 Vision API는 콜백 기반, 동시성은 async, await기반 시대 차이 징검다리 역할 / 없다면? 무수한 콜백, 뷰모델에서 await 못 씀
-            // Vision 엔진 OCR 끝내고 실행 존재 이유: 에러 처리, 결과 변환
+        let variants = preprocessVariants(image)
+        guard !variants.isEmpty else { return [] }
+
+        let minimumTextHeight = tunedMinimumTextHeight(for: image)
+        let firstPass = try await recognizeVariant(variants[0], minimumTextHeight: minimumTextHeight)
+
+        if shouldSkipAdditionalPass(firstPass) || variants.count == 1 {
+            return mergeCandidates(firstPass)
+        }
+
+        let others = Array(variants.dropFirst())
+        let rest = try await recognizeVariantsInParallel(others, minimumTextHeight: minimumTextHeight)
+        return mergeCandidates(firstPass + rest)
+    }
+
+    private func recognizeVariantsInParallel(_ images: [UIImage], minimumTextHeight: Float) async throws -> [CandidateBox] {
+        try await withThrowingTaskGroup(of: [CandidateBox].self) { group in
+            for image in images {
+                group.addTask { [self] in
+                    try await recognizeVariant(image, minimumTextHeight: minimumTextHeight)
+                }
+            }
+
+            var all: [CandidateBox] = []
+            for try await boxes in group {
+                all.append(contentsOf: boxes)
+            }
+            return all
+        }
+    }
+
+    private func recognizeVariant(_ image: UIImage, minimumTextHeight: Float) async throws -> [CandidateBox] {
+        guard let cgImage = image.cgImage else { return [] }
+
+        return try await withCheckedThrowingContinuation { cont in
             let request = VNRecognizeTextRequest { req, error in
-                if let error = error {
+                if let error {
                     cont.resume(throwing: error)
                     return
                 }
-                
-                // 2. 결과 매핑
-                // Vision의 Results는 [Any]?기에 타입 안정성 확보를 위한 캐스팅 (as)
+
                 let boxes = (req.results as? [VNRecognizedTextObservation])?
-                    .compactMap { observation -> RawTextBox? in
-                        guard let candidate = observation.topCandidates(1).first else { return nil } // OCR은 여러개 후보를 제시하지만 최고 신뢰도인 1개만 필요
-                        // OCR -> 구조화 파이프라인 텍스트 / 다음 단계 행,열 판단용
-                        return RawTextBox(
-                            text: candidate.string,
-                            boundingBox: observation.boundingBox
+                    .compactMap { observation -> CandidateBox? in
+                        guard let candidate = observation.topCandidates(1).first else { return nil }
+                        guard candidate.confidence >= 0.18 else { return nil }
+
+                        let text = candidate.string.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !text.isEmpty else { return nil }
+
+                        return CandidateBox(
+                            text: text,
+                            boundingBox: observation.boundingBox,
+                            confidence: candidate.confidence
                         )
                     } ?? []
-                // resume 없으면 앱 멈춤 why? await 무한 대기 -> 동시성 복습 필요
+
                 cont.resume(returning: boxes)
             }
-            
-            // 3. 인식 옵션 설정
+
             request.recognitionLanguages = ["ko-KR", "en-US"]
-            request.recognitionLevel = .accurate // 속도보다 정확도 우선
-            request.usesLanguageCorrection = true // 한국어 띄어쓰기 보정
-            request.minimumTextHeight = 0.0     // 표 배경 노이즈 제거
-            
-            // 요청 실행
-            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-            try? handler.perform([request]) // 트리거
+            request.recognitionLevel = .accurate
+            // 이름/한글 문장 인식 안정성을 위해 교정을 켠다.
+            request.usesLanguageCorrection = true
+            request.minimumTextHeight = minimumTextHeight
+
+            do {
+                let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+                try handler.perform([request])
+            } catch {
+                cont.resume(throwing: error)
+            }
         }
     }
-    
-    /// 전처리: 대비를 높이고 채도를 낮춤 (흑백 문서처럼 만듦) -> 분리 이유 OCR 핵심 로직과 관심사 분리, 성능 튜닝
-    private func preprocess(_ image: UIImage) -> UIImage {
-        guard let ciImage = CIImage(image: image) else { return image }
-        
-        // 1. 흑백 변환 (색상 노이즈 제거)
+
+    /// 사진 품질 편차 대응을 위해 서로 다른 전처리 버전을 준비한다.
+    private func preprocessVariants(_ image: UIImage) -> [UIImage] {
+        guard let ciImage = CIImage(image: image) else { return [image] }
+        let context = CIContext(options: [.useSoftwareRenderer: false])
+
         let noir = CIFilter.photoEffectNoir()
         noir.inputImage = ciImage
-        guard let grayImage = noir.outputImage else { return image }
-        
-        // 2. 해상도 확대 (작은 글씨 보정용, 2배면 충분)
-        // Lanczos는 텍스트를 부드럽게 만들어서 오히려 디지털 폰트에 안 좋을 수 있음 -> 단순 확대 사용
+        let gray = noir.outputImage ?? ciImage
+
         let scale = CIFilter.lanczosScaleTransform()
-        scale.inputImage = grayImage
+        scale.inputImage = gray
         scale.scale = 2.0
         scale.aspectRatio = 1.0
-        
-        guard let outputImage = scale.outputImage else { return image }
-        
-        // 3. (제거됨) 과도한 대비(Contrast)와 선명효과(Sharpen)는 디지털 폰트를 망가뜨림
-        
-        let context = CIContext(options: [.useSoftwareRenderer: false])
-        if let cg = context.createCGImage(outputImage, from: outputImage.extent) {
+        let upscaled = scale.outputImage ?? gray
+
+        let contrast = CIFilter.colorControls()
+        contrast.inputImage = upscaled
+        contrast.contrast = 1.25
+        contrast.saturation = 0.0
+        let contrasted = contrast.outputImage ?? upscaled
+
+        let sharp = CIFilter.sharpenLuminance()
+        sharp.inputImage = upscaled
+        sharp.sharpness = 0.35
+        let sharpened = sharp.outputImage ?? upscaled
+
+        let outputs = [upscaled, contrasted, sharpened]
+        return outputs.compactMap {
+            guard let cg = context.createCGImage($0, from: $0.extent) else { return nil }
             return UIImage(cgImage: cg)
         }
-        return image
+    }
+
+    /// 1차 패스가 충분히 좋은 경우 보조 패스를 생략해 지연 시간을 줄인다.
+    private func shouldSkipAdditionalPass(_ boxes: [CandidateBox]) -> Bool {
+        guard !boxes.isEmpty else { return false }
+
+        let avgConfidence = boxes.reduce(0.0) { $0 + Double($1.confidence) } / Double(boxes.count)
+        let hasScheduleSignal = boxes.contains { box in
+            let t = normalizeText(box.text)
+            return t.contains(":") || t.contains("-") || t.contains("/") || t.contains("월") || t.contains("OFF")
+        }
+
+        return boxes.count >= 12 && avgConfidence >= 0.72 && hasScheduleSignal
+    }
+
+    /// 위치(IoU), 중심점 거리, 문자열 유사도를 함께 사용해 중복을 병합한다.
+    private func mergeCandidates(_ candidates: [CandidateBox]) -> [RawTextBox] {
+        let sorted = candidates.sorted { $0.confidence > $1.confidence }
+        var merged: [CandidateBox] = []
+
+        for cand in sorted {
+            if let idx = merged.firstIndex(where: { isDuplicate($0, cand) }) {
+                merged[idx] = pickBetter(merged[idx], cand)
+            } else {
+                merged.append(cand)
+            }
+        }
+
+        return merged
+            .sorted {
+                if abs($0.boundingBox.midY - $1.boundingBox.midY) > 0.004 {
+                    return $0.boundingBox.midY > $1.boundingBox.midY
+                }
+                return $0.boundingBox.minX < $1.boundingBox.minX
+            }
+            .map { RawTextBox(text: $0.text, boundingBox: $0.boundingBox) }
+    }
+
+    private func pickBetter(_ a: CandidateBox, _ b: CandidateBox) -> CandidateBox {
+        if b.confidence > a.confidence + 0.03 { return b }
+        if a.confidence > b.confidence + 0.03 { return a }
+        return b.text.count >= a.text.count ? b : a
+    }
+
+    private func isDuplicate(_ a: CandidateBox, _ b: CandidateBox) -> Bool {
+        let overlap = iou(a.boundingBox, b.boundingBox)
+        if overlap >= 0.45 { return true }
+
+        let centerDist = hypot(a.boundingBox.midX - b.boundingBox.midX, a.boundingBox.midY - b.boundingBox.midY)
+        let textSim = similarity(normalizeText(a.text), normalizeText(b.text))
+
+        return centerDist < 0.02 && textSim >= 0.7
+    }
+
+    private func tunedMinimumTextHeight(for image: UIImage) -> Float {
+        let shortSide = min(image.size.width, image.size.height) * image.scale
+        switch shortSide {
+        case ..<1000: return 0.018
+        case ..<1500: return 0.014
+        case ..<2200: return 0.012
+        default: return 0.010
+        }
+    }
+
+    private func iou(_ a: CGRect, _ b: CGRect) -> CGFloat {
+        let inter = a.intersection(b)
+        guard !inter.isNull else { return 0 }
+        let interArea = inter.width * inter.height
+        let union = (a.width * a.height) + (b.width * b.height) - interArea
+        guard union > 0 else { return 0 }
+        return interArea / union
+    }
+
+    private func normalizeText(_ text: String) -> String {
+        text.uppercased()
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "O", with: "0")
+            .replacingOccurrences(of: "I", with: "1")
+            .replacingOccurrences(of: "L", with: "1")
+    }
+
+    private func similarity(_ lhs: String, _ rhs: String) -> Double {
+        if lhs == rhs { return 1.0 }
+        guard !lhs.isEmpty && !rhs.isEmpty else { return 0.0 }
+
+        let dist = levenshtein(lhs, rhs)
+        let maxLen = max(lhs.count, rhs.count)
+        return 1.0 - (Double(dist) / Double(maxLen))
+    }
+
+    private func levenshtein(_ a: String, _ b: String) -> Int {
+        let aa = Array(a)
+        let bb = Array(b)
+        if aa.isEmpty { return bb.count }
+        if bb.isEmpty { return aa.count }
+
+        var prev = Array(0...bb.count)
+        for (i, ca) in aa.enumerated() {
+            var cur = [i + 1]
+            for (j, cb) in bb.enumerated() {
+                let cost = ca == cb ? 0 : 1
+                cur.append(min(cur[j] + 1, prev[j + 1] + 1, prev[j] + cost))
+            }
+            prev = cur
+        }
+        return prev.last ?? 0
     }
 }

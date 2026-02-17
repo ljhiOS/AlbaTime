@@ -11,7 +11,6 @@ import Foundation
 struct SalaryBreakdown {
     var basicPay: Int       // 기본급
     var nightPay: Int       // 야간수당
-    var overtimePay: Int    // 연장수당
     var holidayPay: Int     // 주휴수당
     var taxAmount: Int      // 세금
     var totalPay: Int       // 실수령액 (세후)
@@ -23,7 +22,6 @@ struct SalaryBreakdown {
         return SalaryBreakdown(
             basicPay: 0,
             nightPay: 0,
-            overtimePay: 0,
             holidayPay: 0,
             taxAmount: 0,
             totalPay: 0,
@@ -36,7 +34,6 @@ struct SalaryBreakdown {
     mutating func add(_ other: SalaryBreakdown) {
         self.basicPay += other.basicPay
         self.nightPay += other.nightPay
-        self.overtimePay += other.overtimePay
         self.holidayPay += other.holidayPay
         self.taxAmount += other.taxAmount
         self.totalPay += other.totalPay

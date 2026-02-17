@@ -1,0 +1,23 @@
+{
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Settings/SettingView.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SettingView.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SettingView.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SettingView.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SettingView.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/SettingView.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Settings/SettingsComponents/ServiceDetail.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ServiceDetail.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ServiceDetail.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ServiceDetail.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ServiceDetail.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/ServiceDetail.swiftdeps"
+  },
+  "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/ViewComponents/CustomButton.swift" : {
+    "const-values" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CustomButton.swiftconstvalues",
+    "dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CustomButton.d",
+    "diagnostics" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CustomButton.dia",
+    "object" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CustomButton.o",
+    "swift-dependencies" : "/Users/leejunhee/Desktop/AlbaTime/.DerivedData/Build/Intermediates.noindex/AlbaTime.build/Debug-iphoneos/AlbaTime.build/Objects-normal/arm64/CustomButton.swiftdeps"
+  }
+}

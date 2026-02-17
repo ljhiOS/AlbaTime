@@ -1,0 +1,16 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AiViewComponents/ScheduleImportLoadingView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "AI가 '%@' 스케줄을 찾는 중...",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 16
+        }
+      }
+    ]
+  },
+  "version": 1
+}

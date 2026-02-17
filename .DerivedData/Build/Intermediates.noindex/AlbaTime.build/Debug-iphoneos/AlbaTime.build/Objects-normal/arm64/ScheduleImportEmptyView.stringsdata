@@ -1,0 +1,24 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AiViewComponents/ScheduleImportEmptyView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "우측 상단 앨범 버튼을 눌러\n근무표 사진을 선택하면 자동으로 분석합니다.",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 15
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 13
+        }
+      }
+    ]
+  },
+  "version": 1
+}

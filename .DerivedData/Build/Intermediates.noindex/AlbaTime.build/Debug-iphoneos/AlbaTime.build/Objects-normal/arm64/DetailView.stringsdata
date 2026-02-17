@@ -1,0 +1,16 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/DetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "상세보기",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 28
+        }
+      }
+    ]
+  },
+  "version": 1
+}

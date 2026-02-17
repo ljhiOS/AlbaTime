@@ -11,6 +11,7 @@ import SwiftData
 struct PayDashboardView: View {
     
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     
     @Query var monthlyRecords: [MonthlyRecord]
     
@@ -32,7 +33,6 @@ struct PayDashboardView: View {
                 PayDetailCard(
                     basicPay: pvm.salaryData.basicPay,
                     nightPay: pvm.salaryData.nightPay,
-                    overtimePay: pvm.salaryData.overtimePay,
                     holidayPay: pvm.salaryData.holidayPay,
                     taxAmount: pvm.salaryData.taxAmount,
                     totalPay: pvm.salaryData.totalPay,
@@ -55,6 +55,11 @@ struct PayDashboardView: View {
         // 월이 바뀌었을 때도 업데이트 필요하다면 추가
         .onChange(of: pvm.currentMonth) { oldValue, newValue in
             pvm.updateData(workplaces: workplaces)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                pvm.updateData(workplaces: workplaces)
+            }
         }
     }
 }

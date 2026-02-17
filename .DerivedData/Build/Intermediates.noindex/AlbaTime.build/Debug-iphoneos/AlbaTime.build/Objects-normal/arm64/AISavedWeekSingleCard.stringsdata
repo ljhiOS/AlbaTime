@@ -1,0 +1,56 @@
+{
+  "source": "/Users/leejunhee/Desktop/AlbaTime/AlbaTime/View/Job/Components/AiViewComponents/AiScheduleComponents/AISavedWeekSingleCard.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "요일 선택",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "선택한 요일에 저장된 스케줄이 없습니다.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 91
+        }
+      },
+      {
+        "comment": "",
+        "key": "삭제를 원하면 요일 버튼을 길게 눌러주세요.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "~",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 80
+        }
+      }
+    ]
+  },
+  "version": 1
+}

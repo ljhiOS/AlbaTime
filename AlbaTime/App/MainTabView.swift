@@ -22,13 +22,13 @@ struct MainTabView: View {
                 Text("캘린더")
             }
             
-            // 2번 탭: 알바 관리
+            // 2번 탭: 근무지 관리
             NavigationStack {
                 JobListView()
             }
             .tabItem {
                 Image(systemName: "briefcase.fill")
-                Text("알바")
+                Text("근무지")
             }
             
             // 3번 탭: 급여
