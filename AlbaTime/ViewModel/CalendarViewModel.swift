@@ -65,6 +65,14 @@ class CalendarViewModel: ObservableObject {
             let weekdayStr = date.koreanWeekday
             
             for job in workplaces where job.workType == .fixed {
+                if job.hasAIOverrideInWeek(containing: date) {
+                    let hasActualWorkOnThatDay = job.workSchedules.contains {
+                        calendar.isDate($0.date, inSameDayAs: date)
+                    }
+                    if !hasActualWorkOnThatDay {
+                        continue
+                    }
+                }
                 // 이미 위에서 AI 스케줄로 등록된 경우(Override), 중복 추가 방지
                 if let existingJobs = newCache[dateKey], existingJobs.contains(where: { $0.id == job.id }) {
                     continue
@@ -114,8 +122,7 @@ class CalendarViewModel: ObservableObject {
     
     func getWorkTimeRange(for workplace: Workplace, on date: Date) -> String {
         if let schedule = workplace.getSchedule(for: date) {
-            let f = DateFormatter(); f.dateFormat = "HH:mm"
-            return "\(f.string(from: schedule.startTime)) - \(f.string(from: schedule.endTime))"
+            return "\(schedule.startTime.time24h) - \(schedule.endTime.time24h)"
         }
         return "-"
     }

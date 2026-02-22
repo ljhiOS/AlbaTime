@@ -8,6 +8,8 @@
 import Foundation
 import SwiftData
 
+// 역할: 사용자가 직접 입력한 월별 실수령액 기록을 저장하는 엔티티
+
 @Model
 final class MonthlyRecord {
     var id: UUID

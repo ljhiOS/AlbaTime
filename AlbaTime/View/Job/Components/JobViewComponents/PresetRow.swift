@@ -28,9 +28,7 @@ struct PresetRow: View {
     }
     
     private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
+        return date.time24h
     }
 }
 //#Preview {

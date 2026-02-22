@@ -7,12 +7,14 @@
 
 import Foundation
 
+// 해당하는 텍스트가 행 안에서 어느열에 있는지를 표현
 struct TextElement {
-    let text: String
-    let midX: CGFloat
+    let text: String // OCR로 인식된 문자열
+    let midX: CGFloat // 해당 텍스트 박스의 가로 중심값
 }
 
-/// OCR 텍스트를 파서에서 다루기 쉬운 행 단위로 묶은 구조
+// OCR 텍스트를 파서에서 다루기 쉬운 행 단위로 묶은 구조
+// 파서가 줄 단위로 해석할 수 있는 기본 단위
 struct TextRow {
     let elements: [TextElement]
     
@@ -21,17 +23,20 @@ struct TextRow {
     }
 }
 
+// 역할: OCR 결과(RawTextBox)를 행 기반 텍스트로 변환
+// 파서가 위치 해석하기 쉬운 구조를 만들어주는 전처리계층
 final class TextLayoutAnalyzer {
     
-    /// 위치 기반 OCR 결과를 같은 행(Row) 기준으로 그룹화한다.
+    // 위치 기반 OCR 결과를 같은 행(Row) 기준으로 그룹화한다.
     static func groupByRow(_ boxes: [RawTextBox]) -> [TextRow] {
         guard !boxes.isEmpty else { return [] }
         
+        // 노이즈 제거
         let validBoxes = boxes.filter {
             !$0.text.trimmingCharacters(in: .whitespaces).isEmpty
         }
         
-        // Vision 좌표계: y가 클수록 위
+        // Vision 좌표계: y가 클수록 위 // y축 기준 정렬
         let sortedByY = validBoxes.sorted {
             $0.boundingBox.maxY > $1.boundingBox.maxY
         }

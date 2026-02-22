@@ -181,7 +181,7 @@ struct InlineEditRow: View {
         // 종료 시간 동기화 (만약 종료시간이 시작시간보다 빠르면 다음날로 처리 유지)
         var newEndTime = combineDateAndTime(date: newDate, time: schedule.endTime)
         if newEndTime < schedule.startTime {
-            newEndTime = calendar.date(byAdding: .day, value: 1, to: newEndTime)!
+            newEndTime = calendar.date(byAdding: .day, value: 1, to: newEndTime) ?? newEndTime
         }
         schedule.endTime = newEndTime
     }
@@ -211,17 +211,11 @@ struct InlineEditRow: View {
     // MARK: - Format Helpers
     
     private func formatWeekday(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "E"
-        return f.string(from: date)
+        return date.koreanWeekday
     }
     
     private func formatDateFull(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "M/d (E)" // 예: 1/20 (월)
-        return f.string(from: date)
+        return date.monthDayWeekdayText // 예: 1/20 (월)
     }
     
     private func isWeekend(_ date: Date) -> Bool {

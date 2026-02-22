@@ -80,9 +80,7 @@ struct AISavedSchedulesSelectorRow: View {
                 monthLabelText: "2026년 2월",
                 weekLabelDisplay: "1주차 (2/1~2/7) 3건",
                 weekLabelText: { week in
-                    let f = DateFormatter()
-                    f.dateFormat = "M/d"
-                    return "1주차 (\(f.string(from: week.start))~\(f.string(from: week.end))) \(week.count)건"
+                    return "1주차 (\(week.start.monthDayText)~\(week.end.monthDayText)) \(week.count)건"
                 }
             )
             .padding()

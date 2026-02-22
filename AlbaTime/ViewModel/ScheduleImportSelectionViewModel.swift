@@ -56,9 +56,7 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
         let calendar = Calendar.current
         let end = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
         let weekNo = weekNumberInSelectedMonth(for: weekStart)
-        let f = DateFormatter()
-        f.dateFormat = "M/d"
-        return "\(weekNo)주차 \(f.string(from: weekStart)) ~ \(f.string(from: end))"
+        return "\(weekNo)주차 \(weekStart.monthDayText) ~ \(end.monthDayText)"
     }
 
     private func syncYearMonthFromDate() {

@@ -8,41 +8,11 @@
 import Foundation
 import SwiftData
 
-// MARK: - Enums
-enum TaxType: String, Codable, CaseIterable {
-    case none = "세금 없음"
-    case threePointThree = "3.3% (사업소득세)"
-    case fourMajor = "4대보험 (약 9.32%)"
-    
-    var rate: Double {
-        switch self {
-        case .none: return 0.0
-        case .threePointThree: return 0.033
-        case .fourMajor: return 0.0932
-        }
-    }
-}
-
-enum AllowanceType: String, Codable, CaseIterable {
-    case none = "수당 없음"
-    case holiday = "주휴수당"
-    case night = "야간수당"
-    case both = "주휴 + 야간"
-
-    var includesHoliday: Bool {
-        self == .holiday || self == .both
-    }
-
-    var includesNight: Bool {
-        self == .night || self == .both
-    }
-}
-
-enum WorkType: String, Codable, CaseIterable, Identifiable {
-    case fixed = "요일 고정"
-    case flexible = "횟수/시간 중심"
-    var id: Self { self }
-}
+// 역할: 앱의 도메인 루트 엔티티
+// 1) 근무지 자체 정보(이름, 시급, 세금/수당)
+// 2) 근무 정책(고정/자율, 기본 요일/시간, 세금/수당)
+// 3) 근무 기록 관계 집합(workSchedules, regularSchedules, timePresets)
+// 4) 특정 날짜 근무 결정 로직(getSchedule(for:))
 
 // MARK: - Workplace Model
 @Model
@@ -52,7 +22,7 @@ class Workplace {
     var hourlyWage: Int
     var createdAt: Date
     
-    // 고정 근무용 설정
+    // 기본 근무용 설정
     var defaultDays: String      // "월,수,금"
     var defaultStartTime: Date
     var defaultEndTime: Date
@@ -60,6 +30,7 @@ class Workplace {
     var defaultMemo: String?
     var defaultRestTime: Int?
     
+    // UI 상태
     var isPinned: Bool = false
     var isAlarmEnabled: Bool = true
     
@@ -132,6 +103,22 @@ class Workplace {
 
 // MARK: - Logic Extension (충돌 해결의 핵심)
 extension Workplace {
+    // 고정 근무지일 경우 해당 주 ai 스케줄로 변경시 그 데이터로 변경(캘린더 반영)
+    func hasAIOverrideInWeek(containing date: Date) -> Bool {
+        let calendar = Calendar.current
+        let target = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        
+        return workSchedules.contains { workSchedule in
+            guard workSchedule.isFromAIImport else { return false }
+            
+            let workScheduleWeekComponents = calendar.dateComponents(
+                [.yearForWeekOfYear, .weekOfYear], from: workSchedule.date
+            )
+            
+            return workScheduleWeekComponents.yearForWeekOfYear == target.yearForWeekOfYear &&
+            workScheduleWeekComponents.weekOfYear == target.weekOfYear
+        }
+    }
     
     /// [핵심 로직] 특정 날짜에 근무가 있는지 판단
     /// - 1순위: AI/수기로 저장된 기록 (무조건 최우선)
@@ -142,6 +129,10 @@ extension Workplace {
         // 1. 개별 기록(AI/수기) 확인 -> 자율/고정 모두 최우선 적용
         if let actualRecord = workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: date) }) {
             return (actualRecord.startTime, actualRecord.endTime, actualRecord.memo)
+        }
+        
+        if workType == .fixed && hasAIOverrideInWeek(containing: date) {
+            return nil
         }
         
         // 2. 고정 근무 패턴 확인 (자율 근무는 여기서 탈락)
@@ -173,4 +164,40 @@ extension Workplace {
         let timeComp = calendar.dateComponents([.hour, .minute], from: time)
         return calendar.date(bySettingHour: timeComp.hour ?? 0, minute: timeComp.minute ?? 0, second: 0, of: date) ?? date
     }
+}
+
+// MARK: - Enums
+enum TaxType: String, Codable, CaseIterable {
+    case none = "세금 없음"
+    case threePointThree = "3.3% (사업소득세)"
+    case fourMajor = "4대보험 (약 9.32%)"
+    
+    var rate: Double {
+        switch self {
+        case .none: return 0.0
+        case .threePointThree: return 0.033
+        case .fourMajor: return 0.0932
+        }
+    }
+}
+
+enum AllowanceType: String, Codable, CaseIterable {
+    case none = "수당 없음"
+    case holiday = "주휴수당"
+    case night = "야간수당"
+    case both = "주휴 + 야간"
+    
+    var includesHoliday: Bool {
+        self == .holiday || self == .both
+    }
+    
+    var includesNight: Bool {
+        self == .night || self == .both
+    }
+}
+
+enum WorkType: String, Codable, CaseIterable, Identifiable {
+    case fixed = "요일 고정"
+    case flexible = "횟수/시간 중심"
+    var id: Self { self }
 }

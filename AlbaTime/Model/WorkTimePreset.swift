@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-// 존재 이유: ai 인식 스케줄표 중 시간으로 적힌 것이 아닌 오픈 미들 마감 등 글자로 온 스케줄표를 위해 선제적 저장 모델
+// 역할: ai 인식 스케줄표 중 시간으로 적힌 것이 아닌 오픈 미들 마감 등 글자로 온 스케줄표를 위해 선제적 저장 모델
 @Model
 class WorkTimePreset {
     var id: UUID

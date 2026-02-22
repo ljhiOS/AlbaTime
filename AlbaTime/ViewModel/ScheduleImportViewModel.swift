@@ -96,8 +96,8 @@ class ScheduleImportViewModel: ObservableObject {
                 
                 if schedules.isEmpty {
                     self.errorMessage = targetName.isEmpty
-                        ? "스케줄 형식을 찾지 못했습니다.\n(콘솔 로그의 Row 데이터를 확인해주세요)"
-                        : "'\(targetName)'님의 스케줄을 찾지 못했습니다.\n이름이 정확한지 확인해주세요."
+                        ? "스케줄 형식을 찾지 못했어요."
+                        : "'\(targetName)'님의 스케줄을 찾지 못했어요.\n이름이 정확한지 확인해주세요."
                     self.showAlert = true
                 } else {
                     print("최종 파싱 성공: \(schedules.count)건")
@@ -106,7 +106,7 @@ class ScheduleImportViewModel: ObservableObject {
             } catch {
                 self.isProcessing = false
                 print("분석 에러: \(error)")
-                self.errorMessage = "분석 중 오류가 발생했습니다: \(error.localizedDescription)"
+                self.errorMessage = "분석 중 오류가 발생했어요: \(error.localizedDescription)"
                 self.showAlert = true
             }
         }
@@ -123,9 +123,14 @@ class ScheduleImportViewModel: ObservableObject {
             }
         }
         
-        // 2. 기본 시간: 09:00 ~ 18:00
-        let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: targetDate)!
-        let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: targetDate)!
+        // 2. 기본 시간: 09:00 ~ 18:00 // guard let 구문으로 강제언래핑 제거
+        guard let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: targetDate),
+              let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: targetDate)
+        else {
+            errorMessage = "기본 시간 생성에 실패했어요."
+            showAlert = true
+            return
+        }
         
         let newSchedule = ParsedSchedule(
             date: targetDate,
@@ -159,7 +164,7 @@ class ScheduleImportViewModel: ObservableObject {
             var finalEnd = combineDateAndTime(date: mappedDate, time: parsed.endTime)
             
             if finalEnd < finalStart {
-                finalEnd = calendar.date(byAdding: .day, value: 1, to: finalEnd)!
+                finalEnd = calendar.date(byAdding: .day, value: 1, to: finalEnd) ?? finalEnd
             }
             
             // 배열을 직접 건드리지 말고, DB에서 삭제 명령만 내림
@@ -223,10 +228,14 @@ class ScheduleImportViewModel: ObservableObject {
     }
     
     func addEmptySchedule() {
+        let now = Date()
+        let start = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? now
+        let end = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date()) ?? now
+        
         let newSchedule = ParsedSchedule(
-            date: Date(),
-            startTime: Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date())!,
-            endTime: Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date())!,
+            date: now,
+            startTime: start,
+            endTime: end,
             scheduleName: "직접 입력"
         )
         self.parsedSchedules.append(newSchedule)

@@ -9,13 +9,6 @@ import SwiftUI
 
 struct PersonalInfo: View {
     @Environment(\.dismiss) var dismiss
-    
-    // 날짜 포맷터 (오늘 날짜 기준)
-    private var currentDateString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy년 M월 d일"
-        return formatter.string(from: Date())
-    }
 
     var body: some View {
         ScrollView {

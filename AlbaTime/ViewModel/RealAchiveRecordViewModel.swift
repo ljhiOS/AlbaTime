@@ -44,6 +44,7 @@ class RealAchiveRecordViewModel: ObservableObject {
     /// 기록 삭제 로직
     func deleteRecord(at offsets: IndexSet, context: ModelContext, sortedRecords: [MonthlyRecord]) {
         for index in offsets {
+            guard sortedRecords.indices.contains(index) else { continue }
             let recordToDelete = sortedRecords[index]
             context.delete(recordToDelete)
         }

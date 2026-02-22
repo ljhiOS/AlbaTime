@@ -181,7 +181,11 @@ struct SalaryCalculator {
                             addWeeklyHours(hours.total, on: currentDate, calendar: calendar, bucket: &weeklyHours)
                         }
                     }
-                    currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+
+                    guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
+                        break
+                    }
+                    currentDate = nextDate
                 }
             }
             

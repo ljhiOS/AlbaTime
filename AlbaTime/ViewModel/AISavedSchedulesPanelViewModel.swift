@@ -20,9 +20,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     // 근무지에 저장된 AI 스케줄만 날짜/시간 순으로 정렬한다.
     // 뷰에서 바로 리스트/건수 표시에 사용할 기준 데이터다.
     var aiSchedules: [WorkSchedule] {
-        job.workSchedules
-            .filter { $0.isFromAIImport }
-            .sorted {
+        job.workSchedules.filter { $0.isFromAIImport }.sorted {
                 if $0.date != $1.date { return $0.date < $1.date }
                 return $0.startTime < $1.startTime
             }
@@ -122,10 +120,10 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             try context.save()
             let workplaces = try context.fetch(FetchDescriptor<Workplace>())
             NextShiftSyncService.sync(workplaces: workplaces)
-            alertMessage = "주차 스케줄 수정사항을 저장했습니다."
+            alertMessage = "주차 스케줄 수정사항을 저장했어요."
             showAlert = true
         } catch {
-            alertMessage = "저장하지 못했습니다.\n\(error.localizedDescription)"
+            alertMessage = "저장하지 못했어요.\n\(error.localizedDescription)"
             showAlert = true
         }
     }
@@ -166,12 +164,11 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     }
 
     private func dateText(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "M/d"
-        return f.string(from: date)
+        return date.monthDayText
     }
 
     // 월요일 시작 주차 계산 유틸.
+    // 일반적인 사용자는 월부터 주차를 세기에 UX관점에서 월부터 주차 계산을 함.
     // 입력 날짜가 속한 주의 월요일 00:00 시점을 반환한다.
     private func startOfWeekMonday(for date: Date) -> Date {
         let calendar = Calendar.current

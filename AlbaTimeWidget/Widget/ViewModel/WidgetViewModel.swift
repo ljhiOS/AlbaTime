@@ -13,6 +13,12 @@ import Foundation
 //위젯은 상태 변화로 화면을 바꾸는 시스템이 아닌 시간표대로 스냅샷을 교체하는 시스템
 struct WidgetViewModel {
     private let model: WidgetModel
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
 
     init(model: WidgetModel) {
         self.model = model
@@ -23,10 +29,7 @@ struct WidgetViewModel {
 
     var primaryTimeText: String {
         guard let shiftStart = model.shiftStart else { return "--:--" }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: shiftStart)
+        return Self.timeFormatter.string(from: shiftStart)
     }
 
     var scheduleLabelText: String {

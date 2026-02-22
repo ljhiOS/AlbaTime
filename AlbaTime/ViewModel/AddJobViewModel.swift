@@ -9,6 +9,9 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+// 역할: 근무지 추가 및 수정 화면의 핵심 상태 및 저장 로직 담당
+// 고정/자율 근무 분기, 요일 스케줄 편집, 프리셋관리, 최종 저장 후 알림/위젯 동기화 수행
+
 @MainActor // UI 변경점에 대한 뷰 업데이트 메인스레드에서 할것임을 보장
 // 향후 코드 확장시 발생가능한 스레드 안전성 실수 방지 및 뷰와 데이터 바인딩과정에서 발생할수있는 버그 컴파일타임에 차단
 class AddJobViewModel: ObservableObject {
@@ -16,7 +19,7 @@ class AddJobViewModel: ObservableObject {
     @Published var job: Workplace
     
     // UI 상태 // @MainActor 속성 선언 필요
-    @Published var isAIImportPresented: Bool = false
+    @Published var isAIImportPresented: Bool = false // AI 스케줄 화면 이동 트리거
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
     
@@ -29,6 +32,7 @@ class AddJobViewModel: ObservableObject {
     // 유연 근무 UI 바인딩용 변수
     @Published var targetWeeklyCount: Int = 3
     @Published var expectedDailyHours: Double = 5.0
+    
     private let initialDefaultRestTime: Int?
     
     let days = ["월", "화", "수", "목", "금", "토", "일"]
@@ -70,6 +74,7 @@ class AddJobViewModel: ObservableObject {
     // MARK: - 유효성 검사 및 AI
     
     // @MainActor 속성선언 필요 메서드
+    // 매장명 및 시급 유효성 검사 통과시 AI 스케줄 화면 열기
     func validateAndOpenAI() {
         if job.name.trimmingCharacters(in: .whitespaces).isEmpty {
             errorMessage = "매장명을 입력해주세요."
@@ -77,49 +82,13 @@ class AddJobViewModel: ObservableObject {
             return
         }
         
+        if job.hourlyWage <= 0 {
+            errorMessage = "올바른 시급을 입력해주세요."
+            showAlert = true
+            return
+        }
+        
         isAIImportPresented = true
-    }
-    
-    // AI 데이터를 요일 데이터 변경 및 화면(WorkCard) 자동입력을 위한 메서드
-    func refreshSchedulesFromAI(context: ModelContext) {
-        let aiSchedules = job.workSchedules
-        guard !aiSchedules.isEmpty else { return } // 같은 데이터 쌓이는 것 방지
-        
-        let calendar = Calendar.current
-        let weekDaySymbols = ["일", "월", "화", "수", "목", "금", "토"]
-        
-        for schedule in aiSchedules {
-            let weekdayIndex = calendar.component(.weekday, from: schedule.date) - 1
-            let dayName = weekDaySymbols[weekdayIndex]
-            
-            if let existingRegular = job.regularSchedules.first(where: { $0.dayOfWeek == dayName }) {
-                existingRegular.startTime = schedule.startTime
-                existingRegular.endTime = schedule.endTime
-                existingRegular.breakTime = schedule.breakTime
-            } else {
-                let newRegular = RegularSchedule(
-                    dayOfWeek: dayName,
-                    startTime: schedule.startTime,
-                    endTime: schedule.endTime,
-                    breakTime: schedule.breakTime
-                )
-                newRegular.workplace = job
-                job.regularSchedules.append(newRegular)
-                
-                if job.modelContext != nil {
-                    context.insert(newRegular)
-                }
-            }
-        }
-        
-        // 이미 저장된 job만 즉시 save
-        if job.modelContext != nil {
-            do { try context.save() }
-            catch {
-                errorMessage = "저장에 실패했어요. 잠시 후 다시 시도해주세요."
-                showAlert = true
-            }
-        }
     }
 
     // MARK: - 요일별 스케줄 로직
@@ -183,6 +152,12 @@ class AddJobViewModel: ObservableObject {
     
     // 데이터 베이스 저장 -> 사실상 가장 중요한 메서드
     // @MainActor 필요 메서드
+    // as-is
+    // 1) Workplace는 저장 전에 name, hourlyWage 검증을 통과해야함
+    // 2) defaultResrTime은 스케줄 breakTime에 전파됨(개별 수정은 최대한 보존)
+    // 3) flexible 타입에서는 regularSchedule은 DB에서 삭제되야함
+    // 4) fixed 타입에서는 regularSchedule 또는 WorkSchedule이 최소 1개는 필요
+    // 5) 저장 성공 후 위젯 데이터는 전체 workplace를 fetch하여 재생성
     func saveJob(context: ModelContext) -> Bool {
         // 1. 유효성 검사 (먼저 수행)
         if job.name.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -201,6 +176,7 @@ class AddJobViewModel: ObservableObject {
         }
 
         let updatedBreakTime = max(0, job.defaultRestTime ?? 0)
+        
         if job.defaultRestTime == nil {
             for schedule in job.regularSchedules { schedule.breakTime = 0 }
             for schedule in job.workSchedules { schedule.breakTime = 0 }
