@@ -18,7 +18,6 @@ class ScheduleImportViewModel: ObservableObject {
     @Published var isProcessing: Bool = false
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
-    @Published var isManualInputMode: Bool = false
     
     var targetJob: Workplace?
     
@@ -29,9 +28,7 @@ class ScheduleImportViewModel: ObservableObject {
     func processSelectedPhoto(item: PhotosPickerItem?, targetJob: Workplace?, targetName: String) async {
         guard let item else { return }
         
-        isProcessing = true
-        isManualInputMode = false
-        
+        isProcessing = true        
         
         do {
             // Transferable 프로토콜을 이용해 데이터 로드
@@ -157,7 +154,7 @@ class ScheduleImportViewModel: ObservableObject {
         parsedSchedules.sort { $0.date < $1.date }
     }
     
-    func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil) -> Bool {
+    func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil, isFromAIImport: Bool = true) -> Bool {
         guard let job = targetJob else {
             errorMessage = "근무지 정보가 없습니다."
             showAlert = true
@@ -195,7 +192,7 @@ class ScheduleImportViewModel: ObservableObject {
                 endTime: finalEnd,
                 breakTime: job.defaultRestTime ?? 0,
                 memo: parsed.scheduleName,
-                isFromAIImport: !isManualInputMode,
+                isFromAIImport: isFromAIImport,
                 aiImportBatchID: batchID,
                 isEditedAfterAIImport: false
             )

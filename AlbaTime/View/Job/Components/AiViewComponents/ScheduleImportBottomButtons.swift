@@ -21,7 +21,8 @@ struct ScheduleImportBottomButtons: View {
             Button {
                 let didSave = sivm.saveToWorkplace(
                     context: modelContext,
-                    targetWeekStart: selectedWeekStart
+                    targetWeekStart: selectedWeekStart,
+                    isFromAIImport: true
                 )
                 if didSave {
                     onSaved()
