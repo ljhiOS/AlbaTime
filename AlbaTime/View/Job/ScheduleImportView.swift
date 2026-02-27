@@ -87,63 +87,39 @@ private extension ScheduleImportView {
     @ViewBuilder
     var contentView: some View {
         if sivm.selectedImage == nil {
-            idleView
+            ScheduleImportIdleSection(
+                selectedYear: $ssvm.selectedYear,
+                selectedMonth: $ssvm.selectedMonth,
+                selectedWeekStart: $ssvm.selectedWeekStart,
+                name: $myName,
+                yearCandidates: ssvm.yearCandidates,
+                monthCandidates: ssvm.monthCandidates,
+                monthWeeks: ssvm.monthWeeks,
+                weekLabel: ssvm.weekLabel,
+                onSelectYear: { year in
+                    ssvm.selectedYear = year
+                    ssvm.applySelectedYearMonth()
+                },
+                onSelectMonth: { month in
+                    ssvm.selectedMonth = month
+                    ssvm.applySelectedYearMonth()
+                },
+                onTapManualInput: {
+                    triggerManualWeekFocus()
+                },
+                showManualHint: ssvm.showManualHint,
+                targetJob: targetJob,
+                hasSavedAISchedules: hasSavedAISchedules,
+                manualFocusToken: ssvm.manualFocusToken,
+                manualWeekFocus: ssvm.manualWeekFocus,
+                manualMonthFocus: ssvm.manualMonthFocus,
+                isNameFieldFocused: $isNameFieldFocused
+            )
         } else if sivm.isProcessing {
             ScheduleImportLoadingView(targetName: myName)
         } else {
             ScheduleImportResultList(sivm: sivm)
         }
-    }
-
-    var idleView: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                weekSelectorCard
-                nameInputCard
-                savedScheduleSection
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 24)
-        }
-        .onTapGesture {
-            isNameFieldFocused = false
-        }
-        .overlay(alignment: .bottom) {
-            if ssvm.showManualHint {
-                Text("선택한 주차를 수정한 뒤 저장하세요")
-                    .font(.caption)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Capsule())
-                    .padding(.bottom, 8)
-                    .transition(.opacity)
-            }
-        }
-    }
-
-    var weekSelectorCard: some View {
-        ScheduleImportWeekSelectorCard(
-            selectedYear: $ssvm.selectedYear,
-            selectedMonth: $ssvm.selectedMonth,
-            selectedWeekStart: $ssvm.selectedWeekStart,
-            yearCandidates: ssvm.yearCandidates,
-            monthCandidates: ssvm.monthCandidates,
-            monthWeeks: ssvm.monthWeeks,
-            onSelectYear: { year in
-                ssvm.selectedYear = year
-                ssvm.applySelectedYearMonth()
-            },
-            onSelectMonth: { month in
-                ssvm.selectedMonth = month
-                ssvm.applySelectedYearMonth()
-            },
-            weekLabel: ssvm.weekLabel,
-            onTapManualInput: {
-                triggerManualWeekFocus()
-            }
-        )
     }
     
     private func triggerManualWeekFocus() {
@@ -152,53 +128,17 @@ private extension ScheduleImportView {
         sivm.isProcessing = false
     }
 
-    @ViewBuilder
-    var savedScheduleSection: some View {
-        if let job = targetJob, hasSavedAISchedules || ssvm.manualFocusToken > 0 {
-            AISavedSchedulesInlinePanel(
-                job: job,
-                requestedWeekStart: ssvm.manualWeekFocus,
-                requestToken: ssvm.manualFocusToken,
-                requestMonth: ssvm.manualMonthFocus
-            )
-            .transition(.move(edge: .top).combined(with: .opacity))
-        } else {
-            ScheduleImportEmptyView()
-        }
-    }
-
-    @ViewBuilder
     var bottomButtons: some View {
-        if sivm.selectedImage != nil {
-            ScheduleImportBottomButtons(
-                sivm: sivm,
-                selectedWeekStart: ssvm.selectedWeekStart,
-                onSaved: {
-                    dismiss()
-                },
-                onManualInput: {
-                    triggerManualWeekFocus()
-                }
-            )
-        }
-    }
-
-    var nameInputCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("표에 적힌 내 이름")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            TextField("예: 홍길동 (비워두면 전체 인식)", text: $myName)
-                .textFieldStyle(.roundedBorder)
-                .focused($isNameFieldFocused)
-        }
-        .padding(14)
-        .background(Color(.secondarySystemBackground))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.gray.opacity(0.14), lineWidth: 1)
+        ScheduleImportBottomSection(
+            sivm: sivm,
+            selectedWeekStart: ssvm.selectedWeekStart,
+            onSaved: {
+                dismiss()
+            },
+            onManualInput: {
+                triggerManualWeekFocus()
+            }
         )
-        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
 
