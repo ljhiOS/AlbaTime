@@ -10,10 +10,7 @@ import SwiftData
 
 struct PayDashboardView: View {
     
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
-    
-    @Query var monthlyRecords: [MonthlyRecord]
     
     @Query var workplaces: [Workplace]
     

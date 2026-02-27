@@ -13,7 +13,6 @@ struct RealAchiveRecord: View {
     @StateObject var ravm = RealAchiveRecordViewModel()
     
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
     
     // 데이터 리스트 (화면 갱신을 위해 @Query는 뷰에 남겨둡니다)
     @Query(sort: [SortDescriptor(\MonthlyRecord.year, order: .reverse), SortDescriptor(\MonthlyRecord.month, order: .reverse)])

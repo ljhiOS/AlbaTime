@@ -235,12 +235,4 @@ class ScheduleImportViewModel: ObservableObject {
         let start = calendar.startOfDay(for: targetWeekStart)
         return calendar.date(byAdding: .day, value: mondayBasedOffset, to: start) ?? originalDate
     }
-
-    private func startOfWeekMonday(for date: Date) -> Date {
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: date)
-        let weekday = calendar.component(.weekday, from: startOfDay)
-        let offset = (weekday + 5) % 7
-        return calendar.date(byAdding: .day, value: -offset, to: startOfDay) ?? startOfDay
-    }
 }
