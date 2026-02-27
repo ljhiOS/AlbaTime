@@ -9,12 +9,18 @@ import SwiftUI
 import SwiftData
 import UIKit
 
+// TODO: 각 요일별 휴게시간 설정 할지 말지 고민 필요
+// 장점: 각 요일별로 휴게시간 입력하여 휴게시간이 요일별로 다른 사용자에게 편리함을 제공(특히 자율 근무제 사용자)
+// 단점: 근무지 만들때 불편함이나 귀찮음이 많아짐
+
 // 고정 근무 요일/시간 입력 카드.
 // 탭은 선택/추가, 롱프레스는 삭제로 역할을 분리한다.
 struct ScheduleGroup: View {
     @ObservedObject var ajvm: AddJobViewModel
     @Environment(\.modelContext) var context
     @State private var selectedDay: String?
+//    @State private var choiceBreakTimeType: Bool = false
+    
     private let twentyFourHourLocale = Locale(identifier: "ko_KR@hc=h23")
     
     var body: some View {
@@ -81,6 +87,23 @@ struct ScheduleGroup: View {
 
                         Spacer()
                     }
+                    
+//                    Toggle("요일별 휴게시간 설정", isOn: $choiceBreakTimeType)
+//                        .font(.caption)
+//                    
+//                    if choiceBreakTimeType {
+//                        HStack(spacing: 8) {
+//                            Text("휴게")
+//                            TextField("분", value: breakTimeBinding(for: current), format: .number)
+//                                .keyboardType(.numberPad)
+//                                .textFieldStyle(.roundedBorder)
+//                                .frame(width: 72)
+//                            Text("분")
+//                            Spacer()
+//                        }
+//                        .font(.caption)
+//                    }
+                    
                     Text("삭제를 원하면 요일 버튼을 길게 눌러주세요.")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
@@ -148,6 +171,13 @@ struct ScheduleGroup: View {
             set: { schedule.endTime = $0 }
         )
     }
+//    
+//    private func breakTimeBinding(for schedule: RegularSchedule) -> Binding<Int> {
+//        Binding(
+//            get: { schedule.breakTime },
+//            set: { schedule.breakTime = max(0, $0) }
+//        )
+//    }
 }
 
 #Preview {

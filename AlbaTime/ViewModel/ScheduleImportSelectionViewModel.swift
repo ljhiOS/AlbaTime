@@ -34,12 +34,12 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
     }
 
     func ensureInitialSelection() {
+        let now = Date()
+        let currentWeekStart = startOfWeekMonday(for: now)
+        
+        selectedMonthDate = currentWeekStart
         syncYearMonthFromDate()
-        if selectedWeekStart == nil {
-            selectedMonthDate = Date()
-            syncYearMonthFromDate()
-            selectedWeekStart = monthWeeks.first ?? startOfWeekMonday(for: Date())
-        }
+        selectedWeekStart = currentWeekStart
     }
 
     func applySelectedYearMonth() {
@@ -58,7 +58,7 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
         let weekNo = weekNumberInSelectedMonth(for: weekStart)
         return "\(weekNo)주차 \(weekStart.monthDayText) ~ \(end.monthDayText)"
     }
-
+    
     private func syncYearMonthFromDate() {
         let calendar = Calendar.current
         selectedYear = calendar.component(.year, from: selectedMonthDate)

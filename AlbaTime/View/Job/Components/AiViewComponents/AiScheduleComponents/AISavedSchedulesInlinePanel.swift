@@ -6,12 +6,19 @@ import SwiftData
 // 상태/계산/저장 로직은 AISavedSchedulesPanelViewModel로 위임한다.
 struct AISavedSchedulesInlinePanel: View {
     let job: Workplace
+    let requestedWeekStart: Date?
+    let requestToken: Int
+    let requestMonth: AIListMonthKey?
 
     @Environment(\.modelContext) private var modelContext
     @StateObject private var aspvm: AISavedSchedulesPanelViewModel
+    @State private var weekCardPulse: Bool = false
 
-    init(job: Workplace) {
+    init(job: Workplace, requestedWeekStart: Date? = nil, requestToken: Int = 0, requestMonth: AIListMonthKey? = nil) {
         self.job = job
+        self.requestedWeekStart = requestedWeekStart
+        self.requestToken = requestToken
+        self.requestMonth = requestMonth
         _aspvm = StateObject(wrappedValue: AISavedSchedulesPanelViewModel(job: job))
     }
 
@@ -31,10 +38,12 @@ struct AISavedSchedulesInlinePanel: View {
             }
 
             if aspvm.aiSchedules.isEmpty {
-                Text("이 근무지에 저장된 AI 스케줄이 없습니다.")
+                Text("이 근무지에 저장된 주차 스케줄이 없습니다.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            } else {
+            }
+
+            if !aspvm.months.isEmpty || aspvm.selectedWeekStart != nil {
                 AISavedSchedulesSelectorRow(
                     months: aspvm.months,
                     selectedMonthID: $aspvm.selectedMonthID,
@@ -42,35 +51,38 @@ struct AISavedSchedulesInlinePanel: View {
                     selectedWeekStart: $aspvm.selectedWeekStart,
                     monthLabelText: aspvm.monthLabelText,
                     weekLabelDisplay: aspvm.weekLabelDisplay,
-                    weekLabelText: aspvm.weekLabelText
+                    weekLabelText: aspvm.weekLabelText,
+                    onSelectMonth: { monthID in
+                        aspvm.selectMonth(monthID)
+                    }
                 )
 
                 if aspvm.schedulesForSelectedWeek.isEmpty {
                     Text("선택한 주차에 저장된 스케줄이 없습니다.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .padding(.vertical, 8)
-                } else {
-                    // 주차 내 편집은 단일 카드에서 요일 전환 방식으로 처리한다.
-                    // 여러 행 리스트 대신 한 카드에서 월~일을 선택해 시간을 수정한다.
-                    AISavedWeekSingleCard(
-                        job: job,
-                        weekStart: aspvm.selectedWeekStart ?? aspvm.schedulesForSelectedWeek.first?.date ?? Date(),
-                        schedules: aspvm.schedulesForSelectedWeek
-                    )
-
-                    Button("선택한 주차 수정사항 저장") {
-                        // 현재 인라인 편집 상태를 SwiftData에 반영하고 동기화한다.
-                        aspvm.saveChanges(context: modelContext)
-                    }
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.theme.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .padding(.top, 8)
                 }
+
+                AISavedWeekSingleCard(
+                    job: job,
+                    weekStart: aspvm.selectedWeekStart ?? Date(),
+                    schedules: aspvm.schedulesForSelectedWeek
+                )
+                .scaleEffect(weekCardPulse ? 1.035 : 1.0)
+                .animation(.spring(response: 0.28, dampingFraction: 0.68), value: weekCardPulse)
+
+                Button("선택한 주차 수정사항 저장") {
+                    // 현재 인라인 편집 상태를 SwiftData에 반영하고 동기화한다.
+                    aspvm.saveChanges(context: modelContext)
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.theme.primary)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
         .padding(14)
@@ -82,6 +94,18 @@ struct AISavedSchedulesInlinePanel: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .onAppear {
             aspvm.ensureInitialSelection()
+            if let requestedWeekStart {
+                aspvm.focusOnWeek(requestedWeekStart, preferredMonth: requestMonth)
+            }
+        }
+        .onChange(of: requestToken) { _, _ in
+            if let requestedWeekStart {
+                aspvm.focusOnWeek(requestedWeekStart, preferredMonth: requestMonth)
+            }
+            weekCardPulse = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                weekCardPulse = false
+            }
         }
         .alert("알림", isPresented: $aspvm.showAlert) {
             Button("확인", role: .cancel) { }

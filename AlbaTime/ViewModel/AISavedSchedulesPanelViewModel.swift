@@ -10,6 +10,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     @Published var selectedWeekStart: Date?
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
+    @Published var forcedMonth: AIListMonthKey?
 
     let job: Workplace
 
@@ -30,9 +31,12 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     // 월 선택 메뉴의 데이터 소스로 사용한다.
     var months: [AIListMonthKey] {
         let calendar = Calendar.current
-        let keys = aiSchedules.map {
+        var keys = aiSchedules.map {
             let comps = calendar.dateComponents([.year, .month], from: $0.date)
             return AIListMonthKey(year: comps.year ?? 0, month: comps.month ?? 0)
+        }
+        if let forcedMonth {
+            keys.append(forcedMonth)
         }
         return Array(Set(keys)).sorted {
             if $0.year != $1.year { return $0.year > $1.year }
@@ -63,10 +67,36 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             grouped[start, default: []].append(schedule)
         }
 
-        return grouped.keys.sorted().map { start in
+        var items = grouped.keys.sorted().map { start in
             let end = calendar.date(byAdding: .day, value: 6, to: start) ?? start
             return AIListWeekItem(start: start, end: end, count: grouped[start]?.count ?? 0)
         }
+
+        if let selectedWeekStart,
+           !items.contains(where: { calendar.isDate($0.start, inSameDayAs: selectedWeekStart) }),
+           let selected = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: selectedWeekStart) {
+            let end = calendar.date(byAdding: .day, value: 6, to: selected) ?? selected
+            items.append(AIListWeekItem(start: selected, end: end, count: 0))
+            items.sort { $0.start < $1.start }
+        }
+
+        return items
+    }
+
+    // 외부(수기로 추가 버튼)에서 요청된 주차로 패널 포커스를 이동한다.
+    func focusOnWeek(_ weekStart: Date, preferredMonth: AIListMonthKey? = nil) {
+        let calendar = Calendar.current
+        let normalized = calendar.startOfDay(for: weekStart)
+        
+        if let preferredMonth {
+            forcedMonth = preferredMonth
+            selectedMonthID = preferredMonth.id
+        } else {
+            let comps = calendar.dateComponents([.year, .month], from: normalized)
+            let month = AIListMonthKey(year: comps.year ?? 0, month: comps.month ?? 0)
+            selectedMonthID = month.id
+        }
+        selectedWeekStart = normalized
     }
 
     // 현재 선택 주차에 포함되는 스케줄만 반환한다.
@@ -176,5 +206,10 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         let weekday = calendar.component(.weekday, from: startOfDay)
         let offset = (weekday + 5) % 7
         return calendar.date(byAdding: .day, value: -offset, to: startOfDay) ?? startOfDay
+    }
+    
+    func selectMonth(_ monthID: String) {
+        selectedMonthID = monthID
+        selectedWeekStart = weeks.first?.start
     }
 }

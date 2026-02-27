@@ -18,6 +18,7 @@ class ScheduleImportViewModel: ObservableObject {
     @Published var isProcessing: Bool = false
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
+    @Published var isManualInputMode: Bool = false
     
     var targetJob: Workplace?
     
@@ -26,33 +27,35 @@ class ScheduleImportViewModel: ObservableObject {
     }
 
     func processSelectedPhoto(item: PhotosPickerItem?, targetJob: Workplace?, targetName: String) async {
-             guard let item else { return }
-             
-             isProcessing = true
-             
-             do {
-                 // Transferable 프로토콜을 이용해 데이터 로드
-                 if let data = try await item.loadTransferable(type: Data.self),
-                 let image = UIImage(data: data) {
-                     
-                     self.selectedImage = image
-                     
-                     // 직장 정보가 있다면 바로 분석 시작
-                     if let job = targetJob {
-                         self.setTargetJob(job)
-                         self.analyzeImage(targetName: targetName)
-                     }
-                 } else {
-                     self.errorMessage = "이미지 데이터를 불러올 수 없습니다."
-                     self.showAlert = true
-                 }
-             } catch {
-                 print("사진 로드 에러: \(error)")
-                 self.errorMessage = "사진 로드 중 오류 발생.\n권한을 확인해주세요."
-                 self.showAlert = true
-             }
-         }
-
+        guard let item else { return }
+        
+        isProcessing = true
+        isManualInputMode = false
+        
+        
+        do {
+            // Transferable 프로토콜을 이용해 데이터 로드
+            if let data = try await item.loadTransferable(type: Data.self),
+               let image = UIImage(data: data) {
+                
+                self.selectedImage = image
+                
+                // 근무지 정보가 있다면 바로 분석 시작
+                if let job = targetJob {
+                    self.setTargetJob(job)
+                    self.analyzeImage(targetName: targetName)
+                }
+            } else {
+                self.errorMessage = "이미지 데이터를 불러올 수 없습니다."
+                self.showAlert = true
+            }
+        } catch {
+            print("사진 로드 에러: \(error)")
+            self.errorMessage = "사진 로드 중 오류 발생.\n권한을 확인해주세요."
+            self.showAlert = true
+        }
+    }
+    
     func analyzeImage(targetName: String = "") {
         guard let image = selectedImage else { return }
         guard let job = targetJob else {
@@ -96,8 +99,8 @@ class ScheduleImportViewModel: ObservableObject {
                 
                 if schedules.isEmpty {
                     self.errorMessage = targetName.isEmpty
-                        ? "스케줄 형식을 찾지 못했어요."
-                        : "'\(targetName)'님의 스케줄을 찾지 못했어요.\n이름이 정확한지 확인해주세요."
+                    ? "스케줄 형식을 찾지 못했어요."
+                    : "'\(targetName)'님의 스케줄을 찾지 못했어요.\n이름이 정확한지 확인해주세요."
                     self.showAlert = true
                 } else {
                     print("최종 파싱 성공: \(schedules.count)건")
@@ -111,16 +114,25 @@ class ScheduleImportViewModel: ObservableObject {
             }
         }
     }
-
-    func addNewSchedule() {
+    
+    func addNewSchedule(targetWeekStart: Date? = nil) {
         let calendar = Calendar.current
-        var targetDate = Date()
+        let weekStart = calendar.startOfDay(for: targetWeekStart ?? Date())
+        let weekEndExclusive = calendar.date(byAdding: .day, value: 7, to: weekStart) ?? weekStart
+        var targetDate = weekStart
         
-        // 1. 이미 리스트에 데이터가 있다면, '마지막 날짜 + 1일'로 설정
-        if let lastSchedule = parsedSchedules.sorted(by: { $0.date < $1.date }).last {
+        let schedulesInWeek = parsedSchedules
+            .filter { $0.date >= weekStart && $0.date < weekEndExclusive }
+            .sorted(by: { $0.date < $1.date })
+        
+        if let lastSchedule = schedulesInWeek.last {
             if let nextDay = calendar.date(byAdding: .day, value: 1, to: lastSchedule.date) {
                 targetDate = nextDay
             }
+        }
+        
+        if targetDate >= weekEndExclusive {
+            targetDate = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
         }
         
         // 2. 기본 시간: 09:00 ~ 18:00 // guard let 구문으로 강제언래핑 제거
@@ -183,7 +195,7 @@ class ScheduleImportViewModel: ObservableObject {
                 endTime: finalEnd,
                 breakTime: job.defaultRestTime ?? 0,
                 memo: parsed.scheduleName,
-                isFromAIImport: true,
+                isFromAIImport: !isManualInputMode,
                 aiImportBatchID: batchID,
                 isEditedAfterAIImport: false
             )
@@ -217,7 +229,7 @@ class ScheduleImportViewModel: ObservableObject {
         let timeComp = calendar.dateComponents([.hour, .minute], from: time)
         return calendar.date(bySettingHour: timeComp.hour ?? 0, minute: timeComp.minute ?? 0, second: 0, of: date) ?? date
     }
-
+    
     private func mappedDateForTargetWeek(originalDate: Date, targetWeekStart: Date?) -> Date {
         guard let targetWeekStart else { return originalDate }
         let calendar = Calendar.current
@@ -226,19 +238,12 @@ class ScheduleImportViewModel: ObservableObject {
         let start = calendar.startOfDay(for: targetWeekStart)
         return calendar.date(byAdding: .day, value: mondayBasedOffset, to: start) ?? originalDate
     }
-    
-    func addEmptySchedule() {
-        let now = Date()
-        let start = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? now
-        let end = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date()) ?? now
-        
-        let newSchedule = ParsedSchedule(
-            date: now,
-            startTime: start,
-            endTime: end,
-            scheduleName: "직접 입력"
-        )
-        self.parsedSchedules.append(newSchedule)
-        self.objectWillChange.send()
+
+    private func startOfWeekMonday(for date: Date) -> Date {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let weekday = calendar.component(.weekday, from: startOfDay)
+        let offset = (weekday + 5) % 7
+        return calendar.date(byAdding: .day, value: -offset, to: startOfDay) ?? startOfDay
     }
 }

@@ -13,6 +13,7 @@ struct ScheduleImportWeekSelectorCard: View {
     let onSelectYear: (Int) -> Void
     let onSelectMonth: (Int) -> Void
     let weekLabel: (Date) -> String
+    let onTapManualInput: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -84,6 +85,15 @@ struct ScheduleImportWeekSelectorCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
+            
+            Button("수기로 추가") {
+                onTapManualInput()
+            }
+            .font(.subheadline).bold()
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 11)
+            .background(Color.gray.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .padding(14)
         .background(Color.theme.primary.opacity(0.06))
@@ -94,3 +104,73 @@ struct ScheduleImportWeekSelectorCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
+
+#Preview("주차 선택 카드") {
+    struct PreviewWrapper: View {
+        @State private var selectedYear: Int = 2026
+        @State private var selectedMonth: Int = 2
+        @State private var selectedWeekStart: Date? = {
+            let calendar = Calendar.current
+            let now = Date()
+            let startOfDay = calendar.startOfDay(for: now)
+            let weekday = calendar.component(.weekday, from: startOfDay)
+            let offset = (weekday + 5) % 7
+            return calendar.date(byAdding: .day, value: -offset, to: startOfDay)
+        }()
+
+        private var monthWeeks: [Date] {
+            let calendar = Calendar.current
+            var comps = DateComponents()
+            comps.year = selectedYear
+            comps.month = selectedMonth
+            comps.day = 1
+            guard let monthStart = calendar.date(from: comps),
+                  let monthInterval = calendar.dateInterval(of: .month, for: monthStart)
+            else { return [] }
+
+            var weeks: [Date] = []
+            var cursor = startOfWeekMonday(for: monthInterval.start)
+            while cursor < monthInterval.end {
+                let weekEnd = calendar.date(byAdding: .day, value: 6, to: cursor) ?? cursor
+                if weekEnd >= monthInterval.start {
+                    weeks.append(cursor)
+                }
+                cursor = calendar.date(byAdding: .day, value: 7, to: cursor) ?? cursor
+            }
+            return weeks
+        }
+
+        var body: some View {
+            ScheduleImportWeekSelectorCard(
+                selectedYear: $selectedYear,
+                selectedMonth: $selectedMonth,
+                selectedWeekStart: $selectedWeekStart,
+                yearCandidates: Array(2020...2030),
+                monthCandidates: Array(1...12),
+                monthWeeks: monthWeeks,
+                onSelectYear: { selectedYear = $0 },
+                onSelectMonth: { selectedMonth = $0 },
+                weekLabel: { weekStart in
+                    let calendar = Calendar.current
+                    let end = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
+                    return "\(weekStart.monthDayText) ~ \(end.monthDayText)"
+                },
+                onTapManualInput: {
+                    print("수기로 추가 tapped")
+                }
+            )
+            .padding()
+        }
+
+        private func startOfWeekMonday(for date: Date) -> Date {
+            let calendar = Calendar.current
+            let startOfDay = calendar.startOfDay(for: date)
+            let weekday = calendar.component(.weekday, from: startOfDay)
+            let offset = (weekday + 5) % 7
+            return calendar.date(byAdding: .day, value: -offset, to: startOfDay) ?? startOfDay
+        }
+    }
+
+    return PreviewWrapper()
+}
+

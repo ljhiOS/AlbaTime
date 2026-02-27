@@ -8,6 +8,11 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
+import UIKit
+
+// TODO: ai 스케줄 저장시 주차가 현재 해당하는 주차로 자동적으로 UI에 보이도록 한다.
+// TODO: 수기로 입력하기 만들기 주차 선택칸 밑에 수기로 입력하기 버튼 누르고 해당하는 그 주차가 리스트에 추가되어서 수기 저장도 가능하게함
+// -> 필요 이유: 현재 자율근무제일 경우 무조건적으로 스케줄표를 ai 스케줄로 입력해야함 따라서 스케줄 표가 없는 자율 근무제 사용자는 그 근무지 설정 자체를 못함
 
 struct ScheduleImportView: View {
     @Environment(\.dismiss) private var dismiss
@@ -18,6 +23,11 @@ struct ScheduleImportView: View {
     @StateObject private var sivm = ScheduleImportViewModel()
     @StateObject private var ssvm = ScheduleImportSelectionViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var manualWeekFocus: Date?
+    @State private var manualMonthFocus: AIListMonthKey?
+    @State private var manualFocusToken: Int = 0
+    @State private var showManualHint: Bool = false
+    
     @FocusState private var isNameFieldFocused: Bool
     
     init(targetJob: Workplace? = nil) {
@@ -63,11 +73,7 @@ struct ScheduleImportView: View {
                 if isFixed {
                     dismiss()
                 } else {
-                    // 자율 근무 시 현재 뷰의 로직 실행
-                    sivm.isProcessing = false
-                    if sivm.parsedSchedules.isEmpty {
-                        sivm.addEmptySchedule()
-                    }
+                    triggerManualWeekFocus()
                 }
             }
             Button("확인", role: .cancel) { }
@@ -107,6 +113,18 @@ private extension ScheduleImportView {
         .onTapGesture {
             isNameFieldFocused = false
         }
+        .overlay(alignment: .bottom) {
+            if showManualHint {
+                Text("선택한 주차를 수정한 뒤 저장하세요")
+                    .font(.caption)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(.bottom, 8)
+                    .transition(.opacity)
+            }
+        }
     }
 
     var weekSelectorCard: some View {
@@ -125,14 +143,40 @@ private extension ScheduleImportView {
                 ssvm.selectedMonth = month
                 ssvm.applySelectedYearMonth()
             },
-            weekLabel: ssvm.weekLabel
+            weekLabel: ssvm.weekLabel,
+            onTapManualInput: {
+                triggerManualWeekFocus()
+            }
         )
+    }
+    
+    private func triggerManualWeekFocus() {
+        manualWeekFocus = ssvm.selectedWeekStart
+        manualMonthFocus = AIListMonthKey(
+            year: ssvm.selectedYear,
+            month: ssvm.selectedMonth
+        )
+        manualFocusToken += 1
+        sivm.selectedImage = nil
+        sivm.isProcessing = false
+        
+        // UX 상태 메세지
+        showManualHint = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            showManualHint = false
+        }
     }
 
     @ViewBuilder
     var savedScheduleSection: some View {
-        if let job = targetJob, hasSavedAISchedules {
-            AISavedSchedulesInlinePanel(job: job)
+        if let job = targetJob, hasSavedAISchedules || manualFocusToken > 0 {
+            AISavedSchedulesInlinePanel(
+                job: job,
+                requestedWeekStart: manualWeekFocus,
+                requestToken: manualFocusToken,
+                requestMonth: manualMonthFocus
+            )
+            .transition(.move(edge: .top).combined(with: .opacity))
         } else {
             ScheduleImportEmptyView()
         }
@@ -145,14 +189,10 @@ private extension ScheduleImportView {
                 sivm: sivm,
                 selectedWeekStart: ssvm.selectedWeekStart,
                 onSaved: {
-                    // 저장 완료 후 AddJobView로 돌아간다.
                     dismiss()
                 },
                 onManualInput: {
-                    sivm.isProcessing = false
-                    if sivm.parsedSchedules.isEmpty {
-                        sivm.addEmptySchedule()
-                    }
+//                    triggerManualWeekFocus()
                 }
             )
         }
