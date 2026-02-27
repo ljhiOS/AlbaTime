@@ -21,16 +21,27 @@ struct PresetRow: View {
                     .foregroundStyle(.red.opacity(0.8))
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(10)
         .background(Color.gray.opacity(0.08))
         .cornerRadius(8)
-        .padding(.horizontal)
     }
     
     private func formatTime(_ date: Date) -> String {
         return date.time24h
     }
 }
-//#Preview {
-//    PresetRow()
-//}
+#Preview("Preset Row") {
+    let calendar = Calendar.current
+    let base = calendar.startOfDay(for: Date())
+    let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: base) ?? base
+    let end = calendar.date(bySettingHour: 15, minute: 0, second: 0, of: base) ?? base
+
+    let preset = WorkTimePreset(label: "오픈", startTime: start, endTime: end)
+
+    return PresetRow(
+        preset: preset,
+        onDelete: {}
+    )
+    .padding(.vertical, 20)
+}

@@ -18,8 +18,6 @@ struct ScheduleImportWeekSelectorCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: "calendar.badge.clock")
-                    .foregroundStyle(Color.theme.primary)
                 Text("저장 기준 주차 (월~일)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
@@ -41,7 +39,7 @@ struct ScheduleImportWeekSelectorCard: View {
                     .font(.caption)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.gray.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
@@ -62,7 +60,7 @@ struct ScheduleImportWeekSelectorCard: View {
                     .lineLimit(1)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.gray.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
 
@@ -81,7 +79,7 @@ struct ScheduleImportWeekSelectorCard: View {
                     .lineLimit(2)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.gray.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
@@ -92,14 +90,14 @@ struct ScheduleImportWeekSelectorCard: View {
             .font(.subheadline).bold()
             .frame(maxWidth: .infinity)
             .padding(.vertical, 11)
-            .background(Color.gray.opacity(0.1))
+            .background(Color.gray.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .padding(14)
-        .background(Color.theme.primary.opacity(0.06))
+        .background()
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.theme.primary.opacity(0.14), lineWidth: 1)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }

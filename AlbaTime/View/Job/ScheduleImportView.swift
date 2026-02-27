@@ -46,6 +46,7 @@ struct ScheduleImportView: View {
                 PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
                     Label("앨범 선택", systemImage: "photo.badge.plus")
                 }
+                .tint(.black)
             }
         }
         .onAppear {
@@ -113,7 +114,8 @@ private extension ScheduleImportView {
                 manualFocusToken: ssvm.manualFocusToken,
                 manualWeekFocus: ssvm.manualWeekFocus,
                 manualMonthFocus: ssvm.manualMonthFocus,
-                isNameFieldFocused: $isNameFieldFocused
+                isNameFieldFocused: $isNameFieldFocused,
+                sivm: sivm
             )
         } else if sivm.isProcessing {
             ScheduleImportLoadingView(targetName: myName)

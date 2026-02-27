@@ -40,14 +40,7 @@ struct AddJobView: View {
 
                 if ajvm.job.workType == .fixed {
                     ScheduleGroup(ajvm: ajvm)
-                    
-                    Divider().padding(.horizontal)
-                    
-                    PresetGroup(ajvm: ajvm)
                 } else {
-                    PresetGroup(ajvm: ajvm)
-                    
-                    Divider().padding(.horizontal)
                     
                     FlexibleInfoGroup(ajvm: ajvm)
                 }

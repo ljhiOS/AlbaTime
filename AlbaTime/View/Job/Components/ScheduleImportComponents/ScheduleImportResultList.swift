@@ -159,7 +159,7 @@ struct InlineEditRow: View {
             .multilineTextAlignment(.center)
             .padding(.vertical, 6)
             .padding(.horizontal, 4)
-            .background(Color.gray.opacity(0.1))
+            .background(Color.gray.opacity(0.08))
             .cornerRadius(6)
             .frame(width: 60)
         }

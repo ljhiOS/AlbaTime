@@ -22,12 +22,17 @@ struct ScheduleImportIdleSection: View {
     let manualMonthFocus: AIListMonthKey?
 
     let isNameFieldFocused: FocusState<Bool>.Binding
+    let sivm: ScheduleImportViewModel
 
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
                 weekSelectorCard
                 nameInputCard
+                ScheduleImportPresetGroup(
+                    sivm: sivm,
+                    presets: targetJob?.timePresets ?? []
+                )
                 savedScheduleSection
             }
             .padding(.horizontal, 16)
@@ -84,17 +89,20 @@ struct ScheduleImportIdleSection: View {
     private var nameInputCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("표에 적힌 내 이름")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.subheadline)
+                .foregroundStyle(.black)
+                .bold()
             TextField("예: 홍길동 (비워두면 전체 인식)", text: $name)
-                .textFieldStyle(.roundedBorder)
+                .padding(10)
+                .background(Color.gray.opacity(0.08))
+                .cornerRadius(8)
                 .focused(isNameFieldFocused)
         }
         .padding(14)
-        .background(Color(.secondarySystemBackground))
+        .background()
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.gray.opacity(0.14), lineWidth: 1)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
@@ -107,6 +115,7 @@ struct ScheduleImportIdleSection: View {
         @State private var selectedWeekStart: Date? = Calendar.current.startOfDay(for: Date())
         @State private var name: String = "홍길동"
         @FocusState private var isNameFocused: Bool
+        @StateObject private var sivm = ScheduleImportViewModel()
 
         var body: some View {
             ScheduleImportIdleSection(
@@ -130,7 +139,8 @@ struct ScheduleImportIdleSection: View {
                 manualFocusToken: 0,
                 manualWeekFocus: nil,
                 manualMonthFocus: nil,
-                isNameFieldFocused: $isNameFocused
+                isNameFieldFocused: $isNameFocused,
+                sivm: sivm
             )
         }
     }

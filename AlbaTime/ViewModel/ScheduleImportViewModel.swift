@@ -19,6 +19,12 @@ class ScheduleImportViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
     
+    // preset 연관 변수
+    @Published var isAddingPreset: Bool = false
+    @Published var newPresetLabel: String = ""
+    @Published var newPresetStart: Date = Date.makeTime(9, 0)
+    @Published var newPresetEnd: Date = Date.makeTime(18, 0)
+    
     var targetJob: Workplace?
     
     func setTargetJob(_ job: Workplace) {
@@ -234,5 +240,22 @@ class ScheduleImportViewModel: ObservableObject {
         let mondayBasedOffset = (weekday + 5) % 7 // 월:0 ... 일:6
         let start = calendar.startOfDay(for: targetWeekStart)
         return calendar.date(byAdding: .day, value: mondayBasedOffset, to: start) ?? originalDate
+    }
+    
+    // MARK: preset 연관 메서드
+    
+    func addNewPreset() {
+        guard let job = targetJob, !newPresetLabel.isEmpty else { return }
+        let preset = WorkTimePreset(label: newPresetLabel, startTime: newPresetStart, endTime: newPresetEnd)
+        preset.workplace = job
+        job.timePresets.append(preset)
+        newPresetLabel = ""
+        isAddingPreset = false
+    }
+
+    func deletePreset(_ preset: WorkTimePreset) {
+        guard let job = targetJob,
+              let index = job.timePresets.firstIndex(of: preset) else { return }
+        job.timePresets.remove(at: index)
     }
 }

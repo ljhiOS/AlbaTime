@@ -18,7 +18,7 @@ struct EtcGroup: View {
                     .font(.callout)
                     .padding(.horizontal)
                 HStack(spacing: 10) {
-                    TextField("예) 60", value: $job.defaultRestTime, format: .number)
+                    TextField("예: 60", value: $job.defaultRestTime, format: .number)
                         .keyboardType(.numberPad)
                         .padding(10)
                         .background(Color.gray.opacity(0.08))
@@ -32,6 +32,8 @@ struct EtcGroup: View {
                 }
                 .padding(.horizontal)
             }
+            
+            Divider().padding(.horizontal)
             
             VStack(alignment: .leading) {
                 Text("메모 (선택)").font(.callout).padding(.horizontal)

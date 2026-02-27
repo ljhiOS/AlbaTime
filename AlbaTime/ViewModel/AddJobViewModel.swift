@@ -23,12 +23,6 @@ class AddJobViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
     
-    // 프리셋 입력용
-    @Published var isAddingPreset: Bool = false
-    @Published var newPresetLabel: String = ""
-    @Published var newPresetStart: Date = Date.makeTime(9, 0)
-    @Published var newPresetEnd: Date = Date.makeTime(18, 0)
-    
     // 유연 근무 UI 바인딩용 변수
     @Published var targetWeeklyCount: Int = 3
     @Published var expectedDailyHours: Double = 5.0
@@ -233,24 +227,6 @@ class AddJobViewModel: ObservableObject {
             errorMessage = "저장 중 오류가 발생했습니다.\n\(error.localizedDescription)"
             showAlert = true
             return false
-        }
-    }
-
-    // MARK: - 프리셋 (Preset)
-    // UX 고려를 위한 메서드들 스케줄 표는 시간이 아닌 오픈 마감 같은 글자로 적혀있을 수 있음
-    // 따라서 미리 오픈 마감 등의 단어 및 시간을 입력하여 OCR 엔진이 등록된 글자를 읽을 수 있도록 설정
-    func addNewPreset() {
-        guard !newPresetLabel.isEmpty else { return }
-        let preset = WorkTimePreset(label: newPresetLabel, startTime: newPresetStart, endTime: newPresetEnd)
-        preset.workplace = job
-        job.timePresets.append(preset)
-        newPresetLabel = ""
-        isAddingPreset = false
-    }
-    
-    func deletePreset(_ preset: WorkTimePreset) {
-        if let index = job.timePresets.firstIndex(of: preset) {
-            job.timePresets.remove(at: index)
         }
     }
 }

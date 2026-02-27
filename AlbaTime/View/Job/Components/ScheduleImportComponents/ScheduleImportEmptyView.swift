@@ -15,9 +15,12 @@ struct ScheduleImportEmptyView: View {
                 description: Text("우측 상단 앨범 버튼을 눌러\n근무표 사진을 선택하면 자동으로 분석합니다.")
             )
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(Color(.secondarySystemBackground))
+        .padding(14)
+        .background()
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }

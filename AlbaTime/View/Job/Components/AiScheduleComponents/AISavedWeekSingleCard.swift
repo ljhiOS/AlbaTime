@@ -90,7 +90,7 @@ struct AISavedWeekSingleCard: View {
                     .foregroundStyle(.secondary)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("선택한 요일에 저장된 스케줄이 없습니다.")
+                    Text("선택한 요일에 저장된 스케줄이 없어요.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
