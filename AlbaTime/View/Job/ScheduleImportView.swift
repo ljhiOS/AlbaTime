@@ -23,10 +23,6 @@ struct ScheduleImportView: View {
     @StateObject private var sivm = ScheduleImportViewModel()
     @StateObject private var ssvm = ScheduleImportSelectionViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
-    @State private var manualWeekFocus: Date?
-    @State private var manualMonthFocus: AIListMonthKey?
-    @State private var manualFocusToken: Int = 0
-    @State private var showManualHint: Bool = false
     
     @FocusState private var isNameFieldFocused: Bool
     
@@ -114,7 +110,7 @@ private extension ScheduleImportView {
             isNameFieldFocused = false
         }
         .overlay(alignment: .bottom) {
-            if showManualHint {
+            if ssvm.showManualHint {
                 Text("선택한 주차를 수정한 뒤 저장하세요")
                     .font(.caption)
                     .padding(.horizontal, 12)
@@ -151,30 +147,19 @@ private extension ScheduleImportView {
     }
     
     private func triggerManualWeekFocus() {
-        manualWeekFocus = ssvm.selectedWeekStart
-        manualMonthFocus = AIListMonthKey(
-            year: ssvm.selectedYear,
-            month: ssvm.selectedMonth
-        )
-        manualFocusToken += 1
+        ssvm.requestManualFocus()
         sivm.selectedImage = nil
         sivm.isProcessing = false
-        
-        // UX 상태 메세지
-        showManualHint = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            showManualHint = false
-        }
     }
 
     @ViewBuilder
     var savedScheduleSection: some View {
-        if let job = targetJob, hasSavedAISchedules || manualFocusToken > 0 {
+        if let job = targetJob, hasSavedAISchedules || ssvm.manualFocusToken > 0 {
             AISavedSchedulesInlinePanel(
                 job: job,
-                requestedWeekStart: manualWeekFocus,
-                requestToken: manualFocusToken,
-                requestMonth: manualMonthFocus
+                requestedWeekStart: ssvm.manualWeekFocus,
+                requestToken: ssvm.manualFocusToken,
+                requestMonth: ssvm.manualMonthFocus
             )
             .transition(.move(edge: .top).combined(with: .opacity))
         } else {

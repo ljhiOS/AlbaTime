@@ -18,7 +18,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         self.job = job
     }
 
-    // 근무지에 저장된 AI 스케줄만 날짜/시간 순으로 정렬한다.
+    // 근무지에 저장된 AI 스케줄 및 수기추가를 날짜/시간 순으로 정렬한다.
     // 뷰에서 바로 리스트/건수 표시에 사용할 기준 데이터다.
     var aiSchedules: [WorkSchedule] {
         job.workSchedules.filter { $0.isFromAIImport }.sorted {

@@ -7,6 +7,10 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
     @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
     @Published var selectedMonth: Int = Calendar.current.component(.month, from: Date())
     @Published var selectedWeekStart: Date?
+    @Published var manualWeekFocus: Date?
+    @Published var manualMonthFocus: AIListMonthKey?
+    @Published var manualFocusToken: Int = 0
+    @Published var showManualHint: Bool = false
 
     var yearCandidates: [Int] {
         let currentYear = Calendar.current.component(.year, from: Date())
@@ -78,5 +82,16 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
         let weekday = calendar.component(.weekday, from: startOfDay)
         let offset = (weekday + 5) % 7
         return calendar.date(byAdding: .day, value: -offset, to: startOfDay) ?? startOfDay
+    }
+    
+    func requestManualFocus() {
+        manualWeekFocus = selectedWeekStart
+        manualMonthFocus = AIListMonthKey(year: selectedYear, month: selectedMonth)
+        manualFocusToken += 1
+        
+        showManualHint = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.showManualHint = false
+        }
     }
 }
