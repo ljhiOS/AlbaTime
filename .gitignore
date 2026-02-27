@@ -13,3 +13,6 @@ build/
 # SwiftPM
 .build/
 Package.resolved
+# docs artifacts
+docs/*.pdf
+docs/*.txt
