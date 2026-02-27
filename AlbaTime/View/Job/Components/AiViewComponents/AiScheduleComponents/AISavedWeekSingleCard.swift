@@ -136,7 +136,7 @@ struct AISavedWeekSingleCard: View {
             endTime: end,
             breakTime: job.defaultRestTime ?? 0,
             memo: nil,
-            isFromAIImport: true,
+            isFromAIImport: false,
             aiImportBatchID: nil,
             isEditedAfterAIImport: true
         )

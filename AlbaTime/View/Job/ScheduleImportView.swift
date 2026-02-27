@@ -192,7 +192,7 @@ private extension ScheduleImportView {
                     dismiss()
                 },
                 onManualInput: {
-//                    triggerManualWeekFocus()
+                    triggerManualWeekFocus()
                 }
             )
         }

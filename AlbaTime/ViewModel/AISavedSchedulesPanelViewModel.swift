@@ -97,6 +97,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             selectedMonthID = month.id
         }
         selectedWeekStart = normalized
+        clearForcedMonthIfBackedByData()
     }
 
     // 현재 선택 주차에 포함되는 스케줄만 반환한다.
@@ -133,6 +134,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             selectedMonthID = months.first?.id ?? ""
             selectedWeekStart = weeks.first?.start
         }
+        clearForcedMonthIfBackedByData()
     }
 
     // 주차 버튼 리스트에서 보여줄 라벨을 만든다.
@@ -211,5 +213,22 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     func selectMonth(_ monthID: String) {
         selectedMonthID = monthID
         selectedWeekStart = weeks.first?.start
+        
+        clearForcedMonthIfBackedByData()
+    }
+    
+    // 수기 추가 후 미저장시, 뷰모델에 빈 항목으로 잔존하지 않도록 정리
+    private func clearForcedMonthIfBackedByData() {
+        guard let forced = forcedMonth else { return }
+        
+        let calendar = Calendar.current
+        let hasDataInForcedMonth = aiSchedules.contains {
+            let comps = calendar.dateComponents([.year, .month], from: $0.date)
+            return comps.year == forced.year && comps.month == forced.month
+        }
+        
+        if hasDataInForcedMonth {
+            forcedMonth = nil
+        }
     }
 }
