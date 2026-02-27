@@ -8,14 +8,14 @@ struct AISavedSchedulesSelectorRow: View {
     let monthLabelText: String
     let weekLabelDisplay: String
     let weekLabelText: (AIListWeekItem) -> String
+    let onSelectMonth: (String) -> Void
 
     var body: some View {
         HStack(spacing: 8) {
             Menu {
                 ForEach(months) { month in
                     Button("\(String(format: "%d", month.year))년 \(month.month)월") {
-                        selectedMonthID = month.id
-                        selectedWeekStart = weeks.first?.start
+                        onSelectMonth(month.id)
                     }
                 }
             } label: {
@@ -81,6 +81,10 @@ struct AISavedSchedulesSelectorRow: View {
                 weekLabelDisplay: "1주차 (2/1~2/7) 3건",
                 weekLabelText: { week in
                     return "1주차 (\(week.start.monthDayText)~\(week.end.monthDayText)) \(week.count)건"
+                },
+                onSelectMonth: { monthID in
+                    selectedMonthID = monthID
+                    selectedWeekStart = weeks.first?.start
                 }
             )
             .padding()
