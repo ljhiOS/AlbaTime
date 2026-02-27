@@ -128,17 +128,20 @@ private extension ScheduleImportView {
         sivm.isProcessing = false
     }
 
+    @ViewBuilder
     var bottomButtons: some View {
-        ScheduleImportBottomSection(
-            sivm: sivm,
-            selectedWeekStart: ssvm.selectedWeekStart,
-            onSaved: {
-                dismiss()
-            },
-            onManualInput: {
-                triggerManualWeekFocus()
-            }
-        )
+        if sivm.selectedImage != nil {
+            ScheduleImportBottomButtons(
+                sivm: sivm,
+                selectedWeekStart: ssvm.selectedWeekStart,
+                onSaved: {
+                    dismiss()
+                },
+                onManualInput: {
+                    triggerManualWeekFocus()
+                }
+            )
+        }
     }
 }
 
