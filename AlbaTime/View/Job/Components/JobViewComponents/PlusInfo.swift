@@ -28,15 +28,14 @@ struct PlusInfo: View {
             .padding(.bottom)
             .padding(.bottom)
             .padding(.bottom)
-            .background(.white)
+            .background(Color.theme.surface)
             .cornerRadius(20)
             .padding()
             
         } //:VStack
-        .background(Color.gray.opacity(0.1))
+        .background(Color.theme.muted)
         .frame(maxWidth: .infinity)
         .cornerRadius(20)
-        .padding(.horizontal,30)
     }
 }
 

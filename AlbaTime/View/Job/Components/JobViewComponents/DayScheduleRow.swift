@@ -67,7 +67,7 @@ struct DayScheduleRow: View {
             }
         }
         .padding(12)
-        .background(Color.white)
+        .background(Color.theme.surface)
         .cornerRadius(10)
         .shadow(color: .black.opacity(0.03), radius: 2, x: 0, y: 1)
     }

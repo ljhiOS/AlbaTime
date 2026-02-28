@@ -102,7 +102,7 @@ struct ScheduleDetailCard: View {
                                 }
                             }
                             .padding()
-                            .background(Color.white)
+                            .background(Color.theme.surface)
                             .cornerRadius(12)
                             .shadow(color: .black.opacity(0.03), radius: 2, x: 0, y: 1)
                         }

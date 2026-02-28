@@ -28,7 +28,7 @@ struct ingButtonStyle: ButtonStyle {
         configuration.label
             .padding(35)
             .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .background(Color.theme.surface)
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
@@ -61,7 +61,7 @@ struct PlusButton: View {
                 }
                 
                 Text("새 알바 추가하기")
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(Color.theme.textSecondary)
             }
         }
         .buttonStyle(ingButtonStyle())

@@ -32,10 +32,9 @@ struct StaticDetailView: View {
             .padding()
             .frame(maxWidth: .infinity)
         } //:VStack
-        .background(Color.gray.opacity(0.1))
+        .background(Color.theme.muted)
         .frame(maxWidth: .infinity)
         .cornerRadius(20)
-        .padding(.horizontal,30)
     }
 }
 
@@ -61,7 +60,7 @@ struct StaticDetailComponents: View {
             Text(caption)
         
         }.padding()
-            .background(Color.gray.opacity(0.1))
+            .background(Color.theme.muted)
             .cornerRadius(20)
     }
 }

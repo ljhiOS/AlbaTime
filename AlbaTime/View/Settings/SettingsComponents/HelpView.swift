@@ -75,7 +75,7 @@ struct HelpView: View {
                     
                     Text("자주 묻는 질문들을 모아봤어요.")
                         .font(.subheadline)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                 }
                 .padding(.top, 20)
                 
@@ -94,7 +94,7 @@ struct HelpView: View {
                 VStack(spacing: 16) {
                     Text("원하는 답변을 찾지 못하셨나요?")
                         .font(.subheadline)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                     
                     Button {
                         openKakaoChat()
@@ -104,7 +104,7 @@ struct HelpView: View {
                             Text("개발자에게 직접 물어보기")
                         }
                         .fontWeight(.medium)
-                        .foregroundStyle(.black)
+                        .foregroundStyle(Color.theme.textPrimary)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(uiColor: .systemYellow))

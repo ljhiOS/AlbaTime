@@ -26,7 +26,7 @@ struct BottomButton: View {
             }
         }
         .padding(.vertical)
-        .background(Color.white)
+        .background(Color.theme.surface)
         .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: -5)
     }
 }

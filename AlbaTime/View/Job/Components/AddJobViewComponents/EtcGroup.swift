@@ -16,27 +16,25 @@ struct EtcGroup: View {
             VStack(alignment: .leading) {
                 Text("휴게 시간 (선택)")
                     .font(.callout)
-                    .padding(.horizontal)
                 HStack(spacing: 10) {
                     TextField("예: 60", value: $job.defaultRestTime, format: .number)
                         .keyboardType(.numberPad)
                         .padding(10)
-                        .background(Color.gray.opacity(0.08))
+                        .background(Color.theme.field)
                         .cornerRadius(8)
                         .padding(.trailing)
                     Text("분")
                         .font(.system(size: 18))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(Color.theme.textPrimary)
                     
                     Spacer()
                 }
-                .padding(.horizontal)
             }
             
-            Divider().padding(.horizontal)
+            Divider()
             
             VStack(alignment: .leading) {
-                Text("메모 (선택)").font(.callout).padding(.horizontal)
+                Text("메모 (선택)").font(.callout)
                 TextField("특이사항 입력", text: Binding(
                     get: { job.defaultMemo ?? "" },
                     set: { job.defaultMemo = $0 }
@@ -44,9 +42,8 @@ struct EtcGroup: View {
                 )
                     .padding(10)
                     .padding(.bottom, 100)
-                    .background(Color.gray.opacity(0.08))
+                    .background(Color.theme.field)
                     .cornerRadius(8)
-                    .padding(.horizontal)
             }
         }
     }

@@ -115,7 +115,7 @@ struct PayDetailCard: View {
             }
         }
         .padding(24)
-        .background(Color.gray.opacity(0.08))
+        .background(Color.theme.field)
         .cornerRadius(20)
     }
 }

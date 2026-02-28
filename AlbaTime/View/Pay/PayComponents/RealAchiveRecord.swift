@@ -42,12 +42,17 @@ struct RealAchiveRecord: View {
                             .foregroundStyle(Color.theme.primary)
                     }
                     .padding(.vertical, 4)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .listRowBackground(Color.clear)
                 }
                 .onDelete { indexSet in
                     ravm.deleteRecord(at: indexSet, context: modelContext, sortedRecords: records)
                 }
             }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
         .navigationTitle("월별 수령액 기록")
         .toolbar {
             Button {

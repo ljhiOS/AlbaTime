@@ -25,17 +25,17 @@ struct FAQRow: View {
                     
                     Text(faq.question)
                         .fontWeight(.medium)
-                        .foregroundStyle(.black)
+                        .foregroundStyle(Color.theme.textPrimary)
                         .multilineTextAlignment(.leading)
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0)) // 회전 애니메이션
                 }
                 .padding()
-                .background(Color.white)
+                .background(Color.theme.surface)
             }
             .buttonStyle(.plain)
             
@@ -45,15 +45,15 @@ struct FAQRow: View {
                     HStack(alignment: .top) {
                         Text("A.")
                             .fontWeight(.bold)
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(Color.theme.textSecondary)
                         Text(faq.answer)
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(Color.theme.textSecondary)
                             .font(.callout)
                             .lineSpacing(4) // 줄 간격
                     }
                     .padding()
                 }
-                .background(Color.white)
+                .background(Color.theme.surface)
                 .transition(.opacity.combined(with: .move(edge: .top))) // 등장효과 이펙트
             }
         }

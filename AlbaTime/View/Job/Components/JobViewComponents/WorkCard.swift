@@ -26,7 +26,7 @@ struct WorkCard: View {
                     Text(job.name)
                         .font(.title3)
                         .fontWeight(.bold)
-                        .foregroundColor(.black)
+                        .foregroundColor(Color.theme.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .truncationMode(.tail)
@@ -100,10 +100,10 @@ struct WorkCard: View {
                     onShowDetail()
                 } label: {
                     Text("상세보기")
-                        .font(.subheadline).fontWeight(.semibold).foregroundColor(.black)
+                        .font(.subheadline).fontWeight(.semibold).foregroundColor(Color.theme.textPrimary)
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
-                        .background(Color.white).cornerRadius(8)
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                        .background(Color.theme.surface).cornerRadius(8)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.theme.borderSoft, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
                 
@@ -119,10 +119,9 @@ struct WorkCard: View {
             }
         }
         .padding(20)
-        .background(Color.white)
+        .background(Color.theme.surface)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.088), radius: 10, x: 0, y: 4)
-        .padding(.horizontal)
     }
         
     // MARK: - Logic (스케줄 텍스트 표시)

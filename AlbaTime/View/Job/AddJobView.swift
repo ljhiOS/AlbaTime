@@ -35,19 +35,23 @@ struct AddJobView: View {
             VStack(alignment: .leading, spacing: 30) {
 
                 BasicInfoGroup(job: ajvm.job)
+                    .padding(.horizontal)
                 
                 Divider().padding(.horizontal)
 
                 if ajvm.job.workType == .fixed {
                     ScheduleGroup(ajvm: ajvm)
+                        .padding(.horizontal)
                 } else {
                     
                     FlexibleInfoGroup(ajvm: ajvm)
+                        .padding(.horizontal)
                 }
 
                 Divider().padding(.horizontal)
 
                 EtcGroup(job: ajvm.job)
+                    .padding(.horizontal)
                 
                 Spacer()
             }

@@ -18,7 +18,6 @@ struct AlbaTimeApp: App {
     var body: some Scene {
         WindowGroup {
             SplashView()
-                .preferredColorScheme(.light)
         }
         .modelContainer(for: [
             Workplace.self,

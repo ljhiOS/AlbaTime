@@ -6,16 +6,57 @@
 //
 
 import SwiftUI
+import UIKit
 
 extension Color {
     static let theme = Theme()
+
+    static func adaptive(light: UIColor, dark: UIColor) -> Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark ? dark : light
+        })
+    }
 }
 
 struct Theme {
     let primary = Color(hex: "0066FF") // 브랜드 블루
     let accent = Color(hex: "FFB020")  // 급여 강조 (노랑)
-    let textPrimary = Color.black
-    let textSecondary = Color.gray
+    let textPrimary = Color.adaptive(light: .black, dark: .label)
+    let textSecondary = Color.adaptive(light: .gray, dark: .secondaryLabel)
+
+    // Light는 기존 톤 유지, Dark는 요청한 팔레트 적용
+    let surface = Color.adaptive(
+        light: .white,
+        dark: UIColor(red: 0x12 / 255.0, green: 0x13 / 255.0, blue: 0x18 / 255.0, alpha: 1.0) // #121318
+    )
+    let field = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.08),
+        dark: UIColor.systemGray6.withAlphaComponent(0.6)
+    )
+    let subtle = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.05),
+        dark: UIColor.systemGray6.withAlphaComponent(0.6)
+    )
+    let muted = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.1),
+        dark: UIColor.systemGray6.withAlphaComponent(0.6)
+    )
+    let chip = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.12),
+        dark: UIColor.systemGray6.withAlphaComponent(0.6)
+    )
+    let border = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.3),
+        dark: .separator
+    )
+    let borderSoft = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.2),
+        dark: .separator
+    )
+    let disabled = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.5),
+        dark: .systemGray3
+    )
 }
 
 // Hex 코드 지원용 확장

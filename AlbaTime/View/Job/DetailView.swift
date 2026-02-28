@@ -34,14 +34,17 @@ struct DetailView: View {
                 .padding()
                 
                 WorkCardDetail(job: job, hours: salaryData.totalHours)
+                    .padding(.horizontal, 30)
                 
                 StaticDetailView(
                     totalDays: salaryData.workingDays,  // 뷰모델의 일수 변수
                     totalHours: salaryData.totalHours,       // 계산된 총 근무 시간
                     totalWage: salaryData.totalPay   // 뷰모델의 급여 변수
                 )
+                .padding(.horizontal, 30)
                 
                 PlusInfo(job: job)
+                    .padding(.horizontal, 30)
                 
             } //:VStack
         } //:ScrollViewEnd

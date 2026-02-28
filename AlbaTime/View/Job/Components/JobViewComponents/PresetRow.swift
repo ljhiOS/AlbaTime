@@ -14,7 +14,7 @@ struct PresetRow: View {
             
             Text("\(formatTime(preset.startTime)) ~ \(formatTime(preset.endTime))")
                 .font(.subheadline)
-                .foregroundStyle(.gray)
+                .foregroundStyle(Color.theme.textSecondary)
             
             Button(action: onDelete) {
                 Image(systemName: "minus.circle.fill")
@@ -23,7 +23,7 @@ struct PresetRow: View {
         }
         .frame(maxWidth: .infinity)
         .padding(10)
-        .background(Color.gray.opacity(0.08))
+        .background(Color.theme.field)
         .cornerRadius(8)
     }
     

@@ -30,7 +30,7 @@ struct PayCard: View {
             
             Divider()
                 .frame(height: 1)
-                .background(Color.white)
+                .background(Color.theme.surface)
                 .padding(.horizontal)
             
             HStack(alignment: .top) {

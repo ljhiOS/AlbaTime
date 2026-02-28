@@ -68,7 +68,7 @@ struct AppInfo: View {
                         Text("카카오톡으로 문의하기")
                             .font(.headline)
                     }
-                    .foregroundColor(.black) // 글자색
+                    .foregroundColor(Color.theme.textPrimary) // 글자색
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color(uiColor: .systemYellow)) // 카카오톡 노란색 느낌
@@ -115,12 +115,12 @@ struct InfoRow: View {
                 
                 Image(systemName: icon)
                     .font(.system(size: 16))
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.theme.textPrimary)
             }
             
             Text(title)
                 .font(.body)
-                .foregroundColor(.black)
+                .foregroundColor(Color.theme.textPrimary)
             
             Spacer()
             

@@ -35,7 +35,7 @@ struct ScheduleImportBottomButtons: View {
                     .padding(.vertical, 16)
                     .background(
                         sivm.parsedSchedules.isEmpty
-                        ? Color.gray.opacity(0.5)
+                        ? Color.theme.disabled
                         : Color.theme.primary
                     )
                     .cornerRadius(12)
@@ -52,7 +52,7 @@ struct ScheduleImportBottomButtons: View {
             }
         }
         .padding(20)
-        .background(Color.white)
+        .background(Color.theme.surface)
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: -5)
     }
 }

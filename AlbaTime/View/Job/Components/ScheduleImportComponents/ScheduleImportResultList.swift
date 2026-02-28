@@ -36,6 +36,8 @@ struct ScheduleImportResultList: View {
                     ForEach($sivm.parsedSchedules) { $schedule in
                         InlineEditRow(schedule: $schedule)
                             .focused($focusedField, equals: schedule.id.uuidString)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowBackground(Color.clear)
                     }
                     .onDelete(perform: deleteSchedule) // 스와이프 삭제 지원
                 }
@@ -58,6 +60,9 @@ struct ScheduleImportResultList: View {
                 }
             }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
         .onTapGesture {
             // 빈 공간 터치 시 키보드 내리기
             focusedField = nil
@@ -131,7 +136,7 @@ struct InlineEditRow: View {
                         .scaleEffect(0.9)
                     
                     Text("-")
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                         .padding(.horizontal, 2)
                     
                     DatePicker("", selection: $schedule.endTime, displayedComponents: .hourAndMinute)
@@ -159,7 +164,7 @@ struct InlineEditRow: View {
             .multilineTextAlignment(.center)
             .padding(.vertical, 6)
             .padding(.horizontal, 4)
-            .background(Color.gray.opacity(0.08))
+            .background(Color.theme.field)
             .cornerRadius(6)
             .frame(width: 60)
         }

@@ -42,7 +42,7 @@ struct WorkCardDetail: View {
             
             Divider()
                 .frame(height: 1)
-                .background(Color.white)
+                .background(Color.theme.surface)
                 .padding(.horizontal)
             
             HStack(alignment: .top) {
@@ -92,7 +92,6 @@ struct WorkCardDetail: View {
         }.background(Color.theme.primary)
             .frame(maxWidth: .infinity)
             .cornerRadius(20)
-            .padding(.horizontal, 30)
     }
 }
 

@@ -52,7 +52,7 @@ struct ServiceDetail: View {
                                 .foregroundStyle(Color.theme.primary)
                             
                             Text("앱 정보")
-                                .foregroundStyle(.black)
+                                .foregroundStyle(Color.theme.textPrimary)
                             
                             Spacer()
                             
@@ -75,7 +75,7 @@ struct ServiceDetail: View {
                                 .foregroundStyle(Color.theme.primary)
                             
                             Text("개인정보처리방침")
-                                .foregroundStyle(.black)
+                                .foregroundStyle(Color.theme.textPrimary)
                             
                             Spacer()
                             
@@ -89,7 +89,7 @@ struct ServiceDetail: View {
                     
                 } //:HStack
                 .padding()
-                .background(.gray.opacity(0.1))
+                .background(Color.theme.muted)
                 .cornerRadius(20)
             }
        

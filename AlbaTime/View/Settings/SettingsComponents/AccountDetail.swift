@@ -25,7 +25,7 @@ struct AccountDetail: View {
                 
                 // 2. 텍스트
                 Text("알림설정")
-                    .foregroundStyle(.black)
+                    .foregroundStyle(Color.theme.textPrimary)
                 
                 Spacer()
                 
@@ -49,7 +49,7 @@ struct AccountDetail: View {
                        }
             }
             .padding()
-            .background(.gray.opacity(0.1))
+            .background(Color.theme.muted)
             .cornerRadius(20)
             
         }

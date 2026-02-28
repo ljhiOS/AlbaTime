@@ -16,11 +16,11 @@ struct ScheduleImportPresetGroup: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("근무 시간 타입 (선택)")
                     .font(.subheadline)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(Color.theme.textPrimary)
                     .bold()
                 Text("오픈, 마감 등 설정하면 AI가 시간 대신 인식할 수 있어요")
                     .font(.caption)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(Color.theme.textSecondary)
             }
             ForEach(presets) { preset in
                 PresetRow(preset: preset) {
@@ -32,11 +32,11 @@ struct ScheduleImportPresetGroup: View {
                 VStack(spacing: 10) {
                     TextField("타입 이름 (예: 오픈)", text: $sivm.newPresetLabel)
                         .padding(10)
-                        .background(Color.white)
+                        .background(Color.theme.surface)
                         .cornerRadius(6)
                         .overlay(
                             RoundedRectangle(cornerRadius: 6)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                .stroke(Color.theme.border, lineWidth: 1)
                         )
                     
                     HStack {
@@ -63,7 +63,7 @@ struct ScheduleImportPresetGroup: View {
                     }
                 }
                 .padding(10)
-                .background(Color.gray.opacity(0.08))
+                .background(Color.theme.field)
                 .cornerRadius(8)
             } else {
                 Button {
@@ -74,10 +74,10 @@ struct ScheduleImportPresetGroup: View {
                         Text("새로운 시간 타입 추가하기")
                     }
                     .font(.subheadline)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(Color.theme.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(10)
-                    .background(Color.gray.opacity(0.05))
+                    .background(Color.theme.subtle)
                     .cornerRadius(8)
                 }
             }
@@ -86,7 +86,7 @@ struct ScheduleImportPresetGroup: View {
         .background()
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }

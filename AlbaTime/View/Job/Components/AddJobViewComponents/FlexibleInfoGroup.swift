@@ -51,17 +51,15 @@ struct FlexibleInfoGroup: View {
                     }
                 }
             }
-            .padding(.horizontal)
             
             Divider()
-                .padding(.horizontal)
             
             // 2. 하루 평균 몇 시간?
             VStack(alignment: .leading) {
                 HStack {
                     Text("하루 평균 근무 시간")
                         .font(.subheadline)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                     Spacer()
                     Text("\(String(format: "%.1f", ajvm.expectedDailyHours)) 시간")
                         .bold()
@@ -74,11 +72,11 @@ struct FlexibleInfoGroup: View {
                 } minimumValueLabel: {
                     Text("1h")
                         .font(.caption)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                 } maximumValueLabel: {
                     Text("12h")
                         .font(.caption)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                 }
                 .tint(Color.theme.primary)
             }

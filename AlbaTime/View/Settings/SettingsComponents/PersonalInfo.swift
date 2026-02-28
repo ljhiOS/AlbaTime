@@ -27,7 +27,7 @@ struct PersonalInfo: View {
                     
                     Text("최종 수정일: 2026년 1월 11일")
                         .font(.caption)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.textSecondary)
                 }
                 .padding(.top, 20)
                 .padding(.bottom, 10)
@@ -89,16 +89,16 @@ struct PolicySectionView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.headline)
-                .foregroundStyle(.black)
+                .foregroundStyle(Color.theme.textPrimary)
             
             Text(content)
                 .font(.subheadline)
-                .foregroundStyle(.gray)
+                .foregroundStyle(Color.theme.textSecondary)
                 .lineSpacing(4) // 줄 간격 늘려서 가독성 확보
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(Color.white)
+        .background(Color.theme.surface)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
     }
@@ -113,11 +113,11 @@ struct ContactSectionView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("4. 문의처")
                 .font(.headline)
-                .foregroundStyle(.black)
+                .foregroundStyle(Color.theme.textPrimary)
             
             Text("본 앱의 개인정보 처리와 관련하여 문의사항이 있으신 경우 아래 연락처로 문의해 주시기 바랍니다.")
                 .font(.subheadline)
-                .foregroundStyle(.gray)
+                .foregroundStyle(Color.theme.textSecondary)
                 .lineSpacing(4)
             
             Divider()
@@ -155,7 +155,7 @@ struct ContactSectionView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(Color.white)
+        .background(Color.theme.surface)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
     }

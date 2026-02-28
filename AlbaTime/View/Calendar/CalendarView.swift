@@ -30,7 +30,7 @@ struct CalendarView: View {
             // 월 이동 버튼
             HStack {
                 Button(action: { cvm.changeMonth(by: -1) }) {
-                    Image(systemName: "chevron.left").foregroundColor(.black)
+                    Image(systemName: "chevron.left").foregroundColor(Color.theme.textPrimary)
                 }
                 
                 Spacer()
@@ -40,7 +40,7 @@ struct CalendarView: View {
                 Spacer()
                 
                 Button(action: { cvm.changeMonth(by: 1) }) {
-                    Image(systemName: "chevron.right").foregroundColor(.black)
+                    Image(systemName: "chevron.right").foregroundColor(Color.theme.textPrimary)
                 }
             }
             .padding()
@@ -85,7 +85,7 @@ struct CalendarView: View {
             // 하단 상세 카드
             ScheduleDetailCard(cvm: cvm, allWorkplaces: workplaces)
         }
-        .background(Color.white)
+        .background(Color.theme.surface)
         .onAppear { cvm.updateCache(workplaces: workplaces) }
         .onChange(of: workplaces) { _, newValue in cvm.updateCache(workplaces: newValue) }
         .onChange(of: workSchedules.count) { _, _ in

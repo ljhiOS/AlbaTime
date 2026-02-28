@@ -90,11 +90,11 @@ struct ScheduleImportIdleSection: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("표에 적힌 내 이름")
                 .font(.subheadline)
-                .foregroundStyle(.black)
+                .foregroundStyle(Color.theme.textPrimary)
                 .bold()
             TextField("예: 홍길동 (비워두면 전체 인식)", text: $name)
                 .padding(10)
-                .background(Color.gray.opacity(0.08))
+                .background(Color.theme.field)
                 .cornerRadius(8)
                 .focused(isNameFieldFocused)
         }
@@ -102,7 +102,7 @@ struct ScheduleImportIdleSection: View {
         .background()
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }

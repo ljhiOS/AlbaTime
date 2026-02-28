@@ -38,7 +38,6 @@ struct ScheduleGroup: View {
                 .font(.caption)
                 .foregroundStyle(.blue)
             }
-            .padding(.horizontal)
             
             VStack(alignment: .leading, spacing: 10) {
                 Text("요일 선택")
@@ -59,7 +58,7 @@ struct ScheduleGroup: View {
                             .background(
                                 isSelected
                                 ? Color.theme.primary
-                                : (hasSchedule ? Color.theme.primary.opacity(0.15) : Color.gray.opacity(0.12))
+                                : (hasSchedule ? Color.theme.primary.opacity(0.15) : Color.theme.chip)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .contentShape(RoundedRectangle(cornerRadius: 8))
@@ -114,9 +113,8 @@ struct ScheduleGroup: View {
                 }
             }
             .padding(10)
-            .background(Color.gray.opacity(0.08))
+            .background(Color.theme.field)
             .cornerRadius(8)
-            .padding(.horizontal)
         }
         .onAppear {
             if selectedDay == nil {
