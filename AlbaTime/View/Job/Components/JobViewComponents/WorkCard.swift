@@ -9,6 +9,7 @@ import SwiftUI
 
 struct WorkCard: View {
     
+    
     let job: Workplace
     
     var onDelete: () -> Void
@@ -16,6 +17,10 @@ struct WorkCard: View {
     var onShowDetail: () -> Void
     var onShowEdit: () -> Void
     
+    @Environment(\.colorScheme) private var colorScheme
+    private var cardBackgroundColor: Color {
+        colorScheme == .dark ? Color.theme.field : Color.theme.surface
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             
@@ -119,7 +124,7 @@ struct WorkCard: View {
             }
         }
         .padding(20)
-        .background(Color.theme.surface)
+        .background(cardBackgroundColor)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.088), radius: 10, x: 0, y: 4)
     }

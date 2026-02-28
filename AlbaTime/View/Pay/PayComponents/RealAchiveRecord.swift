@@ -26,6 +26,7 @@ struct RealAchiveRecord: View {
                     systemImage: "list.bullet.clipboard",
                     description: Text("우측 상단 + 버튼을 눌러\n월별 수령액을 기록해보세요.")
                 )
+                .listRowBackground(Color.theme.field)
             } else {
                 ForEach(records) { record in
                     HStack {
@@ -39,20 +40,20 @@ struct RealAchiveRecord: View {
                         Text("₩\((Int(record.actualAmount) ?? 0).formatted())")
                             .font(.title3)
                             .fontWeight(.bold)
-                            .foregroundStyle(Color.theme.primary)
+                            .foregroundStyle(Color.orange)
                     }
                     .padding(.vertical, 4)
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                    .listRowBackground(Color.clear)
+                    .listRowBackground(Color.theme.field)
                 }
                 .onDelete { indexSet in
                     ravm.deleteRecord(at: indexSet, context: modelContext, sortedRecords: records)
                 }
             }
         }
-        .listStyle(.plain)
+        .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(Color.clear)
+        .background(Color.theme.surface)
         .navigationTitle("월별 수령액 기록")
         .toolbar {
             Button {
@@ -70,7 +71,9 @@ struct RealAchiveRecord: View {
                         DatePicker("수령 날짜", selection: $ravm.selectedDate, displayedComponents: .date)
                             .datePickerStyle(.graphical)
                             .environment(\.locale, Locale(identifier: "ko_KR")) // 달력을 한국어로 변경
+                            .tint(Color.theme.primary)
                     }
+                    .listRowBackground(Color.theme.field)
                     
                     Section("금액 입력") {
                         HStack {
@@ -79,7 +82,11 @@ struct RealAchiveRecord: View {
                                 .keyboardType(.numberPad)
                         }
                     }
+                    .listRowBackground(Color.theme.field)
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.theme.surface)
+                .listRowBackground(Color.theme.field)
                 .navigationTitle("새 기록 추가")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {

@@ -57,6 +57,7 @@ struct AddJobView: View {
             }
             .padding(.vertical)
         }
+        .background(Color.theme.surface)
         .scrollDismissesKeyboard(.interactively)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {

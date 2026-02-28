@@ -18,7 +18,7 @@ struct DayCell: View {
             Text("\(Calendar.current.component(.day, from: date))")
                 .font(.system(size: 16))
                 .fontWeight(isSelected ? .bold : .regular)
-                .foregroundColor(isSelected ? Color.theme.primary : .black)
+                .foregroundColor(isSelected ? Color.theme.primary : Color.theme.textPrimary)
                 .frame(width: 30, height: 30)
                 .background(isSelected ? Color.theme.primary.opacity(0.1) : Color.clear)
                 .clipShape(Circle())

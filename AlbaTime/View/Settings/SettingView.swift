@@ -44,6 +44,7 @@ struct SettingView: View {
             }.padding()
             
         }
+        .background(Color.theme.surface)
     }
 }
 

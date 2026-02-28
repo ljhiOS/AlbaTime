@@ -35,7 +35,7 @@ struct FAQRow: View {
                         .rotationEffect(.degrees(isExpanded ? 90 : 0)) // 회전 애니메이션
                 }
                 .padding()
-                .background(Color.theme.surface)
+                .background(Color.theme.field)
             }
             .buttonStyle(.plain)
             
@@ -53,7 +53,7 @@ struct FAQRow: View {
                     }
                     .padding()
                 }
-                .background(Color.theme.surface)
+                .background(Color.theme.field)
                 .transition(.opacity.combined(with: .move(edge: .top))) // 등장효과 이펙트
             }
         }

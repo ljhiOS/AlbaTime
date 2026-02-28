@@ -41,6 +41,7 @@ struct PayDashboardView: View {
             }
             .padding(.horizontal)
         }
+        .background(Color.theme.surface)
         // 데이터가 로드되거나 변경될 때마다 ViewModel 업데이트
         .onAppear {
             pvm.updateData(workplaces: workplaces)

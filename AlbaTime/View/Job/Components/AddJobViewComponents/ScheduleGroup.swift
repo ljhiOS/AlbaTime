@@ -58,7 +58,7 @@ struct ScheduleGroup: View {
                             .background(
                                 isSelected
                                 ? Color.theme.primary
-                                : (hasSchedule ? Color.theme.primary.opacity(0.15) : Color.theme.chip)
+                                : (hasSchedule ? Color.theme.primary.opacity(0.15) : Color.theme.surface)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .contentShape(RoundedRectangle(cornerRadius: 8))
@@ -86,22 +86,6 @@ struct ScheduleGroup: View {
 
                         Spacer()
                     }
-                    
-//                    Toggle("요일별 휴게시간 설정", isOn: $choiceBreakTimeType)
-//                        .font(.caption)
-//                    
-//                    if choiceBreakTimeType {
-//                        HStack(spacing: 8) {
-//                            Text("휴게")
-//                            TextField("분", value: breakTimeBinding(for: current), format: .number)
-//                                .keyboardType(.numberPad)
-//                                .textFieldStyle(.roundedBorder)
-//                                .frame(width: 72)
-//                            Text("분")
-//                            Spacer()
-//                        }
-//                        .font(.caption)
-//                    }
                     
                     Text("삭제를 원하면 요일 버튼을 길게 눌러주세요.")
                         .font(.caption2)

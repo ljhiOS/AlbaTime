@@ -49,7 +49,7 @@ struct AccountDetail: View {
                        }
             }
             .padding()
-            .background(Color.theme.muted)
+            .background(Color.theme.field)
             .cornerRadius(20)
             
         }

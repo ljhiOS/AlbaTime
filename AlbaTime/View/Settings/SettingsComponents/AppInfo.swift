@@ -68,7 +68,7 @@ struct AppInfo: View {
                         Text("카카오톡으로 문의하기")
                             .font(.headline)
                     }
-                    .foregroundColor(Color.theme.textPrimary) // 글자색
+                    .foregroundColor(Color.black) // 글자색
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color(uiColor: .systemYellow)) // 카카오톡 노란색 느낌
@@ -93,9 +93,12 @@ struct AppInfo: View {
                         .padding(.bottom, 20)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.theme.surface)
             .navigationTitle("앱 정보")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .background(Color.theme.surface)
     }
 }
 

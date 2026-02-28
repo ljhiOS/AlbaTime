@@ -24,11 +24,17 @@ struct ingButtonStyle2: ButtonStyle {
 
 // 점선 색깔 바꾸기 위한 버튼 스타일 커스텀 및 사용자 UX 고려 버튼 터치시 작아지는 애니메이션 기능 첨가
 struct ingButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) private var colorSheme
+    
+    private var cardBackColor: Color {
+        colorSheme == .dark ? Color.theme.field : Color.theme.surface
+    }
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(35)
             .frame(maxWidth: .infinity)
-            .background(Color.theme.surface)
+            .background(cardBackColor)
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
@@ -37,7 +43,6 @@ struct ingButtonStyle: ButtonStyle {
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-            .padding()
     }
 }
 

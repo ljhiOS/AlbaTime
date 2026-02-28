@@ -33,7 +33,7 @@ struct PlusInfo: View {
             .padding()
             
         } //:VStack
-        .background(Color.theme.muted)
+        .background(Color.theme.field)
         .frame(maxWidth: .infinity)
         .cornerRadius(20)
     }

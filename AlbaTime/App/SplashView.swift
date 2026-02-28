@@ -15,6 +15,8 @@ struct SplashView: View {
     
     var body: some View {
         ZStack {
+            Color.theme.surface
+                .ignoresSafeArea()
             
             if isAppear {
                 MainTabView()
@@ -39,10 +41,10 @@ struct SplashView: View {
                 } //opa
             }
         } //:ZStack
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
 #Preview {
     SplashView()
 }
-

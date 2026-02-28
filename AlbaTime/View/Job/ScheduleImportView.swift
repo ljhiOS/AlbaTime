@@ -44,6 +44,7 @@ struct ScheduleImportView: View {
                 .tint(.black)
             }
         }
+        .background(Color.theme.surface)
         .onAppear {
             if let job = targetJob {
                 sivm.setTargetJob(job)

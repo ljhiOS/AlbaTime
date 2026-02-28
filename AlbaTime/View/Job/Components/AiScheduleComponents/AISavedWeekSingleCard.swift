@@ -49,10 +49,10 @@ struct AISavedWeekSingleCard: View {
                         .foregroundStyle(isSelected ? .white : (hasSchedule ? Color.theme.primary : .primary))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 7)
-                        .background(
-                            isSelected
-                            ? Color.theme.primary
-                            : (hasSchedule ? Color.theme.primary.opacity(0.15) : Color.theme.chip)
+                        .background(isSelected ? Color.theme.primary : Color.theme.surface)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(hasSchedule ? Color.theme.primary.opacity(0.25) : Color.theme.borderSoft, lineWidth: 1)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .contentShape(RoundedRectangle(cornerRadius: 8))
@@ -100,10 +100,14 @@ struct AISavedWeekSingleCard: View {
                         Text("이 요일에 스케줄 추가")
                             .font(.caption)
                             .fontWeight(.semibold)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.theme.primary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 8)
-                            .background(Color.theme.primary)
+                            .background(Color.theme.surface)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.theme.border, lineWidth: 1)
+                            )
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                     .disabled(selectedDay == nil)

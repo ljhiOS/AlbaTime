@@ -33,7 +33,7 @@ struct AISavedSchedulesInlinePanel: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 5)
-                    .background(Color.theme.field)
+                    .background(Color.theme.surface)
                     .clipShape(Capsule())
             }
 
@@ -86,7 +86,7 @@ struct AISavedSchedulesInlinePanel: View {
             }
         }
         .padding(14)
-        .background(Color(.systemBackground))
+        .background(Color.theme.field)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.theme.border, lineWidth: 1)

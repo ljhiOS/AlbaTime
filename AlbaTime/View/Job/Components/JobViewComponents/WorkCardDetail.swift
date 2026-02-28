@@ -38,11 +38,12 @@ struct WorkCardDetail: View {
                 Text("\(job.hourlyWage)원")
                     .foregroundStyle(.yellow)
                     .font(.title)
+                    .bold()
             }.padding(.horizontal)
             
             Divider()
                 .frame(height: 1)
-                .background(Color.theme.surface)
+                .background(Color.white)
                 .padding(.horizontal)
             
             HStack(alignment: .top) {

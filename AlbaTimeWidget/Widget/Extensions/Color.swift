@@ -6,16 +6,31 @@
 //
 
 import SwiftUI
+import UIKit
 
 extension Color {
     static let theme = Theme()
+
+    static func adaptive(light: UIColor, dark: UIColor) -> Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark ? dark : light
+        })
+    }
 }
 
 struct Theme {
     let primary = Color(hex: "0066FF") // 브랜드 블루
     let accent = Color(hex: "FFB020")  // 급여 강조 (노랑)
-    let textPrimary = Color.black
-    let textSecondary = Color.gray
+    let textPrimary = Color.adaptive(light: .black, dark: .label)
+    let textSecondary = Color.adaptive(light: .gray, dark: .secondaryLabel)
+    let surface = Color.adaptive(
+        light: .white,
+        dark: UIColor(red: 0x12 / 255.0, green: 0x13 / 255.0, blue: 0x18 / 255.0, alpha: 1.0) // #121318
+    )
+    let field = Color.adaptive(
+        light: UIColor.gray.withAlphaComponent(0.08),
+        dark: UIColor(red: 0x1A / 255.0, green: 0x1B / 255.0, blue: 0x20 / 255.0, alpha: 1.0)
+    )
 }
 
 // Hex 코드 지원용 확장

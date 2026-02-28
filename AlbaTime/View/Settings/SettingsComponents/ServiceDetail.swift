@@ -89,7 +89,7 @@ struct ServiceDetail: View {
                     
                 } //:HStack
                 .padding()
-                .background(Color.theme.muted)
+                .background(Color.theme.field)
                 .cornerRadius(20)
             }
        

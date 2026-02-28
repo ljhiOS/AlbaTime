@@ -32,7 +32,7 @@ struct ScheduleImportPresetGroup: View {
                 VStack(spacing: 10) {
                     TextField("타입 이름 (예: 오픈)", text: $sivm.newPresetLabel)
                         .padding(10)
-                        .background(Color.theme.surface)
+                        .background(Color.theme.field)
                         .cornerRadius(6)
                         .overlay(
                             RoundedRectangle(cornerRadius: 6)
@@ -63,7 +63,7 @@ struct ScheduleImportPresetGroup: View {
                     }
                 }
                 .padding(10)
-                .background(Color.theme.field)
+                .background(Color.theme.surface)
                 .cornerRadius(8)
             } else {
                 Button {
@@ -77,13 +77,13 @@ struct ScheduleImportPresetGroup: View {
                     .foregroundStyle(Color.theme.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(10)
-                    .background(Color.theme.subtle)
+                    .background(Color.theme.surface)
                     .cornerRadius(8)
                 }
             }
         }
         .padding(14)
-        .background()
+        .background(Color.theme.field)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.theme.border, lineWidth: 1)

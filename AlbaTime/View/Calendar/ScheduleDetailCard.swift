@@ -98,7 +98,7 @@ struct ScheduleDetailCard: View {
                                     
                                     Text("시급 \(job.hourlyWage.formatted())원")
                                         .font(.caption2)
-                                        .foregroundColor(.gray.opacity(0.8))
+                                        .foregroundColor(Color.theme.textSecondary)
                                 }
                             }
                             .padding()
@@ -113,7 +113,7 @@ struct ScheduleDetailCard: View {
             }
         }
         .padding(24)
-        .background(Color(uiColor: .systemGray6).opacity(0.6))
+        .background(Color.theme.field)
         .cornerRadius(12, antialiased: true)
         .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: -2)
     }
@@ -182,7 +182,7 @@ struct ScheduleDetailCard: View {
     cvm.updateCache(workplaces: [job1, job2])
     
     return ZStack {
-        Color.gray.opacity(0.1).ignoresSafeArea() // 배경색 확인용
+        Color.black // 배경색 확인용
         
         ScheduleDetailCard(cvm: cvm, allWorkplaces: [job1, job2])
     }

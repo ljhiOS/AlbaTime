@@ -24,14 +24,13 @@ struct Theme {
     let textPrimary = Color.adaptive(light: .black, dark: .label)
     let textSecondary = Color.adaptive(light: .gray, dark: .secondaryLabel)
 
-    // Light는 기존 톤 유지, Dark는 요청한 팔레트 적용
     let surface = Color.adaptive(
         light: .white,
         dark: UIColor(red: 0x12 / 255.0, green: 0x13 / 255.0, blue: 0x18 / 255.0, alpha: 1.0) // #121318
     )
     let field = Color.adaptive(
         light: UIColor.gray.withAlphaComponent(0.08),
-        dark: UIColor.systemGray6.withAlphaComponent(0.6)
+        dark: UIColor(red: 0x1A / 255.0, green: 0x1B / 255.0, blue: 0x20 / 255.0, alpha: 1.0)
     )
     let subtle = Color.adaptive(
         light: UIColor.gray.withAlphaComponent(0.05),

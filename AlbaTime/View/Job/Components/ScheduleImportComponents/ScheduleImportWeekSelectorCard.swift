@@ -39,7 +39,7 @@ struct ScheduleImportWeekSelectorCard: View {
                     .font(.caption)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.theme.field)
+                    .background(Color.theme.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
@@ -60,7 +60,7 @@ struct ScheduleImportWeekSelectorCard: View {
                     .lineLimit(1)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.theme.field)
+                    .background(Color.theme.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
 
@@ -79,7 +79,7 @@ struct ScheduleImportWeekSelectorCard: View {
                     .lineLimit(2)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color.theme.field)
+                    .background(Color.theme.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
@@ -90,11 +90,11 @@ struct ScheduleImportWeekSelectorCard: View {
             .font(.subheadline).bold()
             .frame(maxWidth: .infinity)
             .padding(.vertical, 11)
-            .background(Color.theme.field)
+            .background(Color.theme.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .padding(14)
-        .background()
+        .background(Color.theme.field)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.theme.border, lineWidth: 1)

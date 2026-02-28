@@ -23,7 +23,7 @@ struct PresetRow: View {
         }
         .frame(maxWidth: .infinity)
         .padding(10)
-        .background(Color.theme.field)
+        .background(Color.theme.surface)
         .cornerRadius(8)
     }
     

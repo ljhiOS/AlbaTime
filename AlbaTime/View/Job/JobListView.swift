@@ -47,6 +47,8 @@ struct JobListView: View {
                         showTypeSelection = true
                     }
                     .listRowSeparator(.hidden)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 32)
                     
                 } else {
                     List {
@@ -95,10 +97,10 @@ struct JobListView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .background(Color.clear)
+                    .background(Color.theme.surface)
                 }
                 
-            }
+            }.background(Color.theme.surface)
             .confirmationDialog("근무 형태를 선택해주세요", isPresented: $showTypeSelection, titleVisibility: .visible) {
                 Button("요일 고정 알바") {
                     selectedWorkType = .fixed
@@ -148,9 +150,38 @@ struct JobListView: View {
     }
 }
 
-#Preview {
+#Preview("데이터 없음") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, RegularSchedule.self, WorkTimePreset.self, configurations: config)
-    JobListView()
+    let container = try! ModelContainer(
+        for: Workplace.self,
+        RegularSchedule.self,
+        WorkTimePreset.self,
+        configurations: config
+    )
+
+    return JobListView()
+        .modelContainer(container)
+}
+
+#Preview("데이터있음") {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: Workplace.self,
+        RegularSchedule.self,
+        WorkTimePreset.self,
+        configurations: config
+    )
+
+    let sample = Workplace(
+        name: "자울 테스트",
+        hourlyWage: 10320,
+        defaultDays: "월/화/수/목/금",
+        defaultStartTime: Date.makeTime(9, 0),
+        defaultEndTime: Date.makeTime(18, 0),
+        workType: .fixed
+    )
+    container.mainContext.insert(sample)
+
+    return JobListView()
         .modelContainer(container)
 }

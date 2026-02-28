@@ -46,7 +46,7 @@ struct BasicInfoGroup: View {
                         ForEach(TaxType.allCases, id: \.self) { type in Text(type.rawValue).tag(type) }
                     }
                     .pickerStyle(.menu)
-                    .tint(.black)
+                    .tint(Color.theme.textPrimary)
                     .padding(5)
                     .background(Color.theme.field).cornerRadius(8)
                 }
@@ -62,7 +62,7 @@ struct BasicInfoGroup: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .tint(.black)
+                    .tint(Color.theme.textPrimary)
                     .padding(5)
                     .background(Color.theme.field)
                     .cornerRadius(8)

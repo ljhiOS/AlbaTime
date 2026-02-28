@@ -104,7 +104,7 @@ struct HelpView: View {
                             Text("개발자에게 직접 물어보기")
                         }
                         .fontWeight(.medium)
-                        .foregroundStyle(Color.theme.textPrimary)
+                        .foregroundStyle(Color.black)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(uiColor: .systemYellow))
@@ -117,7 +117,7 @@ struct HelpView: View {
         }
         .navigationTitle("도움말")
         .navigationBarTitleDisplayMode(.inline)
-        .background(Color(uiColor: .systemGray6))
+        .background(Color.theme.surface)
     }
     
     // 카카오톡 열기

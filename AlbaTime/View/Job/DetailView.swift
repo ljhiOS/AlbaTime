@@ -49,6 +49,7 @@ struct DetailView: View {
             } //:VStack
         } //:ScrollViewEnd
         .toolbar(.hidden, for: .tabBar)
+        .background(Color.theme.surface)
     }
 }
 

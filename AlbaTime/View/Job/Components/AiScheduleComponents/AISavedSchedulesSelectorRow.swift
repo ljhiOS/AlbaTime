@@ -26,7 +26,7 @@ struct AISavedSchedulesSelectorRow: View {
                 .font(.caption)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(Color.theme.muted)
+                .background(Color.theme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
 
@@ -45,7 +45,7 @@ struct AISavedSchedulesSelectorRow: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(Color.theme.muted)
+                .background(Color.theme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }

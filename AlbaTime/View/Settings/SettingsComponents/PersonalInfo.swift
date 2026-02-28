@@ -77,7 +77,7 @@ struct PersonalInfo: View {
         }
         .navigationTitle("개인정보처리방침")
         .navigationBarTitleDisplayMode(.inline)
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(Color.theme.surface)
     }
 }
 
@@ -98,7 +98,7 @@ struct PolicySectionView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(Color.theme.surface)
+        .background(Color.theme.field)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
     }
@@ -155,7 +155,7 @@ struct ContactSectionView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(Color.theme.surface)
+        .background(Color.theme.field)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
     }

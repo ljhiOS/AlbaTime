@@ -16,7 +16,8 @@ struct ScheduleImportLoadingView: View {
             Text("AI가 '\(targetName.isEmpty ? "전체" : targetName)' 스케줄을 찾는 중...")
                 .foregroundStyle(.secondary)
         }
-        .frame(maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.theme.surface)
     }
 }
 

@@ -26,31 +26,33 @@ struct WidgetView: View {
                     .padding(7)
                     .background(
                         Circle()
-                            .fill(.blue.opacity(0.2))
+                            .fill(Color.theme.field)
                     )
                 
                 Text("다음 근무")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.textSecondary)
             }
             .padding(.bottom, 8)
 
             Text(wvm.workplaceText)
                 .font(.headline)
+                .foregroundStyle(Color.theme.textPrimary)
                 .lineLimit(1)
             
             Text(wvm.primaryTimeText)
                 .font(.system(size: family == .systemSmall ? 28 : 34, weight: .bold))
+                .foregroundStyle(Color.theme.textPrimary)
             
             Text(wvm.scheduleLabelText)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.textSecondary)
                 .lineLimit(1)
             
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(16)
-        .containerBackground(.fill.tertiary, for: .widget)
+        .containerBackground(Color.theme.surface, for: .widget)
     }
 }
 

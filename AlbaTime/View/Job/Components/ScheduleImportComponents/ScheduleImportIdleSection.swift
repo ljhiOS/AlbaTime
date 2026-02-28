@@ -94,12 +94,12 @@ struct ScheduleImportIdleSection: View {
                 .bold()
             TextField("예: 홍길동 (비워두면 전체 인식)", text: $name)
                 .padding(10)
-                .background(Color.theme.field)
+                .background(Color.theme.surface)
                 .cornerRadius(8)
                 .focused(isNameFieldFocused)
         }
         .padding(14)
-        .background()
+        .background(Color.theme.field)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.theme.border, lineWidth: 1)

@@ -16,7 +16,7 @@ struct ScheduleImportEmptyView: View {
             )
         }
         .padding(14)
-        .background()
+        .background(Color.theme.field)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.theme.border, lineWidth: 1)
