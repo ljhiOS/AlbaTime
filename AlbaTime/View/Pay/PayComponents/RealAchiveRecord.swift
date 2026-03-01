@@ -28,26 +28,32 @@ struct RealAchiveRecord: View {
                 )
                 .listRowBackground(Color.theme.field)
             } else {
-                ForEach(records) { record in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("\(String(format: "%d", record.year))년 \(record.month)월")
-                                .font(.headline)
+                Section {
+                    ForEach(records) { record in
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("\(String(format: "%d", record.year))년 \(record.month)월")
+                                    .font(.headline)
+                            }
+
+                            Spacer()
+
+                            Text("₩\((Int(record.actualAmount) ?? 0).formatted())")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.orange)
                         }
-                        
-                        Spacer()
-                        
-                        Text("₩\((Int(record.actualAmount) ?? 0).formatted())")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundStyle(Color.orange)
+                        .padding(.vertical, 4)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.theme.field)
                     }
-                    .padding(.vertical, 4)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                    .listRowBackground(Color.theme.field)
-                }
-                .onDelete { indexSet in
-                    ravm.deleteRecord(at: indexSet, context: modelContext, sortedRecords: records)
+                    .onDelete { indexSet in
+                        ravm.deleteRecord(at: indexSet, context: modelContext, sortedRecords: records)
+                    }
+                } header: {
+                    Text("삭제를 원한다면 좌로 넘기세요.")
+                        .font(.footnote)
+                        .foregroundStyle(Color.theme.textSecondary)
                 }
             }
         }
@@ -61,7 +67,7 @@ struct RealAchiveRecord: View {
                 ravm.isAdding = true
             } label: {
                 Image(systemName: "plus")
-                    .foregroundStyle(Color.theme.primary)
+                    .tint(.black)
             }
         }
         .sheet(isPresented: $ravm.isAdding) {
@@ -106,7 +112,26 @@ struct RealAchiveRecord: View {
     }
 }
 
-#Preview {
+#Preview("데이터 없음") {
     RealAchiveRecord()
         .modelContainer(for: MonthlyRecord.self, inMemory: true)
 }
+
+#Preview("데이터 있음") {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: MonthlyRecord.self, configurations: config)
+
+    let r1 = MonthlyRecord(year: 2026, month: 2, actualAmount: "1240000")
+    let r2 = MonthlyRecord(year: 2026, month: 1, actualAmount: "980000")
+    let r3 = MonthlyRecord(year: 2025, month: 12, actualAmount: "1115000")
+
+    container.mainContext.insert(r1)
+    container.mainContext.insert(r2)
+    container.mainContext.insert(r3)
+
+    return NavigationStack {
+        RealAchiveRecord()
+    }
+    .modelContainer(container)
+}
+

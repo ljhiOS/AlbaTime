@@ -95,7 +95,7 @@ struct FlexibleInfoGroup: View {
                     Spacer()
                     Image(systemName: "wonsign.circle.fill")
                         .font(.largeTitle)
-                        .foregroundStyle(.white.opacity(0.3))
+                        .foregroundStyle(.white)
                 }
                 .padding()
                 .background(
