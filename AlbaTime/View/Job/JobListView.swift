@@ -26,53 +26,35 @@ struct JobListView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            VStack() {
-                HStack {
-                    Text("근무지 목록")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding()
-                    Spacer()
-                }
+        
+        VStack() {
+            HStack {
+                Text("근무지 목록")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding()
+                Spacer()
+            }
+            
+            if workplaces.isEmpty {
+                ContentUnavailableView(
+                    "등록된 알바가 없어요...",
+                    systemImage: "briefcase.fill",
+                    description: Text("하단 버튼을 눌러\n새로운 알바를 추가해주세요!")
+                )
                 
-                if workplaces.isEmpty {
-                    ContentUnavailableView(
-                        "등록된 알바가 없어요...",
-                        systemImage: "briefcase.fill",
-                        description: Text("하단 버튼을 눌러\n새로운 알바를 추가해주세요!")
-                    )
-                    
-                    PlusButton {
-                        showTypeSelection = true
-                    }
-                    .listRowSeparator(.hidden)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 32)
-                    
-                } else {
-                    List {
-                        if !pinnedJobs.isEmpty {
-                            Section(header: Label("고정됨", systemImage: "pin.fill")) {
-                                ForEach(pinnedJobs) { job in
-                                    WorkCard(job: job, onDelete: {
-                                        deleteWorkCard(job)
-                                    }, onPin: {
-                                        togglePin(job)
-                                    }, onShowDetail: {
-                                        selectedDetailJob = job
-                                    }, onShowEdit: {
-                                        selectedEditJob = job
-                                    })
-                                    .listRowSeparator(.hidden)
-                                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                                    .listRowBackground(Color.clear)
-                                }
-                            }
-                        }
-                        
-                        Section {
-                            ForEach(normalJobs) { job in
+                PlusButton {
+                    showTypeSelection = true
+                }
+                .listRowSeparator(.hidden)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 32)
+                
+            } else {
+                List {
+                    if !pinnedJobs.isEmpty {
+                        Section(header: Label("고정됨", systemImage: "pin.fill")) {
+                            ForEach(pinnedJobs) { job in
                                 WorkCard(job: job, onDelete: {
                                     deleteWorkCard(job)
                                 }, onPin: {
@@ -87,42 +69,60 @@ struct JobListView: View {
                                 .listRowBackground(Color.clear)
                             }
                         }
-                        
-                        PlusButton {
-                            showTypeSelection = true
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 16))
-                        .listRowBackground(Color.clear)
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.theme.surface)
+                    
+                    Section {
+                        ForEach(normalJobs) { job in
+                            WorkCard(job: job, onDelete: {
+                                deleteWorkCard(job)
+                            }, onPin: {
+                                togglePin(job)
+                            }, onShowDetail: {
+                                selectedDetailJob = job
+                            }, onShowEdit: {
+                                selectedEditJob = job
+                            })
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowBackground(Color.clear)
+                        }
+                    }
+                    
+                    PlusButton {
+                        showTypeSelection = true
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 16))
+                    .listRowBackground(Color.clear)
                 }
-                
-            }.background(Color.theme.surface)
-            .confirmationDialog("근무 형태를 선택해주세요", isPresented: $showTypeSelection, titleVisibility: .visible) {
-                Button("요일 고정 알바") {
-                    selectedWorkType = .fixed
-                }
-                Button("자율/횟수 중심 알바") {
-                    selectedWorkType = .flexible
-                }
-                Button("취소", role: .cancel) {}
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .background(Color.theme.surface)
             }
-            .navigationDestination(item: $selectedWorkType) { type in
-                AddJobView(stateName: "알바 등록", selectedType: type)
+            
+        }
+        .background(Color.theme.surface)
+        .confirmationDialog("근무 형태를 선택해주세요", isPresented: $showTypeSelection, titleVisibility: .visible) {
+            Button("요일 고정 알바") {
+                selectedWorkType = .fixed
             }
-            .navigationDestination(item: $selectedDetailJob) { job in
-                DetailView(job: job)
+            Button("자율/횟수 중심 알바") {
+                selectedWorkType = .flexible
             }
-            .navigationDestination(item: $selectedEditJob) { job in
-                AddJobView(job: job)
-            }
-            .onAppear {
-                selectedWorkType = nil
-                NextShiftSyncService.sync(workplaces: workplaces)
-            }
+            Button("취소", role: .cancel) {}
+        }
+        .navigationDestination(item: $selectedWorkType) { type in
+            AddJobView(stateName: "알바 등록", selectedType: type)
+        }
+        .navigationDestination(item: $selectedDetailJob) { job in
+            DetailView(job: job)
+        }
+        .navigationDestination(item: $selectedEditJob) { job in
+            AddJobView(job: job)
+        }
+        .onAppear {
+            selectedWorkType = nil
+            NextShiftSyncService.sync(workplaces: workplaces)
         }
     }
     

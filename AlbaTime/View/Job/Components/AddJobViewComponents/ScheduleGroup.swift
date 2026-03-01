@@ -129,8 +129,7 @@ struct ScheduleGroup: View {
         let hasSchedule = ajvm.getSchedule(for: day) != nil
         guard hasSchedule else { return }
 
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+        Haptics.impact(.medium)
 
         ajvm.toggleDay(day, context: context)
         if selectedDay == day {

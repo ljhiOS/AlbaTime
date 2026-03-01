@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import UIKit
 
 // 선택된 주차의 스케줄을 "한 장의 카드"에서 요일 전환하며 편집한다.
 // 월~일 칩 선택, 시작/종료 시간 수정, 롱프레스 삭제 UX를 담당한다.
@@ -188,8 +187,7 @@ struct AISavedWeekSingleCard: View {
             return
         }
 
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+        Haptics.impact(.medium)
         suppressNextTap = true
 
         modelContext.delete(target)

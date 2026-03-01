@@ -67,8 +67,7 @@ struct WorkCard: View {
                                     job.isAlarmEnabled.toggle()
                                     NotificationManager.shared.refreshNotifications(for: job)
                                     try? job.modelContext?.save()
-                                    let generator = UIImpactFeedbackGenerator(style: .medium)
-                                    generator.impactOccurred()
+                                    Haptics.impact(.medium)
                                 } label: {
                                     Label(job.isAlarmEnabled ? "알람 해제" : "알람 허용", systemImage: job.isAlarmEnabled ? "bell.slash" : "bell")
                                 }

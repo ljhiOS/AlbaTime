@@ -13,6 +13,7 @@ struct PayCard: View {
     var expectedPay: Int
     var totalHours: Double
     var averageWage: Int
+    var onToggle: (() -> Void)? = nil
     
     @State private var showExpected: Bool = false
     @State private var headerOffsetY: CGFloat = 0
@@ -80,6 +81,7 @@ struct PayCard: View {
     private func bounceHeaderAndToggleValue() {
         guard !isAnimating else { return }
         isAnimating = true
+        Haptics.impact(.light)
         
         withAnimation(.easeIn(duration: 0.14)) {
             headerOffsetY = 10
@@ -87,6 +89,7 @@ struct PayCard: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
             showExpected.toggle()
+            onToggle?()
 
             withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                 headerOffsetY = 0
