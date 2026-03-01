@@ -20,7 +20,7 @@ struct PersonalInfo: View {
                         .foregroundStyle(.blue)
                         .padding(.bottom, 4)
                     
-                    Text("AlbaTime\n개인정보처리방침")
+                    Text("알바타임\n개인정보처리방침")
                         .font(.title2)
                         .fontWeight(.bold)
                         .multilineTextAlignment(.center)
@@ -38,7 +38,7 @@ struct PersonalInfo: View {
                     // 서문
                     PolicySectionView(
                         title: "개요",
-                        content: "'AlbaTime'(이하 '본 앱')은 사용자의 개인정보를 소중히 여기며, 『개인정보 보호법』 등 관련 법령을 준수합니다. 본 앱은 별도의 서버를 운영하지 않으며, 사용자의 기기에 저장된 데이터를 외부로 전송하거나 수집하지 않습니다."
+                        content: "'알바타임'(이하 '본 앱')은 사용자의 개인정보를 소중히 여기며, 『개인정보 보호법』 등 관련 법령을 준수합니다. 본 앱은 별도의 서버를 운영하지 않으며, 사용자의 기기에 저장된 데이터를 외부로 전송하거나 수집하지 않습니다."
                     )
                     
                     // 1. 수집 항목

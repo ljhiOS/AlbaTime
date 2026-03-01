@@ -41,7 +41,7 @@ struct AppInfo: View {
                         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                     
                     VStack(spacing: 6) {
-                        Text("AlbaTime")
+                        Text("알바타임")
                             .font(.title)
                             .fontWeight(.bold)
                         
@@ -80,13 +80,13 @@ struct AppInfo: View {
                 
                 // 3. 하단 저작권 표시
                 VStack {
-                    Text("AlbaTime")
+                    Text("알바타임")
                         .font(.headline)
                         .foregroundColor(.secondary)
                     Text("알바생 맞춤 출퇴근 스케줄러 & 급여계산기")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("Copyright © 2026 AlbaTime.\nAll rights reserved.")
+                    Text("Copyright © 2026 알바타임.\nAll rights reserved.")
                         .font(.caption)
                         .foregroundColor(.gray.opacity(0.6))
                         .multilineTextAlignment(.center)

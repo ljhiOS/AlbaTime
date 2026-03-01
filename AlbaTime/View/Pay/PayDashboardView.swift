@@ -54,7 +54,8 @@ struct PayDashboardView: View {
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                             .shadow(color: .black.opacity(0.14), radius: 8, x: 0, y: 4)
-                            .offset(x: 12, y: -2)
+                            .padding(.top, 6)
+                            .padding(.trailing, 6)
                             .transition(.move(edge: .top).combined(with: .opacity))
                             .onTapGesture {
                                 withAnimation(.easeInOut(duration: 0.2)) {

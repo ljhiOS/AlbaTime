@@ -82,7 +82,7 @@ struct PayCard: View {
         guard !isAnimating else { return }
         isAnimating = true
         Haptics.impact(.light)
-        
+
         withAnimation(.easeIn(duration: 0.14)) {
             headerOffsetY = 10
         }
@@ -94,7 +94,7 @@ struct PayCard: View {
             withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                 headerOffsetY = 0
             }
-
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 isAnimating = false
             }

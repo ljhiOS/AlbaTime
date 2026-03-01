@@ -30,13 +30,13 @@ struct SettingView: View {
             
             VStack(alignment: .center) {
                 
-                Text("AlbaTime")
+                Text("알바타임")
                     .font(.headline)
                     .foregroundColor(.secondary)
                 Text("알바생 맞춤 출퇴근 스케줄러 & 급여계산기")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("Copyright © 2026 AlbaTime.\nAll rights reserved.")
+                Text("Copyright © 2026 알바타임.\nAll rights reserved.")
                     .font(.caption)
                     .foregroundColor(.gray.opacity(0.6))
                     .multilineTextAlignment(.center)
