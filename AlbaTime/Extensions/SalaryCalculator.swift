@@ -148,6 +148,15 @@ struct SalaryCalculator {
                     if !recordedDates.contains(calendar.startOfDay(for: currentDate)) {
                         let weekday = currentDate.koreanWeekday
                         
+                        if job.hasAIOverrideInWeek(containing: currentDate) {
+                            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
+                                break
+                            }
+                            currentDate = nextDate
+                            continue
+                        }
+                        
+                        
                         // 요일별 상세 설정
                         if let regular = job.regularSchedules.first(where: { $0.dayOfWeek == weekday }) {
                             let hours = calculateWorkingHours(

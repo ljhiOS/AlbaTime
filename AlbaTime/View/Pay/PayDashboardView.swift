@@ -22,6 +22,7 @@ struct PayDashboardView: View {
                 
                 PayCard(
                     totalPay: pvm.salaryData.totalPay,
+                    expectedPay: pvm.projectedSalaryData.totalPay,
                     totalHours: pvm.salaryData.totalHours,
                     averageWage: pvm.averageWage
                 )

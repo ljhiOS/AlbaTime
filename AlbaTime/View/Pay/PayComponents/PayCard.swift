@@ -10,23 +10,30 @@ import SwiftUI
 struct PayCard: View {
     
     var totalPay: Int
+    var expectedPay: Int
     var totalHours: Double
     var averageWage: Int
+    
+    @State private var showExpected: Bool = false
+    @State private var headerOffsetY: CGFloat = 0
+    @State private var isAnimating: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
             
             VStack(alignment: .leading) {
-                Text("이번 달 누적 급여")
+                Text(showExpected ? "이번 달 예상 급여" : "이번 달 누적 급여")
                     .font(.subheadline)
                     .foregroundStyle(.white)
                     .padding(.top)
             
-                Text("\(totalPay.formatted())원")
+                Text("\((showExpected ? expectedPay : totalPay).formatted())원")
                     .foregroundStyle(.yellow)
                     .font(.title)
                     .bold()
-            }.padding(.horizontal)
+            }
+            .padding(.horizontal)
+            .offset(y: headerOffsetY)
             
             Divider()
                 .frame(height: 1)
@@ -60,15 +67,42 @@ struct PayCard: View {
                 
                 Spacer()
             }.padding()
-        }.background(Color.theme.primary)
-            .frame(maxWidth: .infinity)
-            .cornerRadius(20)
+        }
+        .background(Color.theme.primary)
+        .frame(maxWidth: .infinity)
+        .cornerRadius(20)
+        .contentShape(RoundedRectangle(cornerRadius: 20))
+        .onTapGesture {
+            bounceHeaderAndToggleValue()
+        }
+    }
+
+    private func bounceHeaderAndToggleValue() {
+        guard !isAnimating else { return }
+        isAnimating = true
+        
+        withAnimation(.easeIn(duration: 0.14)) {
+            headerOffsetY = 10
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
+            showExpected.toggle()
+
+            withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
+                headerOffsetY = 0
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                isAnimating = false
+            }
+        }
     }
 }
 
 #Preview {
     PayCard(
         totalPay: 1143220,    // 임시 급여 데이터
+        expectedPay: 115000,
         totalHours: 108.5,    // 임시 시간 데이터
         averageWage: 10530    // 임시 평균 시급
     )

@@ -15,20 +15,27 @@ class PayViewModel: ObservableObject {
     
     // MARK: - Output
     @Published var salaryData: SalaryBreakdown = .empty
+    @Published var projectedSalaryData: SalaryBreakdown = .empty
     @Published var averageWage: Int = 0
     
     // MARK: - Logic
     func updateData(workplaces: [Workplace]) {
-        let breakdown = SalaryCalculator.calculateAccruedMonthlyPay(
+        let accrued = SalaryCalculator.calculateAccruedMonthlyPay(
             workplaces: workplaces,
             targetMonth: currentMonth,
             asOf: Date()
         )
         
-        self.salaryData = breakdown
+        let projected = SalaryCalculator.calculateTotalMonthlyPay(
+            workplaces: workplaces,
+            targetMonth: currentMonth
+        )
+        
+        self.salaryData = accrued
+        self.projectedSalaryData = projected
         self.averageWage = SalaryCalculator.calculateAverageWage(
-            basicPay: breakdown.basicPay,
-            totalHours: breakdown.totalHours
+            basicPay: accrued.basicPay,
+            totalHours: accrued.totalHours
         )
     }
 }
