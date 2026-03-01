@@ -5,6 +5,21 @@ class NotificationManager {
     static let shared = NotificationManager()
     private let appAlarmKey = "isAppAlarmOn"
     
+    private struct WorkplaceNotificationSnapshot {
+        struct FixedEntry {
+            let weekday: Int
+            let hour: Int
+            let minute: Int
+        }
+        
+        let id: String
+        let name: String
+        let workType: WorkType
+        let isAlarmEnabled: Bool
+        let fixedEntries: [FixedEntry]
+        let upcomingStartTimes: [Date]
+    }
+
     private var isAppAlarmEnabled: Bool {
         let defaults = UserDefaults.standard
         if defaults.object(forKey: appAlarmKey) == nil {
@@ -27,47 +42,53 @@ class NotificationManager {
     
     // 출근 15분 전 알림 스케줄
     func scheduleWorkNotification(for workplace: Workplace) {
+        let snapshot = makeSnapshot(from: workplace)
+        scheduleWorkNotification(using: snapshot)
+    }
+    
+    private func scheduleWorkNotification(using snapshot: WorkplaceNotificationSnapshot) {
         let center = UNUserNotificationCenter.current()
         
         guard isAppAlarmEnabled else {
-            print("앱 알림이 꺼져있어 \(workplace.name) 알람을 등록하지 않습니다.")
+            print("앱 알림이 꺼져있어 \(snapshot.name) 알람을 등록하지 않습니다.")
             return
         }
         
-        guard workplace.isAlarmEnabled else {
-            print("근무지 알림이 꺼져있어 \(workplace.name) 알람을 등록하지 않습니다.")
+        guard snapshot.isAlarmEnabled else {
+            print("근무지 알림이 꺼져있어 \(snapshot.name) 알람을 등록하지 않습니다.")
             return
         }
         
-        center.getNotificationSettings { settings in
+        center.getNotificationSettings { [weak self, snapshot] settings in
             let allowed: Set<UNAuthorizationStatus> = [.authorized, .provisional, .ephemeral]
             guard allowed.contains(settings.authorizationStatus) else {
                 print("시스템 알림 권한 미허용 상태:", settings.authorizationStatus.rawValue)
                 return
             }
+            guard let self else { return }
             
-            if workplace.workType == .flexible {
-                self.scheduleFlexibleNotifications(for: workplace, center: center)
+            if snapshot.workType == .flexible {
+                self.scheduleFlexibleNotifications(using: snapshot, center: center)
             } else {
-                self.scheduleFixedNotifications(for: workplace, center: center)
+                self.scheduleFixedNotifications(using: snapshot, center: center)
             }
         }
     }
     
     func refreshNotifications(for workplace: Workplace) {
-        removeNotifications(for: workplace) { [weak self] in
-            self?.scheduleWorkNotification(for: workplace)
+        let snapshot = makeSnapshot(from: workplace)
+        removeNotifications(prefix: "\(snapshot.id)_") { [weak self] in
+            self?.scheduleWorkNotification(using: snapshot)
         }
     }
     
-    private func scheduleFixedNotifications(for workplace: Workplace, center: UNUserNotificationCenter) {
-        let entries = fixedScheduleEntries(for: workplace)
-        guard !entries.isEmpty else {
-            print("등록 가능한 고정 스케줄이 없어 알림을 건너뜁니다. workplace=\(workplace.name)")
+    private func scheduleFixedNotifications(using snapshot: WorkplaceNotificationSnapshot, center: UNUserNotificationCenter) {
+        guard !snapshot.fixedEntries.isEmpty else {
+            print("등록 가능한 고정 스케줄이 없어 알림을 건너뜁니다. workplace=\(snapshot.name)")
             return
         }
         
-        for entry in entries {
+        for entry in snapshot.fixedEntries {
             var triggerWeekday = entry.weekday
             var totalMinutes = (entry.hour * 60 + entry.minute) - 15
             if totalMinutes < 0 {
@@ -84,8 +105,8 @@ class NotificationManager {
             
             let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: true)
             let request = UNNotificationRequest(
-                identifier: "\(workplace.id.uuidString)_fixed_\(triggerWeekday)_\(triggerHour)_\(triggerMinute)",
-                content: makeContent(workplaceName: workplace.name),
+                identifier: "\(snapshot.id)_fixed_\(triggerWeekday)_\(triggerHour)_\(triggerMinute)",
+                content: makeContent(workplaceName: snapshot.name),
                 trigger: trigger
             )
             
@@ -97,28 +118,28 @@ class NotificationManager {
         }
     }
     
-    private func scheduleFlexibleNotifications(for workplace: Workplace, center: UNUserNotificationCenter) {
+    private func scheduleFlexibleNotifications(using snapshot: WorkplaceNotificationSnapshot, center: UNUserNotificationCenter) {
         let calendar = Calendar.current
         let now = Date()
         
-        let upcomingSchedules = workplace.workSchedules
-            .filter { $0.startTime > now }
+        let upcomingSchedules = snapshot.upcomingStartTimes
+            .filter { $0 > now }
         
         guard !upcomingSchedules.isEmpty else {
-            print("다가오는 자율 근무 스케줄이 없어 알림을 건너뜁니다. workplace=\(workplace.name)")
+            print("다가오는 자율 근무 스케줄이 없어 알림을 건너뜁니다. workplace=\(snapshot.name)")
             return
         }
         
-        for schedule in upcomingSchedules {
-            guard let triggerDate = calendar.date(byAdding: .minute, value: -15, to: schedule.startTime),
+        for startTime in upcomingSchedules {
+            guard let triggerDate = calendar.date(byAdding: .minute, value: -15, to: startTime),
                   triggerDate > now else { continue }
             
             let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
             
             let request = UNNotificationRequest(
-                identifier: "\(workplace.id.uuidString)_shift_\(Int(schedule.startTime.timeIntervalSince1970))",
-                content: makeContent(workplaceName: workplace.name),
+                identifier: "\(snapshot.id)_shift_\(Int(startTime.timeIntervalSince1970))",
+                content: makeContent(workplaceName: snapshot.name),
                 trigger: trigger
             )
             
@@ -163,12 +184,11 @@ class NotificationManager {
     
     // 기존 알림 삭제
     func removeNotifications(for workplace: Workplace) {
-        removeNotifications(for: workplace, completion: nil)
+        removeNotifications(prefix: "\(workplace.id.uuidString)_", completion: nil)
     }
     
-    private func removeNotifications(for workplace: Workplace, completion: (() -> Void)?) {
+    private func removeNotifications(prefix: String, completion: (() -> Void)?) {
         let center = UNUserNotificationCenter.current()
-        let prefix = "\(workplace.id.uuidString)_"
         
         center.getPendingNotificationRequests { requests in
             let identifiers = requests
@@ -180,6 +200,47 @@ class NotificationManager {
             }
             completion?()
         }
+    }
+    
+    private func makeSnapshot(from workplace: Workplace) -> WorkplaceNotificationSnapshot {
+        let calendar = Calendar.current
+        let weekdayMap: [String: Int] = ["일": 1, "월": 2, "화": 3, "수": 4, "목": 5, "금": 6, "토": 7]
+        
+        let fixedEntries: [WorkplaceNotificationSnapshot.FixedEntry]
+        if !workplace.regularSchedules.isEmpty {
+            fixedEntries = workplace.regularSchedules.compactMap { schedule in
+                guard let weekday = weekdayMap[schedule.dayOfWeek] else { return nil }
+                let time = calendar.dateComponents([.hour, .minute], from: schedule.startTime)
+                return WorkplaceNotificationSnapshot.FixedEntry(
+                    weekday: weekday,
+                    hour: time.hour ?? 9,
+                    minute: time.minute ?? 0
+                )
+            }
+        } else {
+            let tokens = workplace.defaultDays
+                .components(separatedBy: CharacterSet(charactersIn: ",/ "))
+                .filter { !$0.isEmpty }
+            
+            fixedEntries = tokens.compactMap { day in
+                guard let weekday = weekdayMap[day] else { return nil }
+                let time = calendar.dateComponents([.hour, .minute], from: workplace.defaultStartTime)
+                return WorkplaceNotificationSnapshot.FixedEntry(
+                    weekday: weekday,
+                    hour: time.hour ?? 9,
+                    minute: time.minute ?? 0
+                )
+            }
+        }
+        
+        return WorkplaceNotificationSnapshot(
+            id: workplace.id.uuidString,
+            name: workplace.name,
+            workType: workplace.workType,
+            isAlarmEnabled: workplace.isAlarmEnabled,
+            fixedEntries: fixedEntries,
+            upcomingStartTimes: workplace.workSchedules.map(\.startTime)
+        )
     }
     
     // 모든 알람 허용 X
