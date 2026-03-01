@@ -11,6 +11,8 @@ import SwiftData
 struct EtcGroup: View {
     @Bindable var job: Workplace
     
+    let focusedField: FocusState<AddJobField?>.Binding
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 30) {
             VStack(alignment: .leading) {
@@ -23,6 +25,8 @@ struct EtcGroup: View {
                         .background(Color.theme.field)
                         .cornerRadius(8)
                         .padding(.trailing)
+                        .focused(focusedField, equals: .restTime)
+
                     Text("분")
                         .font(.system(size: 18))
                         .foregroundStyle(Color.theme.textPrimary)
@@ -34,16 +38,20 @@ struct EtcGroup: View {
             Divider()
             
             VStack(alignment: .leading) {
-                Text("메모 (선택)").font(.callout)
+                Text("메모 (선택)")
+                    .font(.callout)
                 TextField("특이사항 입력", text: Binding(
                     get: { job.defaultMemo ?? "" },
                     set: { job.defaultMemo = $0 }
                 ), axis: .vertical
                 )
-                    .padding(10)
-                    .padding(.bottom, 100)
-                    .background(Color.theme.field)
-                    .cornerRadius(8)
+                .padding(10)
+                .padding(.bottom, 100)
+                .background(Color.theme.field)
+                .cornerRadius(8)
+                .focused(focusedField, equals: .memo)
+                .submitLabel(.done)
+
             }
         }
     }
@@ -52,7 +60,7 @@ struct EtcGroup: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: Workplace.self, configurations: config)
-    
+
     let sampleJob = Workplace(
         name: "스타벅스",
         hourlyWage: 10000,
@@ -62,7 +70,17 @@ struct EtcGroup: View {
         defaultRestTime: 60,
         defaultMemo: "사장님이 화요일에 오심"
     )
-    
-    return EtcGroup(job: sampleJob)
+
+    EtcGroupPreviewWrapper(job: sampleJob)
         .modelContainer(container)
 }
+
+private struct EtcGroupPreviewWrapper: View {
+    let job: Workplace
+    @FocusState private var focusedField: AddJobField?
+
+    var body: some View {
+        EtcGroup(job: job, focusedField: $focusedField)
+    }
+}
+

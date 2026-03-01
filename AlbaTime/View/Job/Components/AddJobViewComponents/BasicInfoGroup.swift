@@ -11,6 +11,8 @@ import SwiftData
 struct BasicInfoGroup: View {
     @Bindable var job: Workplace
     
+    let focusedField: FocusState<AddJobField?>.Binding
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 30) {
             VStack(alignment: .leading) {
@@ -19,6 +21,9 @@ struct BasicInfoGroup: View {
                     .padding(10)
                     .background(Color.theme.field)
                     .cornerRadius(8)
+                    .focused(focusedField, equals: .name)
+                    .submitLabel(.next)
+
             }
             VStack(alignment: .leading) {
                 Text("시급")
@@ -35,6 +40,7 @@ struct BasicInfoGroup: View {
                     .padding(10)
                     .background(Color.theme.field)
                     .cornerRadius(8)
+                    .focused(focusedField, equals: .wage)
                 
             }
             
@@ -73,11 +79,9 @@ struct BasicInfoGroup: View {
 }
 
 #Preview {
-    // 1. 가상 DB 컨테이너 생성
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: Workplace.self, configurations: config)
-    
-    // 2. 샘플 데이터 생성
+
     let sampleJob = Workplace(
         name: "GS25 강남점",
         hourlyWage: 10300,
@@ -85,8 +89,17 @@ struct BasicInfoGroup: View {
         defaultStartTime: Date(),
         defaultEndTime: Date()
     )
-    
-    // 3. 뷰 리턴
-    return BasicInfoGroup(job: sampleJob)
+
+    PreviewWrapper(job: sampleJob)
         .modelContainer(container)
 }
+
+private struct PreviewWrapper: View {
+    let job: Workplace
+    @FocusState private var focusedField: AddJobField?
+
+    var body: some View {
+        BasicInfoGroup(job: job, focusedField: $focusedField)
+    }
+}
+

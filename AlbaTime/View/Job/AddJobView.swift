@@ -15,6 +15,11 @@ struct AddJobView: View {
     
     var stateName: String
     
+    @FocusState private var focusedField: AddJobField?
+    private let keyboardNav = KeyboardUX.Navigator<AddJobField>(
+        orderedFields: [.name, .wage, .restTime, .memo]
+    )
+    
     // job을 받을 수 있도록 생성자(init)를 수정해야 합니다.
     init(stateName: String = "근무지 등록", job: Workplace? = nil, selectedType: WorkType? = nil) {
         
@@ -34,7 +39,7 @@ struct AddJobView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
 
-                BasicInfoGroup(job: ajvm.job)
+                BasicInfoGroup(job: ajvm.job, focusedField: $focusedField)
                     .padding(.horizontal)
                 
                 Divider().padding(.horizontal)
@@ -50,7 +55,7 @@ struct AddJobView: View {
 
                 Divider().padding(.horizontal)
 
-                EtcGroup(job: ajvm.job)
+                EtcGroup(job: ajvm.job, focusedField: $focusedField)
                     .padding(.horizontal)
                 
                 Spacer()
@@ -73,15 +78,43 @@ struct AddJobView: View {
                         .cornerRadius(20)
                 }
             }
+            ToolbarItemGroup(placement: .keyboard) {
+                Button {
+                    focusedField = keyboardNav.previous(from: focusedField)
+                } label: {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .disabled(!keyboardNav.canMovePrevious(from: focusedField))
+                
+                Button {
+                    focusedField = keyboardNav.next(from: focusedField)
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .disabled(!keyboardNav.canMoveNext(from: focusedField))
+                
+                Spacer(minLength: 8)
+                
+                Button {
+                    focusedField = nil
+                } label: {
+                    Text("완료")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+            }
         }
         .navigationTitle(stateName)
         .navigationDestination(isPresented: $ajvm.isAIImportPresented) {
             ScheduleImportView(targetJob: ajvm.job)
         }
         .safeAreaInset(edge: .bottom) {
-            BottomButton(title: "저장하기", action: {
-                if ajvm.saveJob(context: modelContext) { dismiss() }
-            })
+            if focusedField == nil {
+                BottomButton(title: "저장하기", action: {
+                    if ajvm.saveJob(context: modelContext) { dismiss() }
+                })
+            }
         }
         .alert("알림", isPresented: $ajvm.showAlert) {
             Button("확인", role: .cancel) {}
