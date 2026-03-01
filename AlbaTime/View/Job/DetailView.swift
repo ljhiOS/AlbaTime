@@ -24,14 +24,6 @@ struct DetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
-                HStack {
-                    Text("상세보기")
-                        .font(.title)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                } //:HStack
-                .padding()
                 
                 WorkCardDetail(job: job, hours: salaryData.totalHours)
                     .padding(.horizontal, 30)
@@ -50,6 +42,7 @@ struct DetailView: View {
         } //:ScrollViewEnd
         .toolbar(.hidden, for: .tabBar)
         .background(Color.theme.surface)
+        .navigationTitle("상세보기")
     }
 }
 

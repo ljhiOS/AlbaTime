@@ -16,11 +16,11 @@ struct AddJobView: View {
     var stateName: String
     
     // job을 받을 수 있도록 생성자(init)를 수정해야 합니다.
-    init(stateName: String = "알바 등록", job: Workplace? = nil, selectedType: WorkType? = nil) {
+    init(stateName: String = "근무지 등록", job: Workplace? = nil, selectedType: WorkType? = nil) {
         
         if let existingJob = job {
             // [A] 수정 모드: job이 들어오면 '수정용' 뷰모델 생성
-            self.stateName = "알바 수정"
+            self.stateName = "근무지 수정"
             _ajvm = StateObject(wrappedValue: AddJobViewModel(editingJob: existingJob))
         } else {
             // [B] 신규 모드: job이 없으면 '신규 생성용' 뷰모델 생성

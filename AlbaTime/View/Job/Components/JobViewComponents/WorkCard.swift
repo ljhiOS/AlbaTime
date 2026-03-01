@@ -126,7 +126,7 @@ struct WorkCard: View {
         .padding(20)
         .background(cardBackgroundColor)
         .cornerRadius(16)
-        .shadow(color: .black.opacity(0.088), radius: 10, x: 0, y: 4)
+        .shadow(color: .black.opacity(0.088), radius: 10, x: 0, y: 7)
     }
         
     // MARK: - Logic (스케줄 텍스트 표시)
