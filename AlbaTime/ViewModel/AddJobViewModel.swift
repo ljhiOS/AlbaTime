@@ -16,6 +16,29 @@ import SwiftUI
 // 향후 코드 확장시 발생가능한 스레드 안전성 실수 방지 및 뷰와 데이터 바인딩과정에서 발생할수있는 버그 컴파일타임에 차단
 class AddJobViewModel: ObservableObject {
     
+    private struct RegularScheduleBackup {
+        let dayOfWeek: String
+        let startTime: Date
+        let endTime: Date
+        let breakTime: Int
+    }
+    
+    private struct JobEditBackup {
+        let name: String
+        let hourlyWage: Int
+        let defaultDays: String
+        let defaultStartTime: Date
+        let defaultEndTime: Date
+        let defaultMemo: String?
+        let defaultRestTime: Int?
+        let taxTypeRaw: String
+        let allowanceTypeRaw: String
+        let workTypeRaw: String
+        let targetWeeklyCount: Int?
+        let expectedDailyHours: Double?
+        let regularSchedules: [RegularScheduleBackup]
+    }
+    
     @Published var job: Workplace
     
     // UI 상태 // @MainActor 속성 선언 필요
@@ -28,6 +51,10 @@ class AddJobViewModel: ObservableObject {
     @Published var expectedDailyHours: Double = 5.0
     
     private let initialDefaultRestTime: Int?
+    
+    private let isEditingExistingJob: Bool
+    private let originalJobBackup: JobEditBackup?
+    private var hasSavedChanges: Bool = false
     
     let days = ["월", "화", "수", "목", "금", "토", "일"]
     
@@ -51,14 +78,41 @@ class AddJobViewModel: ObservableObject {
             self.expectedDailyHours = 5.0
         }
         self.initialDefaultRestTime = nil
+        
+        self.isEditingExistingJob = false
+        self.originalJobBackup = nil
     }
     
     // 수정 모드
     init(editingJob: Workplace) {
-        self.job = editingJob // 기존 객체를 그대로 사용
+        self.job = editingJob
         self.initialDefaultRestTime = editingJob.defaultRestTime
         
-        // 저장되어 있던 자율 근무 설정값을 UI 변수로 가져옴
+        // 추가
+        self.isEditingExistingJob = true
+        self.originalJobBackup = JobEditBackup(
+            name: editingJob.name,
+            hourlyWage: editingJob.hourlyWage,
+            defaultDays: editingJob.defaultDays,
+            defaultStartTime: editingJob.defaultStartTime,
+            defaultEndTime: editingJob.defaultEndTime,
+            defaultMemo: editingJob.defaultMemo,
+            defaultRestTime: editingJob.defaultRestTime,
+            taxTypeRaw: editingJob.taxTypeRaw,
+            allowanceTypeRaw: editingJob.allowanceTypeRaw,
+            workTypeRaw: editingJob.workTypeRaw,
+            targetWeeklyCount: editingJob.targetWeeklyCount,
+            expectedDailyHours: editingJob.expectedDailyHours,
+            regularSchedules: editingJob.regularSchedules.map {
+                RegularScheduleBackup(
+                    dayOfWeek: $0.dayOfWeek,
+                    startTime: $0.startTime,
+                    endTime: $0.endTime,
+                    breakTime: $0.breakTime
+                )
+            }
+        )
+        
         if editingJob.workType == .flexible {
             self.targetWeeklyCount = editingJob.targetWeeklyCount ?? 3
             self.expectedDailyHours = editingJob.expectedDailyHours ?? 5.0
@@ -219,6 +273,7 @@ class AddJobViewModel: ObservableObject {
         // 4. 최종 저장
         do {
             try context.save()
+            hasSavedChanges = true
             let workplaces = try context.fetch(FetchDescriptor<Workplace>())
             NextShiftSyncService.sync(workplaces: workplaces)
             return true
@@ -228,5 +283,52 @@ class AddJobViewModel: ObservableObject {
             showAlert = true
             return false
         }
+    }
+
+    // 수정 모드에서 저장 없이 화면을 나가면 원본값으로 되돌린다.
+    // AI 스케줄 화면으로 push 될 때는 AddJob 화면이 사라져도 복원하지 않는다.
+    func restoreEditsIfNeeded(context: ModelContext) {
+        guard isEditingExistingJob else { return }
+        guard !hasSavedChanges else { return }
+        guard !isAIImportPresented else { return }
+        guard let backup = originalJobBackup else { return }
+
+        job.name = backup.name
+        job.hourlyWage = backup.hourlyWage
+        job.defaultDays = backup.defaultDays
+        job.defaultStartTime = backup.defaultStartTime
+        job.defaultEndTime = backup.defaultEndTime
+        job.defaultMemo = backup.defaultMemo
+        job.defaultRestTime = backup.defaultRestTime
+        job.taxTypeRaw = backup.taxTypeRaw
+        job.allowanceTypeRaw = backup.allowanceTypeRaw
+        job.workTypeRaw = backup.workTypeRaw
+        job.targetWeeklyCount = backup.targetWeeklyCount
+        job.expectedDailyHours = backup.expectedDailyHours
+
+        targetWeeklyCount = backup.targetWeeklyCount ?? 3
+        expectedDailyHours = backup.expectedDailyHours ?? 5.0
+
+        let existingSchedules = job.regularSchedules
+        job.regularSchedules.removeAll()
+        for schedule in existingSchedules where schedule.modelContext != nil {
+            context.delete(schedule)
+        }
+
+        for item in backup.regularSchedules {
+            let schedule = RegularSchedule(
+                dayOfWeek: item.dayOfWeek,
+                startTime: item.startTime,
+                endTime: item.endTime,
+                breakTime: item.breakTime
+            )
+            schedule.workplace = job
+            job.regularSchedules.append(schedule)
+            if job.modelContext != nil {
+                context.insert(schedule)
+            }
+        }
+
+        try? context.save()
     }
 }

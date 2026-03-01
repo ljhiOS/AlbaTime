@@ -109,6 +109,9 @@ struct AddJobView: View {
         .navigationDestination(isPresented: $ajvm.isAIImportPresented) {
             ScheduleImportView(targetJob: ajvm.job)
         }
+        .onDisappear {
+            ajvm.restoreEditsIfNeeded(context: modelContext)
+        }
         .safeAreaInset(edge: .bottom) {
             if focusedField == nil {
                 BottomButton(title: "저장하기", action: {
