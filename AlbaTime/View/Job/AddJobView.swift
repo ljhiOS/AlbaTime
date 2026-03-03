@@ -100,7 +100,7 @@ struct AddJobView: View {
                 Button {
                     focusedField = nil
                 } label: {
-                    Text("완료")
+                    Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .semibold))
                 }
             }
