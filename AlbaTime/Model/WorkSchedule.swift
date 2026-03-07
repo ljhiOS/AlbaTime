@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-// 특정 날짜의 실제 근무 기록 모델
+// 자율로 저장하거나 ai로 저장한 근무 데이터들이 들어가는 모델
 @Model
 class WorkSchedule {
     var id: UUID

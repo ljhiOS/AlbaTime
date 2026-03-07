@@ -43,6 +43,7 @@ struct DetailView: View {
         .toolbar(.hidden, for: .tabBar)
         .background(Color.theme.surface)
         .navigationTitle("상세보기")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

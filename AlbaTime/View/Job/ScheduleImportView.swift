@@ -36,6 +36,7 @@ struct ScheduleImportView: View {
             bottomButtons
         }
         .navigationTitle("AI 스케줄")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 PhotosPicker(selection: $selectedPhotoItem, matching: .images) {

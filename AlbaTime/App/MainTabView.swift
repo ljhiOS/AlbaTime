@@ -8,9 +8,6 @@
 import SwiftUI
 
 struct MainTabView: View {
-    
-    
-    
     var body: some View {
         TabView {
             // 1번 탭: 캘린더

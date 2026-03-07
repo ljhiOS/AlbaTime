@@ -139,15 +139,16 @@ extension Workplace {
         if workType == .fixed {
             let weekdayStr = date.koreanWeekday
             
-            // A. 상세 요일 설정
+            // 상세 요일 설정
             if let regular = regularSchedules.first(where: { $0.dayOfWeek == weekdayStr }) {
                 let start = combineDateAndTime(date: date, time: regular.startTime)
                 var end = combineDateAndTime(date: date, time: regular.endTime)
+                // 종료시간이 시작시간보다 빠르면 종료시간을 다음 날로 보정
                 if end < start { end = calendar.date(byAdding: .day, value: 1, to: end) ?? end }
                 return (start, end, nil)
             }
             
-            // B. 간편 요일 설정
+            // 간편 요일 설정
             else if regularSchedules.isEmpty && defaultDays.contains(weekdayStr) {
                 let start = combineDateAndTime(date: date, time: defaultStartTime)
                 var end = combineDateAndTime(date: date, time: defaultEndTime)

@@ -61,6 +61,7 @@ struct RealAchiveRecord: View {
         .scrollContentBackground(.hidden)
         .background(Color.theme.surface)
         .navigationTitle("월별 수령액 기록")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             Button {
                 ravm.resetForm()

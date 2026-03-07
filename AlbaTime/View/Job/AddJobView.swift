@@ -106,6 +106,7 @@ struct AddJobView: View {
             }
         }
         .navigationTitle(stateName)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $ajvm.isAIImportPresented) {
             ScheduleImportView(targetJob: ajvm.job)
         }
