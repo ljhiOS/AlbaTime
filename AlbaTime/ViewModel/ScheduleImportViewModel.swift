@@ -151,7 +151,7 @@ class ScheduleImportViewModel: ObservableObject {
             date: targetDate,
             startTime: start,
             endTime: end,
-            scheduleName: nil
+            workLabel: nil
         )
         
         parsedSchedules.append(newSchedule)
@@ -197,7 +197,7 @@ class ScheduleImportViewModel: ObservableObject {
                 startTime: finalStart,
                 endTime: finalEnd,
                 breakTime: job.defaultRestTime ?? 0,
-                memo: parsed.scheduleName,
+                memo: parsed.workLabel,
                 isFromAIImport: isFromAIImport,
                 aiImportBatchID: batchID,
                 isEditedAfterAIImport: false

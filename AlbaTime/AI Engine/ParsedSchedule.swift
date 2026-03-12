@@ -12,5 +12,5 @@ struct ParsedSchedule: Identifiable {
     var date: Date
     var startTime: Date
     var endTime: Date
-    var scheduleName: String?
+    var workLabel: String?
 }

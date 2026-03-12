@@ -235,7 +235,7 @@ final class ScheduleParser {
         if finalEnd <= finalStart {
             finalEnd = Calendar.current.date(byAdding: .day, value: 1, to: finalEnd) ?? finalEnd
         }
-        return ParsedSchedule(date: date, startTime: finalStart, endTime: finalEnd, scheduleName: label)
+        return ParsedSchedule(date: date, startTime: finalStart, endTime: finalEnd, workLabel: label)
     }
 
     private func extractDate(from text: String, regex: NSRegularExpression) -> Date? {

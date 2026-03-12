@@ -152,8 +152,8 @@ struct InlineEditRow: View {
             
             // 3. 라벨 입력 (기존 동일)
             TextField("라벨", text: Binding(
-                get: { schedule.scheduleName ?? "" },
-                set: { schedule.scheduleName = $0.isEmpty ? nil : $0 }
+                get: { schedule.workLabel ?? "" },
+                set: { schedule.workLabel = $0.isEmpty ? nil : $0 }
             ))
             .font(.caption)
             .lineLimit(1)
@@ -242,8 +242,8 @@ struct InlineEditRow: View {
     let end2 = calendar.date(bySettingHour: 22, minute: 0, second: 0, of: day2) ?? day2
 
     vm.parsedSchedules = [
-        ParsedSchedule(date: base, startTime: start1, endTime: end1, scheduleName: "오픈"),
-        ParsedSchedule(date: day2, startTime: start2, endTime: end2, scheduleName: "마감")
+        ParsedSchedule(date: base, startTime: start1, endTime: end1, workLabel: "오픈"),
+        ParsedSchedule(date: day2, startTime: start2, endTime: end2, workLabel: "마감")
     ]
 
     return ScheduleImportResultList(sivm: vm)

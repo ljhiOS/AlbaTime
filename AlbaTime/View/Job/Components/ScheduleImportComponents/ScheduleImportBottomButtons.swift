@@ -83,7 +83,8 @@ struct ScheduleImportBottomButtons: View {
                      date: Date(),
                      startTime: Date(),
                      endTime: Date(),
-                     scheduleName: "테스트"
+                     workLabel
+                     : "테스트"
                  ))
                  
             }
