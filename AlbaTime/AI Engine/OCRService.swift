@@ -22,12 +22,13 @@ final class OCRService {
         let confidence: Float
     }
 
+    // 공용의 OCR 사용 -> 싱글톤 패턴
     static let shared = OCRService()
     private init() {}
 
-    /// 멀티패스 OCR:
-    /// 1) 기본 패스를 먼저 실행하고 품질이 충분하면 종료
-    /// 2) 부족할 때만 보조 패스를 병렬 실행해 정확도를 보완
+    // 멀티패스 OCR:
+    // 1) 기본 패스를 먼저 실행하고 품질이 충분하면 종료
+    // 2) 부족할 때만 보조 패스를 병렬 실행해 정확도를 보완
     func recognize(from image: UIImage) async throws -> [RawTextBox] {
         let variants = preprocessVariants(image)
         guard !variants.isEmpty else { return [] }
@@ -103,11 +104,12 @@ final class OCRService {
         }
     }
 
-    /// 사진 품질 편차 대응을 위해 서로 다른 전처리 버전을 준비한다.
+    // 사진 품질 편차 대응을 위해 서로 다른 전처리 버전을 준비한다.
     private func preprocessVariants(_ image: UIImage) -> [UIImage] {
         guard let ciImage = CIImage(image: image) else { return [image] }
-        let context = CIContext(options: [.useSoftwareRenderer: false])
-
+        // CIContext -> Core Image 렌더링 엔진
+        let context = CIContext()
+        
         let noir = CIFilter.photoEffectNoir()
         noir.inputImage = ciImage
         let gray = noir.outputImage ?? ciImage
