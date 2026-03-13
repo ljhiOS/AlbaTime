@@ -86,33 +86,16 @@ private extension ScheduleImportView {
     var contentView: some View {
         if sivm.selectedImage == nil {
             ScheduleImportIdleSection(
-                selectedYear: $ssvm.selectedYear,
-                selectedMonth: $ssvm.selectedMonth,
-                selectedWeekStart: $ssvm.selectedWeekStart,
+                // TODO: ssvm 자체로 넘기는게 200배는 나을듯 ㅇㅇ
                 name: $myName,
-                yearCandidates: ssvm.yearCandidates,
-                monthCandidates: ssvm.monthCandidates,
-                monthWeeks: ssvm.monthWeeks,
-                weekLabel: ssvm.weekLabel,
-                onSelectYear: { year in
-                    ssvm.selectedYear = year
-                    ssvm.applySelectedYearMonth()
-                },
-                onSelectMonth: { month in
-                    ssvm.selectedMonth = month
-                    ssvm.applySelectedYearMonth()
-                },
                 onTapManualInput: {
                     triggerManualWeekFocus()
                 },
-                showManualHint: ssvm.showManualHint,
                 targetJob: targetJob,
                 hasSavedAISchedules: hasSavedAISchedules,
-                manualFocusToken: ssvm.manualFocusToken,
-                manualWeekFocus: ssvm.manualWeekFocus,
-                manualMonthFocus: ssvm.manualMonthFocus,
                 isNameFieldFocused: $isNameFieldFocused,
-                sivm: sivm
+                sivm: sivm,
+                ssvm: ssvm
             )
         } else if sivm.isProcessing {
             ScheduleImportLoadingView(targetName: myName)

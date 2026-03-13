@@ -1,28 +1,14 @@
 import SwiftUI
 
 struct ScheduleImportIdleSection: View {
-    @Binding var selectedYear: Int
-    @Binding var selectedMonth: Int
-    @Binding var selectedWeekStart: Date?
+    
     @Binding var name: String
-
-    let yearCandidates: [Int]
-    let monthCandidates: [Int]
-    let monthWeeks: [Date]
-    let weekLabel: (Date) -> String
-    let onSelectYear: (Int) -> Void
-    let onSelectMonth: (Int) -> Void
     let onTapManualInput: () -> Void
-
-    let showManualHint: Bool
     let targetJob: Workplace?
     let hasSavedAISchedules: Bool
-    let manualFocusToken: Int
-    let manualWeekFocus: Date?
-    let manualMonthFocus: AIListMonthKey?
-
     let isNameFieldFocused: FocusState<Bool>.Binding
     let sivm: ScheduleImportViewModel
+    @ObservedObject var ssvm: ScheduleImportSelectionViewModel
 
     var body: some View {
         ScrollView {
@@ -43,7 +29,7 @@ struct ScheduleImportIdleSection: View {
             isNameFieldFocused.wrappedValue = false
         }
         .overlay(alignment: .bottom) {
-            if showManualHint {
+            if ssvm.showManualHint {
                 Text("선택한 주차를 수정한 뒤 저장하세요")
                     .font(.caption)
                     .padding(.horizontal, 12)
@@ -58,27 +44,19 @@ struct ScheduleImportIdleSection: View {
 
     private var weekSelectorCard: some View {
         ScheduleImportWeekSelectorCard(
-            selectedYear: $selectedYear,
-            selectedMonth: $selectedMonth,
-            selectedWeekStart: $selectedWeekStart,
-            yearCandidates: yearCandidates,
-            monthCandidates: monthCandidates,
-            monthWeeks: monthWeeks,
-            onSelectYear: onSelectYear,
-            onSelectMonth: onSelectMonth,
-            weekLabel: weekLabel,
+            ssvm: ssvm,
             onTapManualInput: onTapManualInput
         )
     }
 
     @ViewBuilder
     private var savedScheduleSection: some View {
-        if let job = targetJob, hasSavedAISchedules || manualFocusToken > 0 {
+        if let job = targetJob, hasSavedAISchedules || ssvm.manualFocusToken > 0 {
             AISavedSchedulesInlinePanel(
                 job: job,
-                requestedWeekStart: manualWeekFocus,
-                requestToken: manualFocusToken,
-                requestMonth: manualMonthFocus
+                requestedWeekStart: ssvm.manualWeekFocus,
+                requestToken: ssvm.manualFocusToken,
+                requestMonth: ssvm.manualMonthFocus
             )
             .transition(.move(edge: .top).combined(with: .opacity))
         } else {
@@ -110,40 +88,27 @@ struct ScheduleImportIdleSection: View {
 
 #Preview("Idle Section") {
     struct PreviewWrapper: View {
-        @State private var selectedYear: Int = 2026
-        @State private var selectedMonth: Int = 2
-        @State private var selectedWeekStart: Date? = Calendar.current.startOfDay(for: Date())
         @State private var name: String = "홍길동"
         @FocusState private var isNameFocused: Bool
         @StateObject private var sivm = ScheduleImportViewModel()
+        @StateObject private var ssvm = ScheduleImportSelectionViewModel()
 
         var body: some View {
             ScheduleImportIdleSection(
-                selectedYear: $selectedYear,
-                selectedMonth: $selectedMonth,
-                selectedWeekStart: $selectedWeekStart,
                 name: $name,
-                yearCandidates: Array(2020...2030),
-                monthCandidates: Array(1...12),
-                monthWeeks: [Calendar.current.startOfDay(for: Date())],
-                weekLabel: { week in
-                    let end = Calendar.current.date(byAdding: .day, value: 6, to: week) ?? week
-                    return "\(week.monthDayText) ~ \(end.monthDayText)"
-                },
-                onSelectYear: { selectedYear = $0 },
-                onSelectMonth: { selectedMonth = $0 },
                 onTapManualInput: {},
-                showManualHint: true,
                 targetJob: nil,
                 hasSavedAISchedules: false,
-                manualFocusToken: 0,
-                manualWeekFocus: nil,
-                manualMonthFocus: nil,
                 isNameFieldFocused: $isNameFocused,
-                sivm: sivm
+                sivm: sivm,
+                ssvm: ssvm
             )
+            .onAppear {
+                ssvm.ensureInitialSelection()
+            }
         }
     }
 
     return PreviewWrapper()
 }
+
