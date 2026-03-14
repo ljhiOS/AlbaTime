@@ -22,6 +22,8 @@ struct ScheduleImportView: View {
     
     @FocusState private var isNameFieldFocused: Bool
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(targetJob: Workplace? = nil) {
         self.targetJob = targetJob
     }
@@ -43,7 +45,7 @@ struct ScheduleImportView: View {
                 PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
                     Label("앨범 선택", systemImage: "photo.badge.plus")
                 }
-                .tint(.black)
+                .tint(colorScheme == .dark ? .white : .black )
             }
         }
         .background(Color.theme.surface)
