@@ -66,7 +66,7 @@ struct ScheduleImportView: View {
             Button("수기로 입력하기", role: .destructive) {
                 let isFixed = targetJob?.workType == .fixed
                 if isFixed {
-                    dismiss()
+                    dismiss() // TODO: 이 부분 SchduleImportVIew로 넘어가게 바꿔야함
                 } else {
                     triggerManualWeekFocus()
                 }

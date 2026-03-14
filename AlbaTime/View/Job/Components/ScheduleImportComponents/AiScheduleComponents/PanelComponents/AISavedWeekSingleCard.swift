@@ -122,6 +122,7 @@ struct AISavedWeekSingleCard: View {
         }
     }
 
+    // TODO: 옮겨야함
     private func addScheduleForSelectedDay() {
         guard let day = selectedDay else { return }
         let calendar = Calendar.current

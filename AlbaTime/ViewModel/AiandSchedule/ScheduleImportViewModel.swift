@@ -13,24 +13,30 @@ import PhotosUI
 @MainActor
 class ScheduleImportViewModel: ObservableObject {
     
-    @Published var selectedImage: UIImage?
+    // ScheduleImportResultList에 사용
     @Published var parsedSchedules: [ParsedSchedule] = []
+    
+    // processSelectedPhoto에서 사용
+    @Published var selectedImage: UIImage? // ScheduleImportResultList에 사진 보여주기
     @Published var isProcessing: Bool = false
+    
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
     
     // preset 연관 변수
     @Published var isAddingPreset: Bool = false
-    @Published var newPresetLabel: String = ""
+    @Published var newPresetLabel: String = "" // 프리셋 이름
     @Published var newPresetStart: Date = Date.makeTime(9, 0)
     @Published var newPresetEnd: Date = Date.makeTime(18, 0)
     
     var targetJob: Workplace?
     
+    // .onAppear로 뷰 진입시 모델 연결
     func setTargetJob(_ job: Workplace) {
         self.targetJob = job
     }
 
+    // 뷰에서 .onChange로 뷰 상태 변경시 호출
     func processSelectedPhoto(item: PhotosPickerItem?, targetJob: Workplace?, targetName: String) async {
         guard let item else { return }
         
@@ -59,6 +65,7 @@ class ScheduleImportViewModel: ObservableObject {
         }
     }
     
+    // processSelectedPhoto에서 사용
     func analyzeImage(targetName: String = "") {
         guard let image = selectedImage else { return }
         guard let job = targetJob else {
@@ -118,22 +125,26 @@ class ScheduleImportViewModel: ObservableObject {
         }
     }
     
+    // SceduleImportResultList에서 ai로 인식한 스케줄 외 추가시에 호출
     func addNewSchedule(targetWeekStart: Date? = nil) {
         let calendar = Calendar.current
         let weekStart = calendar.startOfDay(for: targetWeekStart ?? Date())
         let weekEndExclusive = calendar.date(byAdding: .day, value: 7, to: weekStart) ?? weekStart
         var targetDate = weekStart
         
+        // 날짜순 정렬
         let schedulesInWeek = parsedSchedules
             .filter { $0.date >= weekStart && $0.date < weekEndExclusive }
             .sorted(by: { $0.date < $1.date })
         
+        // UX 관점 이미 인식된 날짜 다음 날로 자동 생성 ex) 월 화 있으면 추가 버튼 누르면 수요일 자동생성
         if let lastSchedule = schedulesInWeek.last {
             if let nextDay = calendar.date(byAdding: .day, value: 1, to: lastSchedule.date) {
                 targetDate = nextDay
             }
         }
         
+        // 주 넘어가면 마지막날로 보정하기
         if targetDate >= weekEndExclusive {
             targetDate = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
         }
@@ -154,15 +165,17 @@ class ScheduleImportViewModel: ObservableObject {
             workLabel: nil
         )
         
+        // 추가
         parsedSchedules.append(newSchedule)
         
-        // 3. 날짜순 정렬 (추가된 게 중간에 끼어들 수도 있으므로)
+        // 날짜순 정렬 (추가된 게 중간에 끼어들 수도 있으므로)
         parsedSchedules.sort { $0.date < $1.date }
     }
     
+    // ScheduleImportBottomButtons에서 저장버튼 누를시에 호출
     func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil, isFromAIImport: Bool = true) -> Bool {
         guard let job = targetJob else {
-            errorMessage = "근무지 정보가 없습니다."
+            errorMessage = "근무지 정보가 없어요."
             showAlert = true
             return false
         }
@@ -178,17 +191,19 @@ class ScheduleImportViewModel: ObservableObject {
             let finalStart = combineDateAndTime(date: mappedDate, time: parsed.startTime)
             var finalEnd = combineDateAndTime(date: mappedDate, time: parsed.endTime)
             
+            // 다음날 처리
             if finalEnd < finalStart {
                 finalEnd = calendar.date(byAdding: .day, value: 1, to: finalEnd) ?? finalEnd
             }
             
-            // 배열을 직접 건드리지 말고, DB에서 삭제 명령만 내림
+            // 배열을 직접 건드리지 말고, DB에서 삭제 명령만 내림 (중복 저장 처리)
             let duplicates = job.workSchedules.filter {
                 calendar.isDate($0.date, inSameDayAs: mappedDate)
             }
             
+            // 겹치는거 DB 삭제
             for dup in duplicates {
-                context.delete(dup) // DB에서 삭제하면 배열에서도 알아서 빠짐 (SwiftData의 마법)
+                context.delete(dup)
             }
             
             // 새 스케줄 생성
@@ -210,6 +225,7 @@ class ScheduleImportViewModel: ObservableObject {
             context.insert(newSchedule)
         }
         
+        // 알림 갱신
         NotificationManager.shared.refreshNotifications(for: job)
         
         do {
@@ -226,7 +242,7 @@ class ScheduleImportViewModel: ObservableObject {
         }
     }
     
-    // Helper: 날짜(YMD) + 시간(HMS) 합치기
+    // MARK: VM에서 쓰임(헬퍼메서드)
     private func combineDateAndTime(date: Date, time: Date) -> Date {
         let calendar = Calendar.current
         let timeComp = calendar.dateComponents([.hour, .minute], from: time)
@@ -243,13 +259,14 @@ class ScheduleImportViewModel: ObservableObject {
     }
     
     // MARK: preset 연관 메서드
+    // ScheduleImportPresetGroup에서 사용
     
     func addNewPreset() {
         guard let job = targetJob, !newPresetLabel.isEmpty else { return }
         let preset = WorkTimePreset(label: newPresetLabel, startTime: newPresetStart, endTime: newPresetEnd)
         preset.workplace = job
         job.timePresets.append(preset)
-        newPresetLabel = ""
+        newPresetLabel = "" // 입력창 초기화 다음 프리셋 추가를 위해
         isAddingPreset = false
     }
 

@@ -6,84 +6,82 @@ import SwiftUI
 // 월/주 선택 상태를 관리하고, 선택 결과에 맞는 스케줄 목록과 표시 문자열을 제공한다.
 @MainActor
 final class AISavedSchedulesPanelViewModel: ObservableObject {
+    // 상태 변수
     @Published var selectedMonthID: String = ""
-    @Published var selectedWeekStart: Date?
+    @Published var selectedWeekStart: Date? // ensureInitialSelection에서 초기화
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
     @Published var forcedMonth: AIListMonthKey?
 
     let job: Workplace
-
+    
     init(job: Workplace) {
         self.job = job
     }
-
-    // 근무지에 저장된 AI 스케줄 및 수기추가를 날짜/시간 순으로 정렬한다.
-    // 뷰에서 바로 리스트/건수 표시에 사용할 기준 데이터다.
+    
+    // 뷰에서 쓰일 데이터, 뷰에서 건수 나타내거나 비어있는지 확인을 함
     var aiSchedules: [WorkSchedule] {
-        job.workSchedules.filter { $0.isFromAIImport }.sorted {
-                if $0.date != $1.date { return $0.date < $1.date }
-                return $0.startTime < $1.startTime
-            }
+        job.workSchedules.filter {$0.isFromAIImport}.sorted(by: sortAISchedules)
     }
-
-    // 저장된 AI 스케줄이 존재하는 년/월 목록을 만든다.
-    // 월 선택 메뉴의 데이터 소스로 사용한다.
+    
+    // 뷰에서 년도 월 나열시 쓰임
     var months: [AIListMonthKey] {
-        let calendar = Calendar.current
-        var keys = aiSchedules.map {
-            let comps = calendar.dateComponents([.year, .month], from: $0.date)
-            return AIListMonthKey(year: comps.year ?? 0, month: comps.month ?? 0)
-        }
-        if let forcedMonth {
-            keys.append(forcedMonth)
-        }
-        return Array(Set(keys)).sorted {
-            if $0.year != $1.year { return $0.year > $1.year }
-            return $0.month > $1.month
-        }
+        makeMonths(from: aiSchedules, forcedMonth: forcedMonth)
     }
-
-    // 현재 선택된 월 키를 반환한다.
-    // selectedMonthID를 실제 년/월 구조체로 변환한다.
+    
     var selectedMonth: AIListMonthKey? {
         months.first { $0.id == selectedMonthID }
     }
-
-    // 선택 월 내에서 실제로 저장된 주차(월요일 시작) 목록을 만든다.
-    // 저장된 데이터가 있는 주차만 보여주기 위해 count를 함께 계산한다.
-    var weeks: [AIListWeekItem] {
-        guard let month = selectedMonth else { return [] }
-        let calendar = Calendar.current
-
-        let monthSchedules = aiSchedules.filter {
-            let comps = calendar.dateComponents([.year, .month], from: $0.date)
-            return comps.year == month.year && comps.month == month.month
-        }
-
-        var grouped: [Date: [WorkSchedule]] = [:]
-        for schedule in monthSchedules {
-            let start = startOfWeekMonday(for: schedule.date)
-            grouped[start, default: []].append(schedule)
-        }
-
-        var items = grouped.keys.sorted().map { start in
-            let end = calendar.date(byAdding: .day, value: 6, to: start) ?? start
-            return AIListWeekItem(start: start, end: end, count: grouped[start]?.count ?? 0)
-        }
-
-        if let selectedWeekStart,
-           !items.contains(where: { calendar.isDate($0.start, inSameDayAs: selectedWeekStart) }),
-           let selected = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: selectedWeekStart) {
-            let end = calendar.date(byAdding: .day, value: 6, to: selected) ?? selected
-            items.append(AIListWeekItem(start: selected, end: end, count: 0))
-            items.sort { $0.start < $1.start }
-        }
-
-        return items
+    
+    // 2026년 3월 이거 버튼 라벨로 쓰임 AiSavedSchedulesSeletorRow에서
+    var monthLabelText: String {
+        guard let month = selectedMonth else { return "월 선택" }
+        return "\(String(format: "%d", month.year))년 \(month.month)월"
     }
-
-    // 외부(수기로 추가 버튼)에서 요청된 주차로 패널 포커스를 이동한다.
+    // 뷰에서 주차 나열후시 쓰임
+    var weeks: [AIListWeekItem] {
+        makeWeeks(
+            from: aiSchedules,
+            selectedMonth: selectedMonth,
+            selectedWeekStart: selectedWeekStart
+        )
+    }
+    
+    // 뷰에서 주차버튼으로 쓰임
+    func weekLabelText(_ week: AIListWeekItem) -> String {
+        let weekNo = weekNumberInSelectedMonth(for: week.start)
+        return "\(weekNo)주차 (\(dateText(week.start))~\(dateText(week.end))) \(week.count)건"
+    }
+    
+    // 카드에서
+    var schedulesForSelectedWeek: [WorkSchedule] {
+        makeSchedulesForSelectedWeek(
+            from: aiSchedules,
+            selectedWeekStart: selectedWeekStart
+        )
+    }
+    
+    // AISavedSchedulesSelectorRow에서 주차 보여줄때 쓰임
+    var weekLabelDisplay: String {
+        guard
+            let weekStart = selectedWeekStart,
+            let selected = weeks.first(where: { Calendar.current.isDate($0.start, inSameDayAs: weekStart) })
+        else {
+            return "주 선택"
+        }
+        return weekLabelText(selected)
+    }
+    
+    // 수기로 추가 눌러서 panel 뷰에 보여지면 초기화
+    func ensureInitialSelection() {
+        if selectedMonthID.isEmpty {
+            selectedMonthID = months.first?.id ?? ""
+            selectedWeekStart = weeks.first?.start
+        }
+        clearForcedMonthIfBackedByData()
+    }
+    
+    // 수기로 추가 눌러서 panel 뷰에 보여지면 초기화
     func focusOnWeek(_ weekStart: Date, preferredMonth: AIListMonthKey? = nil) {
         let calendar = Calendar.current
         let normalized = calendar.startOfDay(for: weekStart)
@@ -96,56 +94,19 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             let month = AIListMonthKey(year: comps.year ?? 0, month: comps.month ?? 0)
             selectedMonthID = month.id
         }
+        
         selectedWeekStart = normalized
         clearForcedMonthIfBackedByData()
     }
-
-    // 현재 선택 주차에 포함되는 스케줄만 반환한다.
-    // 주차 단일 카드(AISavedWeekSingleCard)의 입력 데이터가 된다.
-    var schedulesForSelectedWeek: [WorkSchedule] {
-        guard let weekStart = selectedWeekStart else { return [] }
-        let calendar = Calendar.current
-        let start = calendar.startOfDay(for: weekStart)
-        let endExclusive = calendar.date(byAdding: .day, value: 7, to: start) ?? start
-        return aiSchedules.filter { schedule in schedule.date >= start && schedule.date < endExclusive }
-    }
-
-    // 월 선택 버튼용 표시 문자열.
-    // 예: "2026년 2월"
-    var monthLabelText: String {
-        guard let month = selectedMonth else { return "월 선택" }
-        return "\(String(format: "%d", month.year))년 \(month.month)월"
-    }
-
-    // 주 선택 버튼용 표시 문자열.
-    // 선택된 주차가 없으면 기본 문구를 반환한다.
-    var weekLabelDisplay: String {
-        guard let weekStart = selectedWeekStart,
-              let selected = weeks.first(where: { Calendar.current.isDate($0.start, inSameDayAs: weekStart) }) else {
-            return "주 선택"
-        }
-        return weekLabelText(selected)
-    }
-
-    // 패널 최초 진입 시 기본 선택 월/주를 세팅한다.
-    // 최신 데이터가 있는 월과 그 월의 첫 저장 주차를 기본값으로 선택한다.
-    func ensureInitialSelection() {
-        if selectedMonthID.isEmpty {
-            selectedMonthID = months.first?.id ?? ""
-            selectedWeekStart = weeks.first?.start
-        }
+    
+    // AiSavedSchedulesSeletorRow에서 onSelectedMonth형태로 넘어가서 쓰임 버튼에서
+    func selectMonth(_ monthID: String) {
+        selectedMonthID = monthID
+        selectedWeekStart = weeks.first?.start
         clearForcedMonthIfBackedByData()
     }
-
-    // 주차 버튼 리스트에서 보여줄 라벨을 만든다.
-    // 예: "3주차 (2/17~2/23) 4건"
-    func weekLabelText(_ week: AIListWeekItem) -> String {
-        let weekNo = weekNumberInSelectedMonth(for: week.start)
-        return "\(weekNo)주차 (\(dateText(week.start))~\(dateText(week.end))) \(week.count)건"
-    }
-
-    // 인라인 편집 결과를 저장하고 알림/위젯 동기화를 갱신한다.
-    // 저장 성공/실패 메시지는 alert 상태로 뷰에 전달한다.
+    
+    // 저장 버튼 누를 시에 뷰에서 호출
     func saveChanges(context: ModelContext) {
         NotificationManager.shared.refreshNotifications(for: job)
         do {
@@ -159,23 +120,107 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             showAlert = true
         }
     }
-
-    // 선택 월 기준의 전체 주차(월요일 시작) 목록을 만든다.
-    // 저장된 주차 순서가 아니라 달력상의 실제 주차 번호 계산에 사용한다.
+    
+    // aiSchedules에 쓰이는 메서드 날
+    private func sortAISchedules(_ one: WorkSchedule, _ two: WorkSchedule) -> Bool {
+        // 둘이 다르면 날짜순
+        if one.date != two.date { return one.date < two.date }
+        // 날짜 같으면 시작 시간 순
+        return one.startTime < two.startTime
+    }
+    
+    // month 만들때 필요
+    private func makeMonths(from schedules: [WorkSchedule], forcedMonth: AIListMonthKey?) -> [AIListMonthKey] {
+        let calendar = Calendar.current
+        // 각 스케줄에서 년 월만 뽑기
+        var keys = schedules.map {
+            let comps = calendar.dateComponents([.year, .month], from: $0.date)
+            return AIListMonthKey(year: comps.year ?? 0, month: comps.month ?? 0)
+        }
+        
+        // 기존에 저장되있던 년 월 데이터 말고 사용자가 필요한 데이터를 view에 보여주기 위해서 필요
+        if let forcedMonth = forcedMonth {
+            keys.append(forcedMonth)
+        }
+        
+        return Array(Set(keys)).sorted { // 날짜 큰 순으로 정렬
+            if $0.year != $1.year { return $0.year > $1.year }
+            return $0.month > $1.month
+        }
+    }
+    
+    // weeks에서 주차 만드는 메뉴 만들때 쓰임
+    private func makeWeeks(from schedules: [WorkSchedule], selectedMonth: AIListMonthKey?, selectedWeekStart: Date?
+    ) -> [AIListWeekItem] {
+        guard let month = selectedMonth else { return [] }
+        let calendar = Calendar.current
+        
+        // 현재 월에 해당하는 스케줄만 걸러냄
+        let monthSchedules = schedules.filter {
+            let comps = calendar.dateComponents([.year, .month], from: $0.date)
+            return comps.year == month.year && comps.month == month.month
+        }
+        
+        // 주차별로 그룹핑
+        var grouped: [Date: [WorkSchedule]] = [:]
+        for schedule in monthSchedules {
+            let start = startOfWeekMonday(for: schedule.date)
+            grouped[start, default: []].append(schedule)
+        }
+        
+        var items = grouped.keys.sorted().map { start in
+            let end = calendar.date(byAdding: .day, value: 6, to: start) ?? start
+            return AIListWeekItem(start: start, end: end, count: grouped[start]?.count ?? 0)
+        }
+        
+        // 현재 선택된 주 목록에 없다면 추가
+        if let selectedWeekStart,
+           !items.contains(where: { calendar.isDate($0.start, inSameDayAs: selectedWeekStart) }),
+           let selected = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: selectedWeekStart) {
+            let end = calendar.date(byAdding: .day, value: 6, to: selected) ?? selected
+            items.append(AIListWeekItem(start: selected, end: end, count: 0))
+            items.sort { $0.start < $1.start }
+        }
+        
+        return items
+    }
+    
+    // schedulesForSelectedWeek에서 쓰임
+    // 전체 workSchedule에서 현재 선택한 주차에 속하는 스케줄만 골라서 반환하는 메서드
+    private func makeSchedulesForSelectedWeek(from schedules: [WorkSchedule], selectedWeekStart: Date?
+    ) -> [WorkSchedule] {
+        guard let weekStart = selectedWeekStart else { return [] }
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: weekStart)
+        let endExclusive = calendar.date(byAdding: .day, value: 7, to: start) ?? start
+        
+        return schedules.filter {
+            $0.date >= start && $0.date < endExclusive
+        }
+    }
+    
+    // 선택월 몇개 주로 나눌지 계산하는 메서드
     private var monthWeekStarts: [Date] {
         guard let month = selectedMonth else { return [] }
         let calendar = Calendar.current
+        
+        // 선택 월 1일 만들기 예) 3월고름 3월 1일
         var comps = DateComponents()
         comps.year = month.year
         comps.month = month.month
         comps.day = 1
+        
+        // 전체 구간 계산
         guard let monthStart = calendar.date(from: comps),
               let monthInterval = calendar.dateInterval(of: .month, for: monthStart) else {
             return []
         }
-
+        
+        // 그 달에 속한 첫주의 월요일로 주차계산 예) 4월 1일인데 수요일이면 그 주 월요일을 기준으로 잡음
         var starts: [Date] = []
         var cursor = startOfWeekMonday(for: monthInterval.start)
+        
+        // 한주씩 돌기
         while cursor < monthInterval.end {
             let weekEnd = calendar.date(byAdding: .day, value: 6, to: cursor) ?? cursor
             if weekEnd >= monthInterval.start {
@@ -183,25 +228,25 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             }
             cursor = calendar.date(byAdding: .day, value: 7, to: cursor) ?? cursor
         }
+        // 모은 월요일 날짜 반환
         return starts
     }
-
-    // 선택 월 전체 주차 기준으로 "n주차" 번호를 계산한다.
-    // 예: 2/16~2/22를 1주차가 아니라 달력상 3주차로 맞춰준다.
+    
+    // 몇주차인지 보여주기위한 메서드 주차 계산
     private func weekNumberInSelectedMonth(for weekStart: Date) -> Int {
-        guard let index = monthWeekStarts.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: weekStart) }) else {
+        guard let index = monthWeekStarts.firstIndex(where: {
+            Calendar.current.isDate($0, inSameDayAs: weekStart)
+        }) else {
             return 1
         }
         return index + 1
     }
-
+    
     private func dateText(_ date: Date) -> String {
-        return date.monthDayText
+        date.monthDayText
     }
-
-    // 월요일 시작 주차 계산 유틸.
-    // 일반적인 사용자는 월부터 주차를 세기에 UX관점에서 월부터 주차 계산을 함.
-    // 입력 날짜가 속한 주의 월요일 00:00 시점을 반환한다.
+    
+    // 주의 월요일 찾는 메서드
     private func startOfWeekMonday(for date: Date) -> Date {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
@@ -210,18 +255,13 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         return calendar.date(byAdding: .day, value: -offset, to: startOfDay) ?? startOfDay
     }
     
-    func selectMonth(_ monthID: String) {
-        selectedMonthID = monthID
-        selectedWeekStart = weeks.first?.start
-        
-        clearForcedMonthIfBackedByData()
-    }
-    
-    // 수기 추가 후 미저장시, 뷰모델에 빈 항목으로 잔존하지 않도록 정리
+    // forcedMonth에 데이터 저장되면 nil만드는 메서드
+    // ensureInitialSelection에 쓰임
     private func clearForcedMonthIfBackedByData() {
         guard let forced = forcedMonth else { return }
         
         let calendar = Calendar.current
+        // 강제로 끼워넣은 월에 데이터 있는지 검사
         let hasDataInForcedMonth = aiSchedules.contains {
             let comps = calendar.dateComponents([.year, .month], from: $0.date)
             return comps.year == forced.year && comps.month == forced.month
@@ -231,4 +271,5 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             forcedMonth = nil
         }
     }
+   
 }
