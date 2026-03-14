@@ -35,6 +35,7 @@ struct AISavedWeekSingleCard: View {
             Text("요일 선택")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            
 
             HStack(spacing: 6) {
                 ForEach(weekDays, id: \.self) { day in

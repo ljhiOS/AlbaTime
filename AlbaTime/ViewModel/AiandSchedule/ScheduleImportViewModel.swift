@@ -172,7 +172,7 @@ class ScheduleImportViewModel: ObservableObject {
         parsedSchedules.sort { $0.date < $1.date }
     }
     
-    // ScheduleImportBottomButtons에서 저장버튼 누를시에 호출
+    // ScheduleImportBottomButtons에서 저장버튼 누를시에 호출 -> ai 인식 결과 저장
     func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil, isFromAIImport: Bool = true) -> Bool {
         guard let job = targetJob else {
             errorMessage = "근무지 정보가 없어요."

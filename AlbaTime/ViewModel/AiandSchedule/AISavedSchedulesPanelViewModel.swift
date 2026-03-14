@@ -49,8 +49,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     
     // 뷰에서 주차버튼으로 쓰임
     func weekLabelText(_ week: AIListWeekItem) -> String {
-        let weekNo = weekNumberInSelectedMonth(for: week.start)
-        return "\(weekNo)주차 (\(dateText(week.start))~\(dateText(week.end))) \(week.count)건"
+        return "\(dateText(week.start)) ~ \(dateText(week.end)) \(week.count)건"
     }
     
     // 전체 ai스케줄 중에서 현재 선택한 주만 반환하는 메서드
@@ -67,7 +66,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             let weekStart = selectedWeekStart,
             let selected = weeks.first(where: { Calendar.current.isDate($0.start, inSameDayAs: weekStart) })
         else {
-            return "주 선택"
+            return "날짜 선택"
         }
         return weekLabelText(selected)
     }
@@ -108,12 +107,18 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     
     // 저장 버튼 누를 시에 뷰에서 호출
     func saveChanges(context: ModelContext) {
+        guard !schedulesForSelectedWeek.isEmpty else {
+            alertMessage = "선택한 기간에 저장된 스케줄이 없어요."
+            showAlert = true
+            return
+        }
+        
         NotificationManager.shared.refreshNotifications(for: job)
         do {
             try context.save()
             let workplaces = try context.fetch(FetchDescriptor<Workplace>())
             NextShiftSyncService.sync(workplaces: workplaces)
-            alertMessage = "주차 스케줄 수정사항을 저장했어요."
+            alertMessage = "스케줄 수정사항을 저장했어요."
             showAlert = true
         } catch {
             alertMessage = "저장하지 못했어요.\n\(error.localizedDescription)"
@@ -232,16 +237,6 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         return starts
     }
     
-    // 몇주차인지 보여주기위한 메서드 주차 계산
-    private func weekNumberInSelectedMonth(for weekStart: Date) -> Int {
-        guard let index = monthWeekStarts.firstIndex(where: {
-            Calendar.current.isDate($0, inSameDayAs: weekStart)
-        }) else {
-            return 1
-        }
-        return index + 1
-    }
-    
     private func dateText(_ date: Date) -> String {
         date.monthDayText
     }
@@ -272,6 +267,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         }
     }
     
+    // 수기로 추가 및 ai 인식 스케줄 수정 데이터 저장 로직
     func addSchedule(on day: Date, context: ModelContext) {
         let calendar = Calendar.current
         let baseDate = calendar.startOfDay(for: day)
@@ -296,6 +292,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         context.insert(schedule)
     }
     
+    // 수기 및 ai 추가한 데이터 삭제 로직
     func deleteSchedule(on day: Date, context: ModelContext) {
         guard let target = job.workSchedules.first(where: {
             Calendar.current.isDate($0.date, inSameDayAs: day) && $0.isFromAIImport
@@ -305,5 +302,23 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         
         context.delete(target)
     }
-   
+    
+    func deleteSelectedSchedule(context: ModelContext) {
+        guard let weekStart = selectedWeekStart else { return }
+        
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: weekStart)
+        let endExclusive = calendar.date(byAdding: .day, value: 6, to: start) ?? start
+        
+        let targets = job.workSchedules.filter {
+            $0.isFromAIImport && $0.date >= start && $0.date < endExclusive
+        }
+        
+        for target in targets {
+            context.delete(target)
+        }
+        
+        showAlert = true
+        alertMessage = "선택한 스케줄을 삭제했어요."
+    }
 }

@@ -30,7 +30,7 @@ struct ScheduleImportIdleSection: View {
         }
         .overlay(alignment: .bottom) {
             if ssvm.showManualHint {
-                Text("선택한 주차를 수정한 뒤 저장하세요")
+                Text("선택한 날짜를 수정한 뒤 저장하세요")
                     .font(.caption)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)

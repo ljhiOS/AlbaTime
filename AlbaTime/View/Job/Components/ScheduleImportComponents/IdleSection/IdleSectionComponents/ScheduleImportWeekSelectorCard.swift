@@ -9,7 +9,7 @@ struct ScheduleImportWeekSelectorCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Text("저장 기준 주차 (월~일)")
+                Text("저장 기준 날짜 (월~일)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 Spacer()
@@ -66,7 +66,7 @@ struct ScheduleImportWeekSelectorCard: View {
                 } label: {
                     HStack {
                         Image(systemName: "list.bullet")
-                        Text(ssvm.selectedWeekStart.map(ssvm.weekLabel) ?? "주 선택")
+                        Text(ssvm.selectedWeekStart.map(ssvm.weekLabel) ?? "날짜 선택")
                     }
                     .font(.caption)
                     .lineLimit(2)

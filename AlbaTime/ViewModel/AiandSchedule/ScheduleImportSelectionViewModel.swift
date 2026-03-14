@@ -84,8 +84,7 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
     func weekLabel(_ weekStart: Date) -> String {
         let calendar = Calendar.current
         let end = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
-        let weekNo = weekNumberInSelectedMonth(for: weekStart)
-        return "\(weekNo)주차 \(weekStart.monthDayText) ~ \(end.monthDayText)"
+        return "\(weekStart.monthDayText) ~ \(end.monthDayText)"
     }
     
     // weekLabel에서 사용 (헬퍼메서드)
