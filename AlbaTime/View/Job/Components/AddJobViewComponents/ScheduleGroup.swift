@@ -46,8 +46,8 @@ struct ScheduleGroup: View {
 
                 HStack(spacing: 6) {
                     ForEach(ajvm.days, id: \.self) { day in
-                        let hasSchedule = ajvm.getSchedule(for: day) != nil
-                        let isSelected = selectedDay == day
+                        let hasSchedule = ajvm.getSchedule(for: day) != nil // Bool
+                        let isSelected = selectedDay == day // Bool
 
                         Text(day)
                             .font(.caption)

@@ -42,20 +42,23 @@ class AddJobViewModel: ObservableObject {
     @Published var job: Workplace
     
     // UI 상태 // @MainActor 속성 선언 필요
-    @Published var isAIImportPresented: Bool = false // AI 스케줄 화면 이동 트리거
+    @Published var isAIImportPresented: Bool = false // 뷰에서 연결된 네비게이션 연결시에 상태 받아서 ScheduleImportView 이동
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
     
-    // 유연 근무 UI 바인딩용 변수
+    // FlexibleInfoGroup에서 값 받음
     @Published var targetWeeklyCount: Int = 3
     @Published var expectedDailyHours: Double = 5.0
     
     private let initialDefaultRestTime: Int?
     
+    // restoreEditsIfNeeded의 검증 변수 초기화시 값 받음
     private let isEditingExistingJob: Bool
+    
     private let originalJobBackup: JobEditBackup?
     private var hasSavedChanges: Bool = false
     
+    // SheduleGroup에서 사용
     let days = ["월", "화", "수", "목", "금", "토", "일"]
     
     // MARK: - 초기화 (Init)
@@ -63,6 +66,7 @@ class AddJobViewModel: ObservableObject {
     
     // 신규 생성 모드
     init(type: WorkType) {
+        // 객체 생성
         self.job = Workplace(
             name: "",
             hourlyWage: 0,
@@ -77,6 +81,7 @@ class AddJobViewModel: ObservableObject {
             self.targetWeeklyCount = 3
             self.expectedDailyHours = 5.0
         }
+        //saveJob에서 사용
         self.initialDefaultRestTime = nil
         
         self.isEditingExistingJob = false
@@ -86,10 +91,11 @@ class AddJobViewModel: ObservableObject {
     // 수정 모드
     init(editingJob: Workplace) {
         self.job = editingJob
+        //saveJob에서 사용
         self.initialDefaultRestTime = editingJob.defaultRestTime
         
-        // 추가
         self.isEditingExistingJob = true
+        
         self.originalJobBackup = JobEditBackup(
             name: editingJob.name,
             hourlyWage: editingJob.hourlyWage,
@@ -122,7 +128,7 @@ class AddJobViewModel: ObservableObject {
     // MARK: - 유효성 검사 및 AI
     
     // @MainActor 속성선언 필요 메서드
-    // 매장명 및 시급 유효성 검사 통과시 AI 스케줄 화면 열기
+    // AddJobView에서 ai 스케줄 버튼 누를시 호출
     func validateAndOpenAI() {
         if job.name.trimmingCharacters(in: .whitespaces).isEmpty {
             errorMessage = "매장명을 입력해주세요."
@@ -135,18 +141,18 @@ class AddJobViewModel: ObservableObject {
             showAlert = true
             return
         }
-        
+        // 뷰에서 연결된 네비게이션 연결시에 상태 받아서 ScheduleImportView 이동
         isAIImportPresented = true
     }
 
     // MARK: - 요일별 스케줄 로직
     
-    // 특정 요일 근무정보 있는지 확인하는 메서드
+    // 특정 요일 근무정보 있는지 확인하는 메서드 -> ScheduleGroup에서 사용
     func getSchedule(for day: String) -> RegularSchedule? {
         return job.regularSchedules.first { $0.dayOfWeek == day }
     }
     
-    // 근무 수정 요일 버튼을 위한 메서드
+    // 근무 수정 요일 버튼을 위한 메서드 -> SheduleGroup 메서드에서 사용
     func toggleDay(_ day: String, context: ModelContext) {
         if let schedule = getSchedule(for: day) {
             if let index = job.regularSchedules.firstIndex(of: schedule) {
@@ -172,7 +178,7 @@ class AddJobViewModel: ObservableObject {
         }
     }
     
-    // 평일 전체선택 편의기능 제공
+    // 평일 전체선택 편의기능 제공 -> ScheduleGroup에서 사용
     func resetAllDays(context: ModelContext) {
         for schedule in job.regularSchedules where schedule.modelContext != nil {
             context.delete(schedule)
@@ -198,14 +204,7 @@ class AddJobViewModel: ObservableObject {
 
     // MARK: - 저장 로직 (Save)
     
-    // 데이터 베이스 저장 -> 사실상 가장 중요한 메서드
-    // @MainActor 필요 메서드
-    // as-is
-    // 1) Workplace는 저장 전에 name, hourlyWage 검증을 통과해야함
-    // 2) defaultResrTime은 스케줄 breakTime에 전파됨(개별 수정은 최대한 보존)
-    // 3) flexible 타입에서는 regularSchedule은 DB에서 삭제되야함
-    // 4) fixed 타입에서는 regularSchedule 또는 WorkSchedule이 최소 1개는 필요
-    // 5) 저장 성공 후 위젯 데이터는 전체 workplace를 fetch하여 재생성
+    // 데이터 베이스 저장 -> 뷰에서 저장버튼 누를때 호출
     func saveJob(context: ModelContext) -> Bool {
         // 1. 유효성 검사 (먼저 수행)
         if job.name.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -225,10 +224,11 @@ class AddJobViewModel: ObservableObject {
 
         let updatedBreakTime = max(0, job.defaultRestTime ?? 0)
         
+        // initialDefaultRestTime -> 신규일때 nil, 수정일땐 editingJob.defaultRestTime
         if job.defaultRestTime == nil {
             for schedule in job.regularSchedules { schedule.breakTime = 0 }
             for schedule in job.workSchedules { schedule.breakTime = 0 }
-        } else if initialDefaultRestTime != job.defaultRestTime {
+        } else if initialDefaultRestTime != job.defaultRestTime { // 수정일때 필요
             let previousBreakTime = max(0, initialDefaultRestTime ?? 0)
             for schedule in job.regularSchedules where schedule.breakTime == 0 || schedule.breakTime == previousBreakTime {
                 schedule.breakTime = updatedBreakTime
@@ -236,7 +236,7 @@ class AddJobViewModel: ObservableObject {
             for schedule in job.workSchedules where schedule.breakTime == 0 || schedule.breakTime == previousBreakTime {
                 schedule.breakTime = updatedBreakTime
             }
-        } else {
+        } else { // 기본 휴게시간 유지
             for schedule in job.regularSchedules where schedule.breakTime == 0 {
                 schedule.breakTime = updatedBreakTime
             }
@@ -250,6 +250,7 @@ class AddJobViewModel: ObservableObject {
             job.targetWeeklyCount = targetWeeklyCount
             job.expectedDailyHours = expectedDailyHours
             
+            // 고정근무가 아니기에 DB 삭제
             let schedulesToDelete = job.regularSchedules
             job.regularSchedules.removeAll()
             schedulesToDelete.forEach { context.delete($0) }
@@ -259,9 +260,9 @@ class AddJobViewModel: ObservableObject {
             job.targetWeeklyCount = nil
             job.expectedDailyHours = nil
             
-            // 고정 근무인데 요일 설정이 하나도 없으면 경고 (단, AI 스케줄이 있으면 통과)
+            // 고정 근무인데 요일 설정이 하나도 없으면 경고 (단, AI로 인식한 스케줄이 있으면 통과)
             if job.regularSchedules.isEmpty && job.workSchedules.isEmpty {
-                errorMessage = "요일별 근무 시간 또는 AI 스케줄을 입력해주세요."
+                errorMessage = "요일별 근무 시간 입력 또는 AI 스케줄을 인식해주세요."
                 showAlert = true
                 return false
             }
@@ -279,7 +280,7 @@ class AddJobViewModel: ObservableObject {
             return true
         } catch {
             print("저장 실패: \(error)")
-            errorMessage = "저장 중 오류가 발생했습니다.\n\(error.localizedDescription)"
+            errorMessage = "저장 중 오류가 발생했어요.\n\(error.localizedDescription)"
             showAlert = true
             return false
         }
@@ -289,7 +290,9 @@ class AddJobViewModel: ObservableObject {
     // AI 스케줄 화면으로 push 될 때는 AddJob 화면이 사라져도 복원하지 않는다.
     func restoreEditsIfNeeded(context: ModelContext) {
         guard isEditingExistingJob else { return }
+        // onDisappear일시 호출되기에 저장된거 복원되는거 막기
         guard !hasSavedChanges else { return }
+        // onDisappear일시 호출되기에 ScheduleImportView 넘어갈때 복원되는거 막기
         guard !isAIImportPresented else { return }
         guard let backup = originalJobBackup else { return }
 
@@ -309,12 +312,16 @@ class AddJobViewModel: ObservableObject {
         targetWeeklyCount = backup.targetWeeklyCount ?? 3
         expectedDailyHours = backup.expectedDailyHours ?? 5.0
 
+        // 수정된 데이터 임시 보관
         let existingSchedules = job.regularSchedules
+        // 요일별 스케줄 연결 전부 제거
         job.regularSchedules.removeAll()
+        // 스케줄이 수정된 데이터 돌면서 DB에서 삭제
         for schedule in existingSchedules where schedule.modelContext != nil {
             context.delete(schedule)
         }
 
+        // 백업된 스케줄 DB 연결
         for item in backup.regularSchedules {
             let schedule = RegularSchedule(
                 dayOfWeek: item.dayOfWeek,
