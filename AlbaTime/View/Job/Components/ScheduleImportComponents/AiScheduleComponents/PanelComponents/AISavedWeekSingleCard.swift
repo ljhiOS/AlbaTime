@@ -48,11 +48,7 @@ struct AISavedWeekSingleCard: View {
                         .foregroundStyle(isSelected ? .white : (hasSchedule ? Color.theme.primary : .primary))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 7)
-                        .background(isSelected ? Color.theme.primary : Color.theme.surface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(hasSchedule ? Color.theme.primary.opacity(0.25) : Color.theme.borderSoft, lineWidth: 1)
-                        )
+                        .background(isSelected ? Color.theme.primary : (hasSchedule ? Color.theme.primary.opacity(0.15) : Color.theme.surface))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .contentShape(RoundedRectangle(cornerRadius: 8))
                         .onTapGesture {

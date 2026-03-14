@@ -5,27 +5,6 @@ import SwiftUI
 struct ScheduleImportWeekSelectorCard: View {
     @ObservedObject var ssvm: ScheduleImportSelectionViewModel
     let onTapManualInput: () -> Void
-    
-    private var selectedYearBinding: Binding<Int> {
-        Binding(
-            get: { ssvm.selectedYear },
-            set: { ssvm.selectedYear = $0 }
-        )
-    }
-    
-    private var selectedMonthBinding: Binding<Int> {
-        Binding(
-            get: { ssvm.selectedMonth },
-            set: { ssvm.selectedMonth = $0 }
-        )
-    }
-    
-    private var selectedWeekStartBinding: Binding<Date?> {
-        Binding(
-            get: { ssvm.selectedWeekStart },
-            set: { ssvm.selectedWeekStart = $0 }
-        )
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
