@@ -4,9 +4,7 @@ import SwiftData
 // 선택된 주차의 스케줄을 "한 장의 카드"에서 요일 전환하며 편집한다.
 // 월~일 칩 선택, 시작/종료 시간 수정, 롱프레스 삭제 UX를 담당한다.
 struct AISavedWeekSingleCard: View {
-    let job: Workplace
-    let weekStart: Date
-    let schedules: [WorkSchedule]
+    @ObservedObject var aspvm: AISavedSchedulesPanelViewModel
 
     @Environment(\.modelContext) private var modelContext
     @State private var selectedDay: Date?
@@ -18,7 +16,7 @@ struct AISavedWeekSingleCard: View {
     // 요일 칩 렌더링 순서를 고정하기 위한 데이터다.
     private var weekDays: [Date] {
         let calendar = Calendar.current
-        let start = calendar.startOfDay(for: weekStart)
+        let start = calendar.startOfDay(for: aspvm.selectedWeekStart ?? Date())
         return (0..<7).compactMap { dayOffset in
             calendar.date(byAdding: .day, value: dayOffset, to: start)
         }
@@ -28,7 +26,8 @@ struct AISavedWeekSingleCard: View {
     // 카드 하단 시간 편집 영역은 이 스케줄을 기준으로 바인딩된다.
     private var selectedSchedule: WorkSchedule? {
         guard let selectedDay else { return nil }
-        return schedules.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDay) })
+        return aspvm.schedulesForSelectedWeek
+            .first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDay) })
     }
 
     var body: some View {
@@ -39,7 +38,8 @@ struct AISavedWeekSingleCard: View {
 
             HStack(spacing: 6) {
                 ForEach(weekDays, id: \.self) { day in
-                    let hasSchedule = schedules.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: day) })
+                    let hasSchedule = aspvm.schedulesForSelectedWeek
+                        .contains(where: { Calendar.current.isDate($0.date, inSameDayAs: day) })
                     let isSelected = selectedDay.map { Calendar.current.isDate($0, inSameDayAs: day) } ?? false
 
                     Text(shortWeekdayText(day))
@@ -90,7 +90,9 @@ struct AISavedWeekSingleCard: View {
                         .foregroundStyle(.secondary)
 
                     Button {
-                        addScheduleForSelectedDay()
+                        if let selectedDay {
+                            aspvm.addSchedule(on: selectedDay, context: modelContext)
+                        }
                     } label: {
                         Text("이 요일에 스케줄 추가")
                             .font(.caption)
@@ -114,37 +116,13 @@ struct AISavedWeekSingleCard: View {
         .cornerRadius(8)
         .onAppear {
             if selectedDay == nil {
-                selectedDay = schedules.first?.date ?? weekStart
+                selectedDay = aspvm.schedulesForSelectedWeek.first?.date ?? aspvm.selectedWeekStart ?? Date()
             }
         }
-        .onChange(of: weekStart) { _, _ in
-            selectedDay = schedules.first?.date ?? weekStart
+        .onChange(of: aspvm.selectedWeekStart) { _, _ in
+            selectedDay = aspvm.schedulesForSelectedWeek
+                .first?.date ?? aspvm.selectedWeekStart ?? Date()
         }
-    }
-
-    // TODO: 옮겨야함
-    private func addScheduleForSelectedDay() {
-        guard let day = selectedDay else { return }
-        let calendar = Calendar.current
-        let baseDate = calendar.startOfDay(for: day)
-        let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: baseDate) ?? baseDate
-        let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: baseDate) ?? baseDate
-
-        let schedule = WorkSchedule(
-            date: baseDate,
-            startTime: start,
-            endTime: end,
-            breakTime: job.defaultRestTime ?? 0,
-            memo: nil,
-            isFromAIImport: true,
-            aiImportBatchID: nil,
-            isEditedAfterAIImport: true
-        )
-        schedule.workplace = job
-        if !job.workSchedules.contains(where: { $0.id == schedule.id }) {
-            job.workSchedules.append(schedule)
-        }
-        modelContext.insert(schedule)
     }
 
     private func shortWeekdayText(_ date: Date) -> String {
@@ -180,69 +158,99 @@ struct AISavedWeekSingleCard: View {
     // 길게 누른 요일의 스케줄을 삭제하고 햅틱 피드백을 제공한다.
     // 롱프레스 직후 탭 오동작을 막기 위해 suppressNextTap 플래그를 함께 제어한다.
     private func handleDayLongPress(_ day: Date) {
-        guard let target = schedules.first(where: { Calendar.current.isDate($0.date, inSameDayAs: day) }) else {
+        guard aspvm.schedulesForSelectedWeek.contains(where: {
+            Calendar.current.isDate($0.date, inSameDayAs: day)
+        }) else {
             return
         }
 
         Haptics.impact(.medium)
         suppressNextTap = true
 
-        modelContext.delete(target)
+        aspvm.deleteSchedule(on: day, context: modelContext)
         if let selectedDay, Calendar.current.isDate(selectedDay, inSameDayAs: day) {
-            self.selectedDay = schedules
+            self.selectedDay = aspvm.schedulesForSelectedWeek
                 .map(\.date)
-                .first(where: { !Calendar.current.isDate($0, inSameDayAs: day) }) ?? weekStart
+                .first(where: { !Calendar.current.isDate($0, inSameDayAs: day) })
+            ?? aspvm.selectedWeekStart
+            ?? Date()
         }
     }
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(
-        for: Workplace.self,
-        WorkSchedule.self,
-        RegularSchedule.self,
-        WorkTimePreset.self,
-        configurations: config
-    )
+    struct PreviewWrapper: View {
+        let container: ModelContainer
+        let aspvm: AISavedSchedulesPanelViewModel
 
-    let calendar = Calendar.current
-    let today = calendar.startOfDay(for: Date())
-    let weekday = calendar.component(.weekday, from: today)
-    let offsetToMonday = (weekday + 5) % 7
-    let weekStart = calendar.date(byAdding: .day, value: -offsetToMonday, to: today) ?? today
+        init() {
+            let config = ModelConfiguration(isStoredInMemoryOnly: true)
+            container = try! ModelContainer(
+                for: Workplace.self,
+                WorkSchedule.self,
+                RegularSchedule.self,
+                WorkTimePreset.self,
+                configurations: config
+            )
 
-    let tuesday = calendar.date(byAdding: .day, value: 1, to: weekStart) ?? weekStart
-    let thursday = calendar.date(byAdding: .day, value: 3, to: weekStart) ?? weekStart
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let weekday = calendar.component(.weekday, from: today)
+            let offsetToMonday = (weekday + 5) % 7
+            let weekStart = calendar.date(byAdding: .day, value: -offsetToMonday, to: today) ?? today
 
-    let tueStart = calendar.date(bySettingHour: 14, minute: 0, second: 0, of: tuesday) ?? tuesday
-    let tueEnd = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: tuesday) ?? tuesday
-    let thuStart = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: thursday) ?? thursday
-    let thuEnd = calendar.date(bySettingHour: 15, minute: 0, second: 0, of: thursday) ?? thursday
+            let tuesday = calendar.date(byAdding: .day, value: 1, to: weekStart) ?? weekStart
+            let thursday = calendar.date(byAdding: .day, value: 3, to: weekStart) ?? weekStart
 
-    let s1 = WorkSchedule(date: tuesday, startTime: tueStart, endTime: tueEnd, memo: "미들", isFromAIImport: true)
-    let s2 = WorkSchedule(date: thursday, startTime: thuStart, endTime: thuEnd, memo: "오픈", isFromAIImport: true)
-    let job = Workplace(
-        name: "테스트 매장",
-        hourlyWage: 11000,
-        defaultDays: "월,화,수,목,금",
-        defaultStartTime: weekStart,
-        defaultEndTime: weekStart,
-        workType: .fixed
-    )
-    s1.workplace = job
-    s2.workplace = job
-    job.workSchedules.append(contentsOf: [s1, s2])
+            let tueStart = calendar.date(bySettingHour: 14, minute: 0, second: 0, of: tuesday) ?? tuesday
+            let tueEnd = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: tuesday) ?? tuesday
+            let thuStart = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: thursday) ?? thursday
+            let thuEnd = calendar.date(bySettingHour: 15, minute: 0, second: 0, of: thursday) ?? thursday
 
-    container.mainContext.insert(job)
-    container.mainContext.insert(s1)
-    container.mainContext.insert(s2)
+            let s1 = WorkSchedule(
+                date: tuesday,
+                startTime: tueStart,
+                endTime: tueEnd,
+                memo: "미들",
+                isFromAIImport: true
+            )
+            let s2 = WorkSchedule(
+                date: thursday,
+                startTime: thuStart,
+                endTime: thuEnd,
+                memo: "오픈",
+                isFromAIImport: true
+            )
 
-    return AISavedWeekSingleCard(
-        job: job,
-        weekStart: weekStart,
-        schedules: [s1, s2]
-    )
-    .padding()
-    .modelContainer(container)
+            let job = Workplace(
+                name: "테스트 매장",
+                hourlyWage: 11000,
+                defaultDays: "월,화,수,목,금",
+                defaultStartTime: weekStart,
+                defaultEndTime: weekStart,
+                workType: .fixed
+            )
+
+            s1.workplace = job
+            s2.workplace = job
+            job.workSchedules.append(contentsOf: [s1, s2])
+
+            container.mainContext.insert(job)
+            container.mainContext.insert(s1)
+            container.mainContext.insert(s2)
+
+            let viewModel = AISavedSchedulesPanelViewModel(job: job)
+            viewModel.selectedWeekStart = weekStart
+            self.aspvm = viewModel
+        }
+
+        var body: some View {
+            AISavedWeekSingleCard(aspvm: aspvm)
+                .padding()
+                .modelContainer(container)
+        }
+    }
+
+    return PreviewWrapper()
 }
+

@@ -65,9 +65,7 @@ struct AISavedSchedulesInlinePanel: View {
                 }
 
                 AISavedWeekSingleCard(
-                    job: job,
-                    weekStart: aspvm.selectedWeekStart ?? Date(),
-                    schedules: aspvm.schedulesForSelectedWeek
+                    aspvm: aspvm
                 )
                 .scaleEffect(weekCardPulse ? 1.035 : 1.0)
                 .animation(.spring(response: 0.28, dampingFraction: 0.68), value: weekCardPulse)

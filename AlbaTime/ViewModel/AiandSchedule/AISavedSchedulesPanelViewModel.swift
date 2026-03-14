@@ -53,7 +53,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         return "\(weekNo)주차 (\(dateText(week.start))~\(dateText(week.end))) \(week.count)건"
     }
     
-    // 카드에서
+    // 전체 ai스케줄 중에서 현재 선택한 주만 반환하는 메서드
     var schedulesForSelectedWeek: [WorkSchedule] {
         makeSchedulesForSelectedWeek(
             from: aiSchedules,
@@ -270,6 +270,40 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         if hasDataInForcedMonth {
             forcedMonth = nil
         }
+    }
+    
+    func addSchedule(on day: Date, context: ModelContext) {
+        let calendar = Calendar.current
+        let baseDate = calendar.startOfDay(for: day)
+        let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: baseDate) ?? baseDate
+        let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: baseDate) ?? baseDate
+        
+        let schedule = WorkSchedule(
+            date: baseDate,
+            startTime: start,
+            endTime: end,
+            breakTime: job.defaultRestTime ?? 0,
+            memo: nil,
+            isFromAIImport: true,
+            aiImportBatchID: nil,
+            isEditedAfterAIImport: true
+        )
+        
+        schedule.workplace = job
+        if !job.workSchedules.contains(where: { $0.id == schedule.id }) {
+            job.workSchedules.append(schedule)
+        }
+        context.insert(schedule)
+    }
+    
+    func deleteSchedule(on day: Date, context: ModelContext) {
+        guard let target = job.workSchedules.first(where: {
+            Calendar.current.isDate($0.date, inSameDayAs: day) && $0.isFromAIImport
+        }) else {
+            return
+        }
+        
+        context.delete(target)
     }
    
 }
