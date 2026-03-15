@@ -38,7 +38,7 @@ struct AISavedSchedulesInlinePanel: View {
             }
 
             if aspvm.aiSchedules.isEmpty {
-                Text("이 근무지에 저장된 주차 스케줄이 없습니다.")
+                Text("이 근무지에 저장된 스케줄이 없습니다.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -58,7 +58,7 @@ struct AISavedSchedulesInlinePanel: View {
                 )
 
                 if aspvm.schedulesForSelectedWeek.isEmpty {
-                    Text("선택한 주차에 저장된 스케줄이 없습니다.")
+                    Text("선택한 날짜에 저장된 스케줄이 없습니다.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.top, 8)
@@ -70,17 +70,30 @@ struct AISavedSchedulesInlinePanel: View {
                 .scaleEffect(weekCardPulse ? 1.035 : 1.0)
                 .animation(.spring(response: 0.28, dampingFraction: 0.68), value: weekCardPulse)
 
-                Button("선택한 주차 수정사항 저장") {
-                    // 현재 인라인 편집 상태를 SwiftData에 반영하고 동기화한다.
-                    aspvm.saveChanges(context: modelContext)
+                VStack(spacing: 10) {
+                    
+                    Button("선택한 기간 수정사항 저장") {
+                        // 현재 인라인 편집 상태를 SwiftData에 반영하고 동기화한다.
+                        aspvm.saveChanges(context: modelContext)
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.theme.primary)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    
+                    Button {
+                        aspvm.deleteSelectedSchedule(context: modelContext)
+                    } label: {
+                        Text("선택한 기간 데이터 삭제")
+                            .foregroundStyle(Color.red)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
                 }
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.theme.primary)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+
             }
         }
         .padding(14)

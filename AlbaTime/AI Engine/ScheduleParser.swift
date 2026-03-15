@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class ScheduleParser {
+final class ScheduleParser: Sendable {
     private enum Regex {
         static let date = try? NSRegularExpression(pattern: #"(\d{1,2})\s*[./월-]\s*(\d{1,2})"#)
         static let dayOnly = try? NSRegularExpression(pattern: #"^(\d{1,2})[^\d]*$"#)

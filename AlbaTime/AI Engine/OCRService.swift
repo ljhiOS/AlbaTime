@@ -15,7 +15,7 @@ struct RawTextBox {
     let boundingBox: CGRect
 }
 
-final class OCRService {
+final class OCRService: Sendable {
     private struct CandidateBox {
         let text: String
         let boundingBox: CGRect

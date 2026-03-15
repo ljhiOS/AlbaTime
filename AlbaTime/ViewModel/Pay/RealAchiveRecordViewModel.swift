@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+@MainActor
 class RealAchiveRecordViewModel: ObservableObject {
     
     // 뷰와 연동될 상태 변수들

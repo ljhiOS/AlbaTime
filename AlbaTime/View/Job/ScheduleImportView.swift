@@ -22,6 +22,8 @@ struct ScheduleImportView: View {
     
     @FocusState private var isNameFieldFocused: Bool
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(targetJob: Workplace? = nil) {
         self.targetJob = targetJob
     }
@@ -43,7 +45,7 @@ struct ScheduleImportView: View {
                 PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
                     Label("앨범 선택", systemImage: "photo.badge.plus")
                 }
-                .tint(.black)
+                .tint(colorScheme == .dark ? .white : .black )
             }
         }
         .background(Color.theme.surface)
@@ -64,20 +66,11 @@ struct ScheduleImportView: View {
             set: { sivm.showAlert = $0 }
         )) {
             Button("수기로 입력하기", role: .destructive) {
-                let isFixed = targetJob?.workType == .fixed
-                if isFixed {
-                    dismiss() // TODO: 이 부분 SchduleImportVIew로 넘어가게 바꿔야함
-                } else {
-                    triggerManualWeekFocus()
-                }
+                triggerManualWeekFocus()
             }
             Button("확인", role: .cancel) { }
         } message: {
-            if let type = targetJob?.workType, type == .flexible {
-                Text(sivm.errorMessage + "\n하단의 '수기로 입력하기' 버튼으로 스케줄을 완성할 수 있습니다.")
-            } else {
-                Text(sivm.errorMessage)
-            }
+            Text(sivm.errorMessage + "\n하단의 '수기로 입력하기' 버튼으로 스케줄을 완성할 수 있습니다.")
         }
     }
 }

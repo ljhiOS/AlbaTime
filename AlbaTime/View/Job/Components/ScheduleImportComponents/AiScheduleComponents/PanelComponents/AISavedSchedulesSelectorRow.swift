@@ -78,9 +78,9 @@ struct AISavedSchedulesSelectorRow: View {
                 weeks: weeks,
                 selectedWeekStart: $selectedWeekStart,
                 monthLabelText: "2026년 2월",
-                weekLabelDisplay: "1주차 (2/1~2/7) 3건",
+                weekLabelDisplay: "2/1 ~ 2/7 3건",
                 weekLabelText: { week in
-                    return "1주차 (\(week.start.monthDayText)~\(week.end.monthDayText)) \(week.count)건"
+                    return "\(week.start.monthDayText) ~ \(week.end.monthDayText) \(week.count)건"
                 },
                 onSelectMonth: { monthID in
                     selectedMonthID = monthID

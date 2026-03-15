@@ -1,6 +1,7 @@
-import UserNotifications
+@preconcurrency import UserNotifications
 import Foundation
 
+@MainActor
 class NotificationManager {
     static let shared = NotificationManager()
     private let appAlarmKey = "isAppAlarmOn"
@@ -67,10 +68,12 @@ class NotificationManager {
             }
             guard let self else { return }
             
-            if snapshot.workType == .flexible {
-                self.scheduleFlexibleNotifications(using: snapshot, center: center)
-            } else {
-                self.scheduleFixedNotifications(using: snapshot, center: center)
+            Task { @MainActor in
+                if snapshot.workType == .flexible {
+                    self.scheduleFlexibleNotifications(using: snapshot, center: center)
+                } else {
+                    self.scheduleFixedNotifications(using: snapshot, center: center)
+                }
             }
         }
     }
@@ -78,7 +81,10 @@ class NotificationManager {
     func refreshNotifications(for workplace: Workplace) {
         let snapshot = makeSnapshot(from: workplace)
         removeNotifications(prefix: "\(snapshot.id)_") { [weak self] in
-            self?.scheduleWorkNotification(using: snapshot)
+            guard let self else { return }
+            Task { @MainActor in
+                self.scheduleWorkNotification(using: snapshot)
+            }
         }
     }
     
@@ -187,18 +193,24 @@ class NotificationManager {
         removeNotifications(prefix: "\(workplace.id.uuidString)_", completion: nil)
     }
     
-    private func removeNotifications(prefix: String, completion: (() -> Void)?) {
+    private func removeNotifications(prefix: String, completion: (@Sendable () -> Void)?) {
         let center = UNUserNotificationCenter.current()
-        
+
         center.getPendingNotificationRequests { requests in
             let identifiers = requests
                 .map(\.identifier)
                 .filter { $0.hasPrefix(prefix) }
-            
+
             if !identifiers.isEmpty {
-                center.removePendingNotificationRequests(withIdentifiers: identifiers)
+                // Re-acquire the center within the closure to avoid capturing it
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
             }
-            completion?()
+
+            if let completion {
+                Task { @MainActor in
+                    completion()
+                }
+            }
         }
     }
     
