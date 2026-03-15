@@ -7,17 +7,9 @@ class NotificationManager {
     private let appAlarmKey = "isAppAlarmOn"
     
     private struct WorkplaceNotificationSnapshot {
-        struct FixedEntry {
-            let weekday: Int
-            let hour: Int
-            let minute: Int
-        }
-        
         let id: String
         let name: String
-        let workType: WorkType
         let isAlarmEnabled: Bool
-        let fixedEntries: [FixedEntry]
         let upcomingStartTimes: [Date]
     }
 
@@ -69,11 +61,7 @@ class NotificationManager {
             guard let self else { return }
             
             Task { @MainActor in
-                if snapshot.workType == .flexible {
-                    self.scheduleFlexibleNotifications(using: snapshot, center: center)
-                } else {
-                    self.scheduleFixedNotifications(using: snapshot, center: center)
-                }
+                self.scheduleUpcomingNotifications(using: snapshot)
             }
         }
     }
@@ -88,95 +76,38 @@ class NotificationManager {
         }
     }
     
-    private func scheduleFixedNotifications(using snapshot: WorkplaceNotificationSnapshot, center: UNUserNotificationCenter) {
-        guard !snapshot.fixedEntries.isEmpty else {
-            print("등록 가능한 고정 스케줄이 없어 알림을 건너뜁니다. workplace=\(snapshot.name)")
-            return
-        }
-        
-        for entry in snapshot.fixedEntries {
-            var triggerWeekday = entry.weekday
-            var totalMinutes = (entry.hour * 60 + entry.minute) - 15
-            if totalMinutes < 0 {
-                totalMinutes += 24 * 60
-                triggerWeekday = entry.weekday == 1 ? 7 : entry.weekday - 1
-            }
-            let triggerHour = totalMinutes / 60
-            let triggerMinute = totalMinutes % 60
-            
-            var triggerComponents = DateComponents()
-            triggerComponents.weekday = triggerWeekday
-            triggerComponents.hour = triggerHour
-            triggerComponents.minute = triggerMinute
-            
-            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: true)
-            let request = UNNotificationRequest(
-                identifier: "\(snapshot.id)_fixed_\(triggerWeekday)_\(triggerHour)_\(triggerMinute)",
-                content: makeContent(workplaceName: snapshot.name),
-                trigger: trigger
-            )
-            
-            center.add(request) { error in
-                if let error = error {
-                    print("❌ 고정 알림 등록 실패:", error.localizedDescription)
-                }
-            }
-        }
-    }
-    
-    private func scheduleFlexibleNotifications(using snapshot: WorkplaceNotificationSnapshot, center: UNUserNotificationCenter) {
+    private func scheduleUpcomingNotifications(using snapshot: WorkplaceNotificationSnapshot) {
         let calendar = Calendar.current
         let now = Date()
-        
+        let center = UNUserNotificationCenter.current()
+
         let upcomingSchedules = snapshot.upcomingStartTimes
             .filter { $0 > now }
-        
+            .sorted()
+
         guard !upcomingSchedules.isEmpty else {
-            print("다가오는 자율 근무 스케줄이 없어 알림을 건너뜁니다. workplace=\(snapshot.name)")
+            print("다가오는 근무 스케줄이 없어 알림을 건너뜁니다. workplace=\(snapshot.name)")
             return
         }
-        
+
         for startTime in upcomingSchedules {
             guard let triggerDate = calendar.date(byAdding: .minute, value: -15, to: startTime),
                   triggerDate > now else { continue }
-            
+
             let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            
+
             let request = UNNotificationRequest(
                 identifier: "\(snapshot.id)_shift_\(Int(startTime.timeIntervalSince1970))",
                 content: makeContent(workplaceName: snapshot.name),
                 trigger: trigger
             )
-            
+
             center.add(request) { error in
                 if let error = error {
-                    print("❌ 자율 알림 등록 실패:", error.localizedDescription)
+                    print("❌ 알림 등록 실패:", error.localizedDescription)
                 }
             }
-        }
-    }
-    
-    private func fixedScheduleEntries(for workplace: Workplace) -> [(weekday: Int, hour: Int, minute: Int)] {
-        let calendar = Calendar.current
-        let weekdayMap: [String: Int] = ["일": 1, "월": 2, "화": 3, "수": 4, "목": 5, "금": 6, "토": 7]
-        
-        if !workplace.regularSchedules.isEmpty {
-            return workplace.regularSchedules.compactMap { schedule in
-                guard let weekday = weekdayMap[schedule.dayOfWeek] else { return nil }
-                let time = calendar.dateComponents([.hour, .minute], from: schedule.startTime)
-                return (weekday, time.hour ?? 9, time.minute ?? 0)
-            }
-        }
-        
-        let tokens = workplace.defaultDays
-            .components(separatedBy: CharacterSet(charactersIn: ",/ "))
-            .filter { !$0.isEmpty }
-        
-        return tokens.compactMap { day in
-            guard let weekday = weekdayMap[day] else { return nil }
-            let time = calendar.dateComponents([.hour, .minute], from: workplace.defaultStartTime)
-            return (weekday, time.hour ?? 9, time.minute ?? 0)
         }
     }
     
@@ -215,45 +146,47 @@ class NotificationManager {
     }
     
     private func makeSnapshot(from workplace: Workplace) -> WorkplaceNotificationSnapshot {
-        let calendar = Calendar.current
-        let weekdayMap: [String: Int] = ["일": 1, "월": 2, "화": 3, "수": 4, "목": 5, "금": 6, "토": 7]
-        
-        let fixedEntries: [WorkplaceNotificationSnapshot.FixedEntry]
-        if !workplace.regularSchedules.isEmpty {
-            fixedEntries = workplace.regularSchedules.compactMap { schedule in
-                guard let weekday = weekdayMap[schedule.dayOfWeek] else { return nil }
-                let time = calendar.dateComponents([.hour, .minute], from: schedule.startTime)
-                return WorkplaceNotificationSnapshot.FixedEntry(
-                    weekday: weekday,
-                    hour: time.hour ?? 9,
-                    minute: time.minute ?? 0
-                )
-            }
-        } else {
-            let tokens = workplace.defaultDays
-                .components(separatedBy: CharacterSet(charactersIn: ",/ "))
-                .filter { !$0.isEmpty }
-            
-            fixedEntries = tokens.compactMap { day in
-                guard let weekday = weekdayMap[day] else { return nil }
-                let time = calendar.dateComponents([.hour, .minute], from: workplace.defaultStartTime)
-                return WorkplaceNotificationSnapshot.FixedEntry(
-                    weekday: weekday,
-                    hour: time.hour ?? 9,
-                    minute: time.minute ?? 0
-                )
-            }
-        }
-        
-        return WorkplaceNotificationSnapshot(
+        WorkplaceNotificationSnapshot(
             id: workplace.id.uuidString,
             name: workplace.name,
-            workType: workplace.workType,
             isAlarmEnabled: workplace.isAlarmEnabled,
-            fixedEntries: fixedEntries,
-            upcomingStartTimes: workplace.workSchedules.map(\.startTime)
+            upcomingStartTimes: upcomingShiftStartTimes(for: workplace, daysAhead: 30)
         )
     }
+
+    private func upcomingShiftStartTimes(for workplace: Workplace, daysAhead: Int) -> [Date] {
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfToday = calendar.startOfDay(for: now)
+
+        var results: [Date] = []
+
+        for offset in 0...daysAhead {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
+            let resolved = workplace.getSchedule(for: day)
+            
+            guard let schedule = workplace.getSchedule(for: day) else { continue }
+
+            let start = combineDateAndTime(date: day, time: schedule.startTime)
+            
+            guard start > now else { continue }
+            results.append(start)
+        }
+
+        return results.sorted()
+    }
+
+    private func combineDateAndTime(date: Date, time: Date) -> Date {
+        let calendar = Calendar.current
+        let timeComp = calendar.dateComponents([.hour, .minute], from: time)
+        return calendar.date(
+            bySettingHour: timeComp.hour ?? 0,
+            minute: timeComp.minute ?? 0,
+            second: 0,
+            of: date
+        ) ?? date
+    }
+
     
     // 모든 알람 허용 X
     func removeAllNotifications() {
