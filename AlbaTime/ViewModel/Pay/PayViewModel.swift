@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class PayViewModel: ObservableObject {
     // MARK: - Inputs
     @Published var currentMonth: Date = Date()
