@@ -163,7 +163,6 @@ class NotificationManager {
 
         for offset in 0...daysAhead {
             guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
-            let resolved = workplace.getSchedule(for: day)
             
             guard let schedule = workplace.getSchedule(for: day) else { continue }
 
