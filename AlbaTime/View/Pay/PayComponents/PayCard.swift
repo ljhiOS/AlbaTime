@@ -9,10 +9,7 @@ import SwiftUI
 
 struct PayCard: View {
     
-    var totalPay: Int
-    var expectedPay: Int
-    var totalHours: Double
-    var averageWage: Int
+    @ObservedObject var pvm: PayViewModel
     var onToggle: (() -> Void)? = nil
     
     @State private var showExpected: Bool = false
@@ -28,7 +25,7 @@ struct PayCard: View {
                     .foregroundStyle(.white)
                     .padding(.top)
             
-                Text("\((showExpected ? expectedPay : totalPay).formatted())원")
+                Text("\((showExpected ? pvm.projectedSalaryData.totalPay : pvm.salaryData.totalPay).formatted())원")
                     .foregroundStyle(.yellow)
                     .font(.title)
                     .bold()
@@ -47,7 +44,7 @@ struct PayCard: View {
                         .font(.subheadline)
                         .foregroundStyle(.white)
                     
-                    Text(String(format: "%.1f시간", totalHours))
+                    Text(String(format: "%.1f시간", pvm.salaryData.totalHours))
                         .foregroundStyle(.white)
                         .font(.system(size: 20))
                         .bold()
@@ -60,7 +57,7 @@ struct PayCard: View {
                         .font(.subheadline)
                         .foregroundStyle(.white)
                     
-                    Text("\(averageWage.formatted())원")
+                    Text("\(pvm.averageWage.formatted())원")
                         .foregroundStyle(.white)
                         .font(.system(size: 20))
                         .bold(true)
@@ -103,11 +100,29 @@ struct PayCard: View {
 }
 
 #Preview {
-    PayCard(
-        totalPay: 1143220,    // 임시 급여 데이터
-        expectedPay: 115000,
-        totalHours: 108.5,    // 임시 시간 데이터
-        averageWage: 10530    // 임시 평균 시급
+    let pvm = PayViewModel()
+    pvm.salaryData = SalaryBreakdown(
+        basicPay: 1050000,
+        nightPay: 93220,
+        holidayPay: 120000,
+        taxAmount: 120500,
+        totalPay: 1142720,
+        totalHours: 108.5,
+        workingDays: 12
     )
-    .padding() // 프리뷰에서 여백을 두어 보기 좋게 설정
+    pvm.projectedSalaryData = SalaryBreakdown(
+        basicPay: 1240000,
+        nightPay: 110000,
+        holidayPay: 160000,
+        taxAmount: 138800,
+        totalPay: 1371200,
+        totalHours: 128.0,
+        workingDays: 14
+    )
+    pvm.averageWage = 10530
+
+    return PayCard(pvm: pvm)
+        .padding()
 }
+
+

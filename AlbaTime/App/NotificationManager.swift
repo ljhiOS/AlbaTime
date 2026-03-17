@@ -133,8 +133,7 @@ class NotificationManager {
                 .filter { $0.hasPrefix(prefix) }
 
             if !identifiers.isEmpty {
-                // Re-acquire the center within the closure to avoid capturing it
-                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
+                center.removePendingNotificationRequests(withIdentifiers: identifiers)
             }
 
             if let completion {
@@ -196,7 +195,7 @@ class NotificationManager {
     // 디버깅용
     func printPendingNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-            print("📋 예약된 알림 \(requests.count)개")
+            print("예약된 알림 \(requests.count)개")
             for req in requests {
                 if let trigger = req.trigger as? UNCalendarNotificationTrigger,
                    let date = trigger.nextTriggerDate() {

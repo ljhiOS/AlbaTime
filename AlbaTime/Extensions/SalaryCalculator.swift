@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: 누적 급여 계산 고쳐야 할거 같음
 struct SalaryCalculator {
     private struct WeekKey: Hashable {
         let yearForWeekOfYear: Int

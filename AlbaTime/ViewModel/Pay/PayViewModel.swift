@@ -21,12 +21,13 @@ class PayViewModel: ObservableObject {
     
     // MARK: - Logic
     func updateData(workplaces: [Workplace]) {
+        // 누적 급여
         let accrued = SalaryCalculator.calculateAccruedMonthlyPay(
             workplaces: workplaces,
             targetMonth: currentMonth,
             asOf: Date()
         )
-        
+        // 예상 급여
         let projected = SalaryCalculator.calculateTotalMonthlyPay(
             workplaces: workplaces,
             targetMonth: currentMonth

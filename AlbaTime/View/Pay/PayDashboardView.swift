@@ -26,10 +26,7 @@ struct PayDashboardView: View {
                 VStack(spacing: 24) {
                     
                     PayCard(
-                        totalPay: pvm.salaryData.totalPay,
-                        expectedPay: pvm.projectedSalaryData.totalPay,
-                        totalHours: pvm.salaryData.totalHours,
-                        averageWage: pvm.averageWage,
+                        pvm: pvm,
                         onToggle: {
                             if showPayCardHint {
                                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -53,16 +50,16 @@ struct PayDashboardView: View {
                                         .stroke(Color.theme.primary.opacity(0.35), lineWidth: 1)
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .shadow(color: .black.opacity(0.14), radius: 8, x: 0, y: 4)
-                            .padding(.top, 6)
-                            .padding(.trailing, 6)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                            .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    showPayCardHint = false
+                                .shadow(color: .black.opacity(0.14), radius: 8, x: 0, y: 4)
+                                .padding(.top, 6)
+                                .padding(.trailing, 6)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                                .onTapGesture {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        showPayCardHint = false
+                                    }
+                                    hasSeenPayCardHint = true
                                 }
-                                hasSeenPayCardHint = true
-                            }
                         }
                     }
                     
