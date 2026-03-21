@@ -80,7 +80,6 @@ private extension ScheduleImportView {
     var contentView: some View {
         if sivm.selectedImage == nil {
             ScheduleImportIdleSection(
-                // TODO: ssvm 자체로 넘기는게 200배는 나을듯 ㅇㅇ
                 name: $myName,
                 onTapManualInput: {
                     triggerManualWeekFocus()
