@@ -1,0 +1,200 @@
+//
+//  ScheduleImportViewModel.swift
+//  AlbaTime
+//
+//  Created by 이준희 on 12/8/25.
+//
+
+import SwiftUI
+import Vision
+import SwiftData
+import PhotosUI
+
+// 뷰 상태 처리
+enum ScheduleImportPhase {
+    case idle
+    case loading
+    case result
+}
+
+@MainActor
+class ScheduleImportViewModel: ObservableObject {
+    
+    // ScheduleImportResultList에 사용
+    @Published var parsedSchedules: [ParsedSchedule] = []
+    
+    // processSelectedPhoto에서 사용
+    @Published var selectedImage: UIImage? // ScheduleImportResultList에 사진 보여주기
+    @Published var phase: ScheduleImportPhase = .idle
+    
+    @Published var showAlert: Bool = false
+    @Published var errorMessage: String = ""
+    
+    // preset 연관 변수
+    @Published var isAddingPreset: Bool = false
+    @Published var newPresetLabel: String = "" // 프리셋 이름
+    @Published var newPresetStart: Date = Date.makeTime(9, 0)
+    @Published var newPresetEnd: Date = Date.makeTime(18, 0)
+    
+    var targetJob: Workplace?
+    
+    // UseCase
+    private let saveParsedSchedules = SaveParsedSchedules()
+    private let analyzeScheduleImage = AnalyzeScheduleImage()
+    
+    // .onAppear로 뷰 진입시 모델 연결
+    func setTargetJob(_ job: Workplace) {
+        self.targetJob = job
+    }
+
+    // 뷰에서 .onChange로 뷰 상태 변경시 호출
+    func processSelectedPhoto(item: PhotosPickerItem?, targetJob: Workplace?, targetName: String) async {
+        guard let item else { return }
+        
+        phase = .loading
+        
+        do {
+            // Transferable 프로토콜을 이용해 데이터 로드
+            if let data = try await item.loadTransferable(type: Data.self),
+               let image = UIImage(data: data) {
+                
+                self.selectedImage = image
+                
+                // 근무지 정보가 있다면 바로 분석 시작
+                if let job = targetJob {
+                    self.setTargetJob(job)
+                    self.analyzeImage(targetName: targetName)
+                }
+            } else {
+                self.errorMessage = "이미지 데이터를 불러올 수 없습니다."
+                self.showAlert = true
+            }
+        } catch {
+            print("사진 로드 에러: \(error)")
+            self.errorMessage = "사진 로드 중 오류 발생.\n권한을 확인해주세요."
+            self.showAlert = true
+        }
+    }
+    
+    // processSelectedPhoto에서 사용
+    func analyzeImage(targetName: String = "") {
+        guard let image = selectedImage else { return }
+        guard let job = targetJob else {
+            errorMessage = "근무지 정보가 없습니다."
+            showAlert = true
+            return
+        }
+
+        phase = .loading
+        parsedSchedules = []
+
+        Task {
+            do {
+                let schedules = try await analyzeScheduleImage.execute(
+                    image: image,
+                    targetName: targetName,
+                    presets: job.timePresets
+                )
+
+                self.parsedSchedules = schedules
+
+                if schedules.isEmpty {
+                    self.phase = .idle
+                    self.errorMessage = targetName.isEmpty
+                        ? "스케줄 형식을 찾지 못했어요."
+                        : "'\(targetName)'님의 스케줄을 찾지 못했어요.\n이름이 정확한지 확인해주세요."
+                    self.showAlert = true
+                } else {
+                    self.phase = .result
+                }
+            } catch {
+                self.phase = .idle
+                self.errorMessage = "분석 중 오류가 발생했어요: \(error.localizedDescription)"
+                self.showAlert = true
+            }
+        }
+    }
+
+    // SceduleImportResultList에서 ai로 인식한 스케줄 외 추가시에 호출
+    func addNewSchedule(targetWeekStart: Date? = nil) {
+        let calendar = Calendar.current
+        let weekStart = calendar.startOfDay(for: targetWeekStart ?? Date())
+        let weekEndExclusive = calendar.date(byAdding: .day, value: 7, to: weekStart) ?? weekStart
+        var targetDate = weekStart
+        
+        // 날짜순 정렬
+        let schedulesInWeek = parsedSchedules
+            .filter { $0.date >= weekStart && $0.date < weekEndExclusive }
+            .sorted(by: { $0.date < $1.date })
+        
+        // UX 관점 이미 인식된 날짜 다음 날로 자동 생성 ex) 월 화 있으면 추가 버튼 누르면 수요일 자동생성
+        if let lastSchedule = schedulesInWeek.last {
+            if let nextDay = calendar.date(byAdding: .day, value: 1, to: lastSchedule.date) {
+                targetDate = nextDay
+            }
+        }
+        
+        // 주 넘어가면 마지막날로 보정하기
+        if targetDate >= weekEndExclusive {
+            targetDate = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
+        }
+        
+        // 2. 기본 시간: 09:00 ~ 18:00 // guard let 구문으로 강제언래핑 제거
+        guard let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: targetDate),
+              let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: targetDate)
+        else {
+            errorMessage = "기본 시간 생성에 실패했어요."
+            showAlert = true
+            return
+        }
+        
+        let newSchedule = ParsedSchedule(
+            date: targetDate,
+            startTime: start,
+            endTime: end,
+            workLabel: nil
+        )
+        
+        // 추가
+        parsedSchedules.append(newSchedule)
+        
+        // 날짜순 정렬 (추가된 게 중간에 끼어들 수도 있으므로)
+        parsedSchedules.sort { $0.date < $1.date }
+    }
+    
+    // ScheduleImportBottomButtons에서 저장버튼 누를시에 호출 -> ai 인식 결과 저장
+    func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil, isFromAIImport: Bool = true) -> Bool {
+        do {
+            try saveParsedSchedules.execute(
+                job: targetJob,
+                parsedSchedules: parsedSchedules,
+                targetWeekStart: targetWeekStart,
+                context: context,
+                isFromAIImport: isFromAIImport
+            )
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            showAlert = true
+            return false
+        }
+    }
+    
+    // MARK: preset 연관 메서드
+    // ScheduleImportPresetGroup에서 사용
+    
+    func addNewPreset() {
+        guard let job = targetJob, !newPresetLabel.isEmpty else { return }
+        let preset = WorkTimePreset(label: newPresetLabel, startTime: newPresetStart, endTime: newPresetEnd)
+        preset.workplace = job
+        job.timePresets.append(preset)
+        newPresetLabel = "" // 입력창 초기화 다음 프리셋 추가를 위해
+        isAddingPreset = false
+    }
+
+    func deletePreset(_ preset: WorkTimePreset) {
+        guard let job = targetJob,
+              let index = job.timePresets.firstIndex(of: preset) else { return }
+        job.timePresets.remove(at: index)
+    }
+}
