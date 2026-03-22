@@ -10,6 +10,13 @@ import Vision
 import SwiftData
 import PhotosUI
 
+// 뷰 상태 처리
+enum ScheduleImportPhase {
+    case idle
+    case loading
+    case result
+}
+
 @MainActor
 class ScheduleImportViewModel: ObservableObject {
     
@@ -18,7 +25,7 @@ class ScheduleImportViewModel: ObservableObject {
     
     // processSelectedPhoto에서 사용
     @Published var selectedImage: UIImage? // ScheduleImportResultList에 사진 보여주기
-    @Published var isProcessing: Bool = false
+    @Published var phase: ScheduleImportPhase = .idle
     
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
@@ -40,7 +47,7 @@ class ScheduleImportViewModel: ObservableObject {
     func processSelectedPhoto(item: PhotosPickerItem?, targetJob: Workplace?, targetName: String) async {
         guard let item else { return }
         
-        isProcessing = true        
+        phase = .loading
         
         do {
             // Transferable 프로토콜을 이용해 데이터 로드
@@ -74,7 +81,7 @@ class ScheduleImportViewModel: ObservableObject {
             return
         }
         
-        isProcessing = true
+        phase = .loading
         parsedSchedules = [] // 초기화
         
         Task {
@@ -105,9 +112,10 @@ class ScheduleImportViewModel: ObservableObject {
                 
                 // 결과 업데이트
                 self.parsedSchedules = schedules
-                self.isProcessing = false
+                phase = .result
                 
                 if schedules.isEmpty {
+                    phase = .result
                     self.errorMessage = targetName.isEmpty
                     ? "스케줄 형식을 찾지 못했어요."
                     : "'\(targetName)'님의 스케줄을 찾지 못했어요.\n이름이 정확한지 확인해주세요."
@@ -117,7 +125,7 @@ class ScheduleImportViewModel: ObservableObject {
                 }
                 
             } catch {
-                self.isProcessing = false
+                phase = .idle
                 print("분석 에러: \(error)")
                 self.errorMessage = "분석 중 오류가 발생했어요: \(error.localizedDescription)"
                 self.showAlert = true

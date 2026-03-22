@@ -78,7 +78,8 @@ struct ScheduleImportView: View {
 private extension ScheduleImportView {
     @ViewBuilder
     var contentView: some View {
-        if sivm.selectedImage == nil {
+        switch sivm.phase {
+        case .idle:
             ScheduleImportIdleSection(
                 name: $myName,
                 onTapManualInput: {
@@ -88,11 +89,11 @@ private extension ScheduleImportView {
                 hasSavedAISchedules: hasSavedAISchedules,
                 isNameFieldFocused: $isNameFieldFocused,
                 sivm: sivm,
-                ssvm: ssvm
-            )
-        } else if sivm.isProcessing {
+                ssvm: ssvm)
+        case .loading:
             ScheduleImportLoadingView(targetName: myName)
-        } else {
+        
+        case .result:
             ScheduleImportResultList(sivm: sivm)
         }
     }
@@ -100,12 +101,12 @@ private extension ScheduleImportView {
     private func triggerManualWeekFocus() {
         ssvm.requestManualFocus()
         sivm.selectedImage = nil
-        sivm.isProcessing = false
+        sivm.phase = .idle
     }
 
     @ViewBuilder
     var bottomButtons: some View {
-        if sivm.selectedImage != nil {
+        if sivm.phase == .result {
             ScheduleImportBottomButtons(
                 sivm: sivm,
                 selectedWeekStart: ssvm.selectedWeekStart,
