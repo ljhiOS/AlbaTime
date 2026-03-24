@@ -105,100 +105,13 @@ class Workplace {
 extension Workplace {
     // 고정 근무지일 경우 해당 주 ai 스케줄로 변경시 그 데이터로 변경(캘린더 반영)
     func hasAIOverrideInWeek(containing date: Date) -> Bool {
-        let calendar = Calendar.current
-        let target = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
-        
-        return workSchedules.contains { workSchedule in
-            guard workSchedule.isFromAIImport else { return false }
-            
-            let workScheduleWeekComponents = calendar.dateComponents(
-                [.yearForWeekOfYear, .weekOfYear], from: workSchedule.date
-            )
-            
-            return workScheduleWeekComponents.yearForWeekOfYear == target.yearForWeekOfYear &&
-            workScheduleWeekComponents.weekOfYear == target.weekOfYear
-        }
+        ScheduleResolver.hasAIOverride(in: self, containing: date)
     }
     
     /// [핵심 로직] 특정 날짜에 근무가 있는지 판단
     /// - 1순위: AI/수기로 저장된 기록 (무조건 최우선)
     /// - 2순위: 고정 근무 패턴 (자율 근무제는 해당 없음)
     func getSchedule(for date: Date) -> (startTime: Date, endTime: Date, title: String?)? {
-        let calendar = Calendar.current
-        
-        // 1. 개별 기록(AI/수기) 확인 -> 자율/고정 모두 최우선 적용
-        if let actualRecord = workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: date) }) {
-            return (actualRecord.startTime, actualRecord.endTime, actualRecord.memo)
-        }
-        
-        if workType == .fixed && hasAIOverrideInWeek(containing: date) {
-            return nil
-        }
-        
-        // 2. 고정 근무 패턴 확인 (자율 근무는 여기서 탈락)
-        if workType == .fixed {
-            let weekdayStr = date.koreanWeekday
-            
-            // 상세 요일 설정
-            if let regular = regularSchedules.first(where: { $0.dayOfWeek == weekdayStr }) {
-                let start = combineDateAndTime(date: date, time: regular.startTime)
-                var end = combineDateAndTime(date: date, time: regular.endTime)
-                // 종료시간이 시작시간보다 빠르면 종료시간을 다음 날로 보정
-                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end) ?? end }
-                return (start, end, nil)
-            }
-            
-            // 간편 요일 설정
-            else if regularSchedules.isEmpty && defaultDays.contains(weekdayStr) {
-                let start = combineDateAndTime(date: date, time: defaultStartTime)
-                var end = combineDateAndTime(date: date, time: defaultEndTime)
-                if end < start { end = calendar.date(byAdding: .day, value: 1, to: end) ?? end }
-                return (start, end, nil)
-            }
-        }
-        
-        return nil
+        ScheduleResolver.resolve(workplace: self, for: date)
     }
-    
-    private func combineDateAndTime(date: Date, time: Date) -> Date {
-        let calendar = Calendar.current
-        let timeComp = calendar.dateComponents([.hour, .minute], from: time)
-        return calendar.date(bySettingHour: timeComp.hour ?? 0, minute: timeComp.minute ?? 0, second: 0, of: date) ?? date
-    }
-}
-
-// MARK: - Enums
-enum TaxType: String, Codable, CaseIterable {
-    case none = "세금 없음"
-    case threePointThree = "3.3% (사업소득세)"
-    case fourMajor = "4대보험 (약 9.32%)"
-    
-    var rate: Double {
-        switch self {
-        case .none: return 0.0
-        case .threePointThree: return 0.033
-        case .fourMajor: return 0.0932
-        }
-    }
-}
-
-enum AllowanceType: String, Codable, CaseIterable {
-    case none = "수당 없음"
-    case holiday = "주휴수당"
-    case night = "야간수당"
-    case both = "주휴 + 야간"
-    
-    var includesHoliday: Bool {
-        self == .holiday || self == .both
-    }
-    
-    var includesNight: Bool {
-        self == .night || self == .both
-    }
-}
-
-enum WorkType: String, Codable, CaseIterable, Identifiable {
-    case fixed = "요일 고정"
-    case flexible = "횟수/시간 중심"
-    var id: Self { self }
 }

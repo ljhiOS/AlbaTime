@@ -12,6 +12,8 @@ struct JobListView: View {
     @Query(sort: \Workplace.createdAt, order: .reverse) var workplaces: [Workplace]
     @Environment(\.modelContext) private var modelContext
     
+    @StateObject private var jlvm = JobListViewModel()
+    
     @State private var showTypeSelection = false
     @State private var selectedWorkType: WorkType?
     @State private var selectedDetailJob: Workplace?
@@ -56,7 +58,7 @@ struct JobListView: View {
                         Section(header: Label("고정됨", systemImage: "pin.fill")) {
                             ForEach(pinnedJobs) { job in
                                 WorkCard(job: job, onDelete: {
-                                    deleteWorkCard(job)
+                                    jlvm.delete(job, context: modelContext)
                                 }, onPin: {
                                     togglePin(job)
                                 }, onShowDetail: {
@@ -74,7 +76,7 @@ struct JobListView: View {
                     Section {
                         ForEach(normalJobs) { job in
                             WorkCard(job: job, onDelete: {
-                                deleteWorkCard(job)
+                                jlvm.delete(job, context: modelContext)
                             }, onPin: {
                                 togglePin(job)
                             }, onShowDetail: {
@@ -127,22 +129,6 @@ struct JobListView: View {
     }
     
     // MARK: - Logic
-    
-    private func deleteWorkCard(_ workplace: Workplace) {
-        NotificationManager.shared.removeNotifications(for: workplace)
-        withAnimation {
-            modelContext.delete(workplace)
-        }
-        
-        do {
-            try modelContext.save()
-            let workplaces = try modelContext.fetch(FetchDescriptor<Workplace>())
-            NextShiftSyncService.sync(workplaces: workplaces)
-        } catch {
-            print("삭제/동기화 실패: \(error)")
-        }
-    }
-    
     private func togglePin(_ workplace: Workplace) {
         withAnimation {
             workplace.isPinned.toggle()
