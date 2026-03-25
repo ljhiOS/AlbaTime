@@ -30,12 +30,12 @@ struct ScheduleImportResultList: View {
             
             // 2. 스케줄 리스트 섹션 (인라인 편집)
             Section {
-                if sivm.parsedSchedules.isEmpty {
+                if sivm.session.scheduleImportDraft.parsedSchedule.isEmpty {
                     emptyStateView
                         .listRowBackground(Color.theme.field)
                 } else {
                     // 배열 Binding으로 각 행을 인라인 편집한다.
-                    ForEach($sivm.parsedSchedules) { $schedule in
+                    ForEach($sivm.session.scheduleImportDraft.parsedSchedule) { $schedule in
                         InlineEditRow(schedule: $schedule)
                             .focused($focusedField, equals: schedule.id.uuidString)
                             .listRowBackground(Color.theme.field)
@@ -46,7 +46,7 @@ struct ScheduleImportResultList: View {
                 VStack(alignment: .leading) {
                     
                     HStack {
-                        Text("인식된 스케줄 (\(sivm.parsedSchedules.count)건)")
+                        Text("인식된 스케줄 (\(sivm.session.scheduleImportDraft.parsedSchedule.count)건)")
                         Spacer()
                         // 헤더에 [+] 버튼 배치
                         Button {
@@ -57,7 +57,7 @@ struct ScheduleImportResultList: View {
                                 .fontWeight(.bold)
                         }
                     }
-                    if !sivm.parsedSchedules.isEmpty {
+                    if !sivm.session.scheduleImportDraft.parsedSchedule.isEmpty {
                         Text("시간을 터치하여 수정하고, 왼쪽으로 밀어서 삭제하세요.")
                             .font(.footnote)
                     }
@@ -75,7 +75,7 @@ struct ScheduleImportResultList: View {
     
     // MARK: - Actions
     private func deleteSchedule(at offsets: IndexSet) {
-        sivm.parsedSchedules.remove(atOffsets: offsets)
+        sivm.session.scheduleImportDraft.parsedSchedule.remove(atOffsets: offsets)
     }
     
     // MARK: - Subviews
@@ -92,12 +92,17 @@ struct ScheduleImportResultList: View {
 }
 
 #Preview("데이터 없음") {
-    let vm = ScheduleImportViewModel()
-    return ScheduleImportResultList(sivm: vm)
+    let viewModel = ScheduleImportViewModel(
+        session: JobEditingSession(type: .fixed)
+    )
+
+    return ScheduleImportResultList(sivm: viewModel)
 }
 
 #Preview("데이터 있음") {
-    let vm = ScheduleImportViewModel()
+    let viewModel = ScheduleImportViewModel(
+        session: JobEditingSession(type: .fixed)
+    )
 
     let calendar = Calendar.current
     let base = calendar.startOfDay(for: Date())
@@ -107,10 +112,11 @@ struct ScheduleImportResultList: View {
     let start2 = calendar.date(bySettingHour: 14, minute: 0, second: 0, of: day2) ?? day2
     let end2 = calendar.date(bySettingHour: 22, minute: 0, second: 0, of: day2) ?? day2
 
-    vm.parsedSchedules = [
+    viewModel.session.scheduleImportDraft.parsedSchedule = [
         ParsedSchedule(date: base, startTime: start1, endTime: end1, workLabel: "오픈"),
         ParsedSchedule(date: day2, startTime: start2, endTime: end2, workLabel: "마감")
     ]
 
-    return ScheduleImportResultList(sivm: vm)
+    return ScheduleImportResultList(sivm: viewModel)
 }
+

@@ -23,6 +23,7 @@ enum SaveParsedSchedulesError: Error {
 }
 
 struct SaveParsedSchedules {
+    let appWriteCoordinator: AppWriteCoordinator
     @MainActor
     func execute(
         job: Workplace?,
@@ -83,12 +84,8 @@ struct SaveParsedSchedules {
             context.insert(newSchedule)
         }
         
-        NotificationManager.shared.refreshNotifications(for: job)
-        
         do {
-            try context.save()
-            let workplaces = try context.fetch(FetchDescriptor<Workplace>())
-            NextShiftSyncService.sync(workplaces: workplaces)
+            try appWriteCoordinator.commit(context: context, affectedWorkplace: job)
         } catch {
             throw SaveParsedSchedulesError.saveFailed(error.localizedDescription)
         }

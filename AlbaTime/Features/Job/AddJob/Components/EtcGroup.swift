@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct EtcGroup: View {
-    @Bindable var job: Workplace
+    @ObservedObject var ajvm: AddJobViewModel
     
     let focusedField: FocusState<AddJobField?>.Binding
     
@@ -19,7 +19,7 @@ struct EtcGroup: View {
                 Text("휴게 시간 (선택)")
                     .font(.callout)
                 HStack(spacing: 10) {
-                    TextField("예: 60", value: $job.defaultRestTime, format: .number)
+                    TextField("예: 60", value: $ajvm.session.jobDraft.defaultRestTime, format: .number)
                         .keyboardType(.numberPad)
                         .padding(10)
                         .background(Color.theme.field)
@@ -40,11 +40,7 @@ struct EtcGroup: View {
             VStack(alignment: .leading) {
                 Text("메모 (선택)")
                     .font(.callout)
-                TextField("특이사항 입력", text: Binding(
-                    get: { job.defaultMemo ?? "" },
-                    set: { job.defaultMemo = $0 }
-                ), axis: .vertical
-                )
+                TextField("특이사항 입력", text: $ajvm.session.jobDraft.defaultMemo, axis: .vertical)
                 .padding(10)
                 .padding(.bottom, 100)
                 .background(Color.theme.field)
@@ -54,33 +50,6 @@ struct EtcGroup: View {
 
             }
         }
-    }
-}
-
-#Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, configurations: config)
-
-    let sampleJob = Workplace(
-        name: "스타벅스",
-        hourlyWage: 10000,
-        defaultDays: "",
-        defaultStartTime: Date(),
-        defaultEndTime: Date(),
-        defaultRestTime: 60,
-        defaultMemo: "사장님이 화요일에 오심"
-    )
-
-    EtcGroupPreviewWrapper(job: sampleJob)
-        .modelContainer(container)
-}
-
-private struct EtcGroupPreviewWrapper: View {
-    let job: Workplace
-    @FocusState private var focusedField: AddJobField?
-
-    var body: some View {
-        EtcGroup(job: job, focusedField: $focusedField)
     }
 }
 

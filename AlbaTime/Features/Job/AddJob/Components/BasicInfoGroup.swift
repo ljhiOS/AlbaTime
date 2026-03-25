@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct BasicInfoGroup: View {
-    @Bindable var job: Workplace
+    @ObservedObject var ajvm: AddJobViewModel
     
     let focusedField: FocusState<AddJobField?>.Binding
     
@@ -17,7 +17,7 @@ struct BasicInfoGroup: View {
         VStack(alignment: .leading, spacing: 30) {
             VStack(alignment: .leading) {
                 Text("매장명").font(.callout)
-                TextField("예) 스타벅스 강남점", text: $job.name)
+                TextField("예) 스타벅스 강남점", text: $ajvm.session.jobDraft.name)
                     .padding(10)
                     .background(Color.theme.field)
                     .cornerRadius(8)
@@ -30,8 +30,8 @@ struct BasicInfoGroup: View {
                     .font(.callout)
                 
                 let wageProxy = Binding<String>(
-                    get: { job.hourlyWage == 0 ? "" : String(job.hourlyWage) },
-                    set: { job.hourlyWage = Int($0) ?? 0 }
+                    get: { ajvm.session.jobDraft.hourlyWage == 0 ? "" : String(ajvm.session.jobDraft.hourlyWage) },
+                    set: { ajvm.session.jobDraft.hourlyWage = Int($0) ?? 0 }
                 )
                 
                 
@@ -48,7 +48,7 @@ struct BasicInfoGroup: View {
                 VStack(alignment: .leading) {
                     Text("세금 적용")
                         .font(.callout)
-                    Picker("세금 종류", selection: $job.taxType) {
+                    Picker("세금 종류", selection: $ajvm.session.jobDraft.taxType) {
                         ForEach(TaxType.allCases, id: \.self) { type in Text(type.rawValue).tag(type) }
                     }
                     .pickerStyle(.menu)
@@ -62,7 +62,7 @@ struct BasicInfoGroup: View {
                 VStack(alignment: .leading) {
                     Text("수당 적용")
                         .font(.callout)
-                    Picker("수당 종류", selection: $job.allowanceType) {
+                    Picker("수당 종류", selection: $ajvm.session.jobDraft.allowanceType) {
                         ForEach(AllowanceType.allCases, id: \.self) { type in
                             Text(type.rawValue).tag(type)
                         }
@@ -77,29 +77,3 @@ struct BasicInfoGroup: View {
         }
     }
 }
-
-#Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, configurations: config)
-
-    let sampleJob = Workplace(
-        name: "GS25 강남점",
-        hourlyWage: 10300,
-        defaultDays: "",
-        defaultStartTime: Date(),
-        defaultEndTime: Date()
-    )
-
-    PreviewWrapper(job: sampleJob)
-        .modelContainer(container)
-}
-
-private struct PreviewWrapper: View {
-    let job: Workplace
-    @FocusState private var focusedField: AddJobField?
-
-    var body: some View {
-        BasicInfoGroup(job: job, focusedField: $focusedField)
-    }
-}
-

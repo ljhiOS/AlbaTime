@@ -20,9 +20,6 @@ enum ScheduleImportPhase {
 @MainActor
 class ScheduleImportViewModel: ObservableObject {
     
-    // ScheduleImportResultList에 사용
-    @Published var parsedSchedules: [ParsedSchedule] = []
-    
     // processSelectedPhoto에서 사용
     @Published var selectedImage: UIImage? // ScheduleImportResultList에 사진 보여주기
     @Published var phase: ScheduleImportPhase = .idle
@@ -36,19 +33,18 @@ class ScheduleImportViewModel: ObservableObject {
     @Published var newPresetStart: Date = Date.makeTime(9, 0)
     @Published var newPresetEnd: Date = Date.makeTime(18, 0)
     
-    var targetJob: Workplace?
-    
+    var session: JobEditingSession
+
     // UseCase
-    private let saveParsedSchedules = SaveParsedSchedules()
+    private let saveParsedSchedules = SaveParsedSchedules(appWriteCoordinator: AppWriteCoordinator())
     private let analyzeScheduleImage = AnalyzeScheduleImage()
     
-    // .onAppear로 뷰 진입시 모델 연결
-    func setTargetJob(_ job: Workplace) {
-        self.targetJob = job
+    init(session: JobEditingSession) {
+        self.session = session
     }
-
+    
     // 뷰에서 .onChange로 뷰 상태 변경시 호출
-    func processSelectedPhoto(item: PhotosPickerItem?, targetJob: Workplace?, targetName: String) async {
+    func processSelectedPhoto(item: PhotosPickerItem?, targetName: String) async {
         guard let item else { return }
         
         phase = .loading
@@ -59,12 +55,7 @@ class ScheduleImportViewModel: ObservableObject {
                let image = UIImage(data: data) {
                 
                 self.selectedImage = image
-                
-                // 근무지 정보가 있다면 바로 분석 시작
-                if let job = targetJob {
-                    self.setTargetJob(job)
-                    self.analyzeImage(targetName: targetName)
-                }
+                self.analyzeImage(targetName: targetName)
             } else {
                 self.errorMessage = "이미지 데이터를 불러올 수 없습니다."
                 self.showAlert = true
@@ -79,24 +70,32 @@ class ScheduleImportViewModel: ObservableObject {
     // processSelectedPhoto에서 사용
     func analyzeImage(targetName: String = "") {
         guard let image = selectedImage else { return }
-        guard let job = targetJob else {
+        guard session.editingJob != nil else {
             errorMessage = "근무지 정보가 없습니다."
             showAlert = true
             return
         }
 
         phase = .loading
-        parsedSchedules = []
+        session.scheduleImportDraft.parsedSchedule = []
+        
+        let presetModels = session.scheduleImportDraft.presetDrafts.map {
+            WorkTimePreset(
+                label: $0.label,
+                startTime: $0.startTime,
+                endTime: $0.endTime
+            )
+        }
 
         Task {
             do {
                 let schedules = try await analyzeScheduleImage.execute(
                     image: image,
                     targetName: targetName,
-                    presets: job.timePresets
+                    presets: presetModels
                 )
 
-                self.parsedSchedules = schedules
+                self.session.scheduleImportDraft.parsedSchedule = schedules
 
                 if schedules.isEmpty {
                     self.phase = .idle
@@ -123,7 +122,7 @@ class ScheduleImportViewModel: ObservableObject {
         var targetDate = weekStart
         
         // 날짜순 정렬
-        let schedulesInWeek = parsedSchedules
+        let schedulesInWeek = session.scheduleImportDraft.parsedSchedule
             .filter { $0.date >= weekStart && $0.date < weekEndExclusive }
             .sorted(by: { $0.date < $1.date })
         
@@ -156,18 +155,18 @@ class ScheduleImportViewModel: ObservableObject {
         )
         
         // 추가
-        parsedSchedules.append(newSchedule)
+        session.scheduleImportDraft.parsedSchedule.append(newSchedule)
         
         // 날짜순 정렬 (추가된 게 중간에 끼어들 수도 있으므로)
-        parsedSchedules.sort { $0.date < $1.date }
+        session.scheduleImportDraft.parsedSchedule.sort { $0.date < $1.date }
     }
     
     // ScheduleImportBottomButtons에서 저장버튼 누를시에 호출 -> ai 인식 결과 저장
     func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil, isFromAIImport: Bool = true) -> Bool {
         do {
             try saveParsedSchedules.execute(
-                job: targetJob,
-                parsedSchedules: parsedSchedules,
+                job: session.editingJob,
+                parsedSchedules: session.scheduleImportDraft.parsedSchedule,
                 targetWeekStart: targetWeekStart,
                 context: context,
                 isFromAIImport: isFromAIImport
@@ -184,17 +183,22 @@ class ScheduleImportViewModel: ObservableObject {
     // ScheduleImportPresetGroup에서 사용
     
     func addNewPreset() {
-        guard let job = targetJob, !newPresetLabel.isEmpty else { return }
-        let preset = WorkTimePreset(label: newPresetLabel, startTime: newPresetStart, endTime: newPresetEnd)
-        preset.workplace = job
-        job.timePresets.append(preset)
+        guard !newPresetLabel.isEmpty else {return}
+        
+        let preset = TimePresetDraft(
+            id: UUID(),
+            label: newPresetLabel,
+            startTime: newPresetStart,
+            endTime: newPresetEnd
+        )
+        
+        session.scheduleImportDraft.presetDrafts.append(preset)
         newPresetLabel = "" // 입력창 초기화 다음 프리셋 추가를 위해
         isAddingPreset = false
     }
 
-    func deletePreset(_ preset: WorkTimePreset) {
-        guard let job = targetJob,
-              let index = job.timePresets.firstIndex(of: preset) else { return }
-        job.timePresets.remove(at: index)
+    func deletePreset(_ preset: TimePresetDraft) {
+        guard let index = session.scheduleImportDraft.presetDrafts.firstIndex(where: { $0.id == preset.id }) else { return }
+        session.scheduleImportDraft.presetDrafts.remove(at: index)
     }
 }

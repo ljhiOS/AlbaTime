@@ -39,12 +39,12 @@ struct AddJobView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
 
-                BasicInfoGroup(job: ajvm.job, focusedField: $focusedField)
+                BasicInfoGroup(ajvm: ajvm, focusedField: $focusedField)
                     .padding(.horizontal)
                 
                 Divider().padding(.horizontal)
 
-                if ajvm.job.workType == .fixed {
+                if ajvm.session.jobDraft.workType == .fixed {
                     ScheduleGroup(ajvm: ajvm)
                         .padding(.horizontal)
                 } else {
@@ -55,7 +55,7 @@ struct AddJobView: View {
 
                 Divider().padding(.horizontal)
 
-                EtcGroup(job: ajvm.job, focusedField: $focusedField)
+                EtcGroup(ajvm: ajvm, focusedField: $focusedField)
                     .padding(.horizontal)
                 
                 Spacer()
@@ -108,7 +108,7 @@ struct AddJobView: View {
         .navigationTitle(stateName)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $ajvm.isAIImportPresented) {
-            ScheduleImportView(targetJob: ajvm.job)
+            ScheduleImportView(ajvm: ajvm)
         }
         .onDisappear {
             ajvm.restoreEditsIfNeeded(context: modelContext)
@@ -131,16 +131,30 @@ struct AddJobView: View {
 // MARK: - Preview
 #Preview("고정 근무") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, RegularSchedule.self, WorkTimePreset.self, configurations: config)
-    
-    return AddJobView(stateName: "알바 등록", selectedType: .fixed)
-        .modelContainer(container)
+    let container = try! ModelContainer(
+        for: Workplace.self,
+        RegularSchedule.self,
+        WorkTimePreset.self,
+        configurations: config
+    )
+
+    return NavigationStack {
+        AddJobView(stateName: "알바 등록", selectedType: .fixed)
+    }
+    .modelContainer(container)
 }
 
-#Preview("비고정 근무") {
+#Preview("자율 근무") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, RegularSchedule.self, WorkTimePreset.self, configurations: config)
-    
-    return AddJobView(stateName: "알바 등록", selectedType: .flexible)
-        .modelContainer(container)
+    let container = try! ModelContainer(
+        for: Workplace.self,
+        RegularSchedule.self,
+        WorkTimePreset.self,
+        configurations: config
+    )
+
+    return NavigationStack {
+        AddJobView(stateName: "알바 등록", selectedType: .flexible)
+    }
+    .modelContainer(container)
 }

@@ -13,10 +13,10 @@ import PhotosUI
 struct ScheduleImportView: View {
     @Environment(\.dismiss) private var dismiss
     
-    var targetJob: Workplace?
+    @ObservedObject var ajvm: AddJobViewModel
     
     @AppStorage("myScheduleName") private var myName: String = ""
-    @StateObject private var sivm = ScheduleImportViewModel()
+    @StateObject private var sivm: ScheduleImportViewModel
     @StateObject private var ssvm = ScheduleImportSelectionViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
     
@@ -24,12 +24,13 @@ struct ScheduleImportView: View {
     
     @Environment(\.colorScheme) private var colorScheme
     
-    init(targetJob: Workplace? = nil) {
-        self.targetJob = targetJob
+    init(ajvm: AddJobViewModel) {
+        self.ajvm = ajvm
+        _sivm = StateObject(wrappedValue: ScheduleImportViewModel(session: ajvm.session))
     }
 
     var hasSavedAISchedules: Bool {
-        guard let job = targetJob else { return false }
+        guard let job = ajvm.session.editingJob else { return false }
         return job.workSchedules.contains(where: { $0.isFromAIImport })
     }
 
@@ -50,14 +51,12 @@ struct ScheduleImportView: View {
         }
         .background(Color.theme.surface)
         .onAppear {
-            if let job = targetJob {
-                sivm.setTargetJob(job)
-            }
             ssvm.ensureInitialSelection()
         }
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
-                await sivm.processSelectedPhoto(item: newItem, targetJob: targetJob, targetName: myName)
+                await sivm.processSelectedPhoto(item: newItem, targetName: myName)
+
             }
         }
         // 근무 형태에 따라 에러 처리 버튼 동작을 분기한다.
@@ -85,7 +84,8 @@ private extension ScheduleImportView {
                 onTapManualInput: {
                     triggerManualWeekFocus()
                 },
-                targetJob: targetJob,
+                targetJob: ajvm.session.editingJob,
+                presetDrafts: sivm.session.scheduleImportDraft.presetDrafts,
                 hasSavedAISchedules: hasSavedAISchedules,
                 isNameFieldFocused: $isNameFieldFocused,
                 sivm: sivm,
@@ -122,9 +122,21 @@ private extension ScheduleImportView {
 }
 
 #Preview("AI 스케줄 - 빈 상태") {
-    NavigationStack {
-        ScheduleImportView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: Workplace.self,
+        WorkSchedule.self,
+        WorkTimePreset.self,
+        RegularSchedule.self,
+        configurations: config
+    )
+
+    let ajvm = AddJobViewModel(type: .fixed)
+
+    return NavigationStack {
+        ScheduleImportView(ajvm: ajvm)
     }
+    .modelContainer(container)
 }
 
 #Preview("AI 스케줄 - 저장된 데이터 있음") {
@@ -160,6 +172,7 @@ private extension ScheduleImportView {
         isFromAIImport: true,
         workplace: job
     )
+
     let s2 = WorkSchedule(
         date: d2,
         startTime: calendar.date(bySettingHour: 14, minute: 0, second: 0, of: d2) ?? d2,
@@ -169,13 +182,27 @@ private extension ScheduleImportView {
         workplace: job
     )
 
+    let p1 = WorkTimePreset(
+        label: "오픈",
+        startTime: calendar.date(bySettingHour: 9, minute: 0, second: 0, of: today) ?? today,
+        endTime: calendar.date(bySettingHour: 15, minute: 0, second: 0, of: today) ?? today
+    )
+
+    p1.workplace = job
+    job.timePresets.append(p1)
     job.workSchedules.append(contentsOf: [s1, s2])
+
     container.mainContext.insert(job)
     container.mainContext.insert(s1)
     container.mainContext.insert(s2)
+    container.mainContext.insert(p1)
+
+    let ajvm = AddJobViewModel(editingJob: job)
 
     return NavigationStack {
-        ScheduleImportView(targetJob: job)
+        ScheduleImportView(ajvm: ajvm)
     }
     .modelContainer(container)
 }
+
+

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PresetRow: View {
-    let preset: WorkTimePreset
+    let preset: TimePresetDraft
     let onDelete: () -> Void
     
     var body: some View {
@@ -31,13 +31,19 @@ struct PresetRow: View {
         return date.time24h
     }
 }
+
 #Preview("Preset Row") {
     let calendar = Calendar.current
     let base = calendar.startOfDay(for: Date())
     let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: base) ?? base
     let end = calendar.date(bySettingHour: 15, minute: 0, second: 0, of: base) ?? base
 
-    let preset = WorkTimePreset(label: "오픈", startTime: start, endTime: end)
+    let preset = TimePresetDraft(
+        id: UUID(),
+        label: "오픈",
+        startTime: start,
+        endTime: end
+    )
 
     return PresetRow(
         preset: preset,
@@ -45,3 +51,4 @@ struct PresetRow: View {
     )
     .padding(.vertical, 20)
 }
+

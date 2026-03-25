@@ -12,11 +12,12 @@ struct FlexibleInfoGroup: View {
     @ObservedObject var ajvm: AddJobViewModel
     
     var estimatedWeeklyPay: Int {
-            let wage = ajvm.job.hourlyWage
-            let count = ajvm.targetWeeklyCount
-            let hours = ajvm.expectedDailyHours
-            return Int(Double(wage) * Double(count) * hours)
-        }
+        let wage = ajvm.session.jobDraft.hourlyWage
+        let count = ajvm.session.jobDraft.targetWeeklyCount
+        let hours = ajvm.session.jobDraft.expectedDailyHours
+
+        return Int(Double(wage) * Double(count) * hours)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -25,7 +26,7 @@ struct FlexibleInfoGroup: View {
                 HStack {
                     Text("일주일에 몇 번 가나요?")
                     Spacer()
-                    Text("주 \(ajvm.targetWeeklyCount)회")
+                    Text("주 \(ajvm.session.jobDraft.targetWeeklyCount)회")
                         .bold()
                         .foregroundStyle(Color.theme.primary)
                 }
@@ -35,15 +36,15 @@ struct FlexibleInfoGroup: View {
                     ForEach(1...7, id: \.self) { day in
                         Button {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                ajvm.targetWeeklyCount = day
+                                ajvm.session.jobDraft.targetWeeklyCount = day
                             }
                         } label: {
                             Circle()
-                                .fill(ajvm.targetWeeklyCount == day ? Color.theme.primary : Color.gray.opacity(0.1))
+                                .fill(ajvm.session.jobDraft.targetWeeklyCount == day ? Color.theme.primary : Color.gray.opacity(0.1))
                                 .overlay(
                                     Text("\(day)")
                                         .font(.subheadline).bold()
-                                        .foregroundStyle(ajvm.targetWeeklyCount == day ? .white : .gray)
+                                        .foregroundStyle(ajvm.session.jobDraft.targetWeeklyCount == day ? .white : .gray)
                                 )
                                 .frame(height: 44)
                         }
@@ -61,13 +62,13 @@ struct FlexibleInfoGroup: View {
                         .font(.subheadline)
                         .foregroundStyle(Color.theme.textSecondary)
                     Spacer()
-                    Text("\(String(format: "%.1f", ajvm.expectedDailyHours)) 시간")
+                    Text("\(String(format: "%.1f", ajvm.session.jobDraft.expectedDailyHours)) 시간")
                         .bold()
                         .foregroundStyle(Color.theme.primary)
                 }
                 .font(.callout)
                 
-                Slider(value: $ajvm.expectedDailyHours, in: 1...12, step: 0.5) {
+                Slider(value: $ajvm.session.jobDraft.expectedDailyHours, in: 1...12, step: 0.5) {
                     Text("Hours")
                 } minimumValueLabel: {
                     Text("1h")
@@ -80,7 +81,7 @@ struct FlexibleInfoGroup: View {
                 }
                 .tint(Color.theme.primary)
             }
-            if ajvm.job.hourlyWage > 0 {
+            if ajvm.session.jobDraft.hourlyWage > 0 {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("예상 주급")
@@ -115,14 +116,23 @@ struct FlexibleInfoGroup: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, RegularSchedule.self, WorkTimePreset.self, configurations: config)
-    
-    let vm = AddJobViewModel(type: .flexible)
-    vm.job.hourlyWage = 10350 // 2026년 최저시급 가정
-    
+    let container = try! ModelContainer(
+        for: Workplace.self,
+        RegularSchedule.self,
+        WorkTimePreset.self,
+        configurations: config
+    )
+
+    let viewModel = AddJobViewModel(type: .flexible)
+    viewModel.session.jobDraft.hourlyWage = 10350
+    viewModel.session.jobDraft.targetWeeklyCount = 4
+    viewModel.session.jobDraft.expectedDailyHours = 6.5
+
     return ZStack {
         Color.gray.opacity(0.1).ignoresSafeArea()
-        FlexibleInfoGroup(ajvm: vm)
+        FlexibleInfoGroup(ajvm: viewModel)
     }
     .modelContainer(container)
 }
+
+

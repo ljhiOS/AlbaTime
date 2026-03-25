@@ -5,9 +5,11 @@ struct ScheduleImportIdleSection: View {
     @Binding var name: String
     let onTapManualInput: () -> Void
     let targetJob: Workplace?
+    let presetDrafts: [TimePresetDraft]
     let hasSavedAISchedules: Bool
     let isNameFieldFocused: FocusState<Bool>.Binding
     let sivm: ScheduleImportViewModel
+
     @ObservedObject var ssvm: ScheduleImportSelectionViewModel
 
     var body: some View {
@@ -17,7 +19,7 @@ struct ScheduleImportIdleSection: View {
                 nameInputCard
                 ScheduleImportPresetGroup(
                     sivm: sivm,
-                    presets: targetJob?.timePresets ?? []
+                    preset: presetDrafts
                 )
                 savedScheduleSection
             }
@@ -85,30 +87,3 @@ struct ScheduleImportIdleSection: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
-
-#Preview("Idle Section") {
-    struct PreviewWrapper: View {
-        @State private var name: String = "홍길동"
-        @FocusState private var isNameFocused: Bool
-        @StateObject private var sivm = ScheduleImportViewModel()
-        @StateObject private var ssvm = ScheduleImportSelectionViewModel()
-
-        var body: some View {
-            ScheduleImportIdleSection(
-                name: $name,
-                onTapManualInput: {},
-                targetJob: nil,
-                hasSavedAISchedules: false,
-                isNameFieldFocused: $isNameFocused,
-                sivm: sivm,
-                ssvm: ssvm
-            )
-            .onAppear {
-                ssvm.ensureInitialSelection()
-            }
-        }
-    }
-
-    return PreviewWrapper()
-}
-

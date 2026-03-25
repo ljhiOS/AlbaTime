@@ -14,6 +14,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     @Published var forcedMonth: AIListMonthKey?
 
     let job: Workplace
+    private let appWriteCoordinator = AppWriteCoordinator()
     
     init(job: Workplace) {
         self.job = job
@@ -320,5 +321,25 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         
         showAlert = true
         alertMessage = "선택한 스케줄을 삭제했어요."
+    }
+    
+    // 날짜 선택 시작시간 및 끝시간 업데이트
+    
+    func updateStartTime(on day: Date, to newValue: Date) {
+        guard let schedule = schedulesForSelectedWeek.first(where: {
+            Calendar.current.isDate($0.date, inSameDayAs: day)
+        }) else { return }
+
+        schedule.startTime = newValue
+        schedule.isEditedAfterAIImport = true
+    }
+    
+    func updateEndTime(on day: Date, to newValue: Date) {
+        guard let schedule = schedulesForSelectedWeek.first(where: {
+            Calendar.current.isDate($0.date, inSameDayAs: day)
+        }) else { return }
+
+        schedule.endTime = newValue
+        schedule.isEditedAfterAIImport = true
     }
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ScheduleImportPresetGroup: View {
     @ObservedObject var sivm: ScheduleImportViewModel
-    let presets: [WorkTimePreset]
+    let preset: [TimePresetDraft]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -22,7 +22,7 @@ struct ScheduleImportPresetGroup: View {
                     .font(.caption)
                     .foregroundStyle(Color.theme.textSecondary)
             }
-            ForEach(presets) { preset in
+            ForEach(preset) { preset in
                 PresetRow(preset: preset) {
                     sivm.deletePreset(preset)
                 }
@@ -93,12 +93,31 @@ struct ScheduleImportPresetGroup: View {
 }
 
 #Preview("ScheduleImport Preset Group") {
-    let vm = ScheduleImportViewModel()
-    let base = Date()
-    let p1 = WorkTimePreset(label: "오픈", startTime: base, endTime: base.addingTimeInterval(3600 * 4))
-    
-    return ScheduleImportPresetGroup(
-        sivm: vm,
-        presets: [p1]
+    let viewModel = ScheduleImportViewModel(
+        session: JobEditingSession(type: .fixed)
     )
+
+    viewModel.session.scheduleImportDraft.presetDrafts = [
+        TimePresetDraft(
+            id: UUID(),
+            label: "오픈",
+            startTime: Date.makeTime(9, 0),
+            endTime: Date.makeTime(15, 0)
+        ),
+        TimePresetDraft(
+            id: UUID(),
+            label: "마감",
+            startTime: Date.makeTime(17, 0),
+            endTime: Date.makeTime(23, 0)
+        )
+    ]
+
+    return ScheduleImportPresetGroup(
+        sivm: viewModel,
+        preset: viewModel.session.scheduleImportDraft.presetDrafts
+    )
+    .padding()
 }
+
+
+

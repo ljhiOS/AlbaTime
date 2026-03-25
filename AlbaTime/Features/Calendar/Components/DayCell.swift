@@ -36,36 +36,51 @@ struct DayCell: View {
     }
 }
 
-#Preview("DayCell 모음") {
-    // 1. 데이터 준비 (PreviewHelper 컨테이너 사용)
-    let container = PreviewHelper.container
-    let context = container.mainContext
-    
-    // 2. 가짜 가게 데이터 가져오기
-    let workplaces = (try? context.fetch(FetchDescriptor<Workplace>())) ?? []
-    
-    return HStack(spacing: 20) {
-        // Case 1: 선택됨 + 오늘 근무 있음 (점 찍힘)
-        DayCell(
-            date: Date(),
-            isSelected: true,
-            todayJobs: workplaces // [Workplace] 전달
-        )
-        
-        // Case 2: 선택 안 됨 + 오늘 근무 있음 (점 찍힘)
-        DayCell(
-            date: Date(),
-            isSelected: false,
-            todayJobs: workplaces
-        )
-        
-        // Case 3: 선택 안 됨 + 근무 없음 (점 없음)
-        DayCell(
-            date: Date(),
-            isSelected: false,
-            todayJobs: [] // 빈 배열 전달
-        )
-    }
+#Preview("선택됨 + 근무 있음") {
+    let today = Date()
+    let calendar = Calendar.current
+
+    let sampleJob = Workplace(
+        name: "알바타임 카페",
+        hourlyWage: 11000,
+        defaultDays: "월,수,금",
+        defaultStartTime: calendar.date(bySettingHour: 9, minute: 0, second: 0, of: today) ?? today,
+        defaultEndTime: calendar.date(bySettingHour: 18, minute: 0, second: 0, of: today) ?? today
+    )
+
+    return DayCell(
+        date: today,
+        isSelected: true,
+        todayJobs: [sampleJob]
+    )
     .padding()
-    .modelContainer(container) // ⭐️ 프리뷰 크래시 방지용
+}
+
+#Preview("선택 안 됨 + 근무 있음") {
+    let today = Date()
+    let calendar = Calendar.current
+
+    let sampleJob = Workplace(
+        name: "알바타임 카페",
+        hourlyWage: 11000,
+        defaultDays: "월,수,금",
+        defaultStartTime: calendar.date(bySettingHour: 9, minute: 0, second: 0, of: today) ?? today,
+        defaultEndTime: calendar.date(bySettingHour: 18, minute: 0, second: 0, of: today) ?? today
+    )
+
+    return DayCell(
+        date: today,
+        isSelected: false,
+        todayJobs: [sampleJob]
+    )
+    .padding()
+}
+
+#Preview("선택 안 됨 + 근무 없음") {
+    DayCell(
+        date: Date(),
+        isSelected: false,
+        todayJobs: []
+    )
+    .padding()
 }
