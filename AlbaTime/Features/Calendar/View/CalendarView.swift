@@ -6,12 +6,10 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct CalendarView: View {
     @StateObject private var cvm = CalendarViewModel()
-    @Query var workplaces: [Workplace] // 데이터베이스 감지
-    @Query var workSchedules: [WorkSchedule]
+    
     @State private var showMonthPicker: Bool = false
     @State private var pickedYear: Int = Calendar.current.component(.year, from: Date())
     @State private var pickedMonth: Int = Calendar.current.component(.month, from: Date())
@@ -83,15 +81,13 @@ struct CalendarView: View {
                 
                 ForEach(0..<days.count, id: \.self) { index in
                     if let day = days[index] {
-                        let jobsOnThisDay = cvm.getScheduledWorkplaces(for: day, allWorkplaces: workplaces)
-                        
                         DayCell(
                             date: day,
                             isSelected: cvm.selectedDate.isSameDay(as: day),
-                            todayJobs: jobsOnThisDay
+                            hasWork: cvm.hasWork(on: day)
                         )
                         .onTapGesture {
-                            cvm.selectedDate = day
+                            cvm.selectDate(day)
                         }
                     } else {
                         Text("")
@@ -103,7 +99,11 @@ struct CalendarView: View {
             Spacer()
         
             // 하단 상세 카드
-            ScheduleDetailCard(cvm: cvm, allWorkplaces: workplaces)
+            ScheduleDetailCard(
+                selectedDate: cvm.selectedDate,
+                schedules: cvm.selectedDateSchedules,
+                totalPay: cvm.selectedDateTotalPay
+            )
         }
         .background(Color.theme.surface)
         .contentShape(Rectangle())
@@ -118,12 +118,7 @@ struct CalendarView: View {
                     }
                 }
         )
-        .onAppear { cvm.updateCache(workplaces: workplaces) }
-        .onChange(of: workplaces) { _, newValue in cvm.updateCache(workplaces: newValue) }
-        .onChange(of: workSchedules.count) { _, _ in
-            cvm.updateCache(workplaces: workplaces)
-        }
-        .onChange(of: cvm.currentMonth) { _, _ in cvm.updateCache(workplaces: workplaces) }
+        .onAppear { cvm.load() }
         .sheet(isPresented: $showMonthPicker) {
             NavigationStack {
                 VStack(spacing: 18) {
@@ -145,7 +140,7 @@ struct CalendarView: View {
                     .frame(height: 160)
                     
                     Button("적용") {
-                        applyPickedYearMonth()
+                        cvm.applyPickedYearMonth(year: pickedYear, month: pickedMonth)
                         showMonthPicker = false
                     }
                     .buttonStyle(.borderedProminent)
@@ -162,33 +157,7 @@ struct CalendarView: View {
             .presentationDetents([.height(280)])
         }
     }
-    
-    private func applyPickedYearMonth() {
-        let calendar = Calendar.current
-        var comp = calendar.dateComponents([.hour, .minute, .second], from: cvm.currentMonth)
-        comp.year = pickedYear
-        comp.month = pickedMonth
-        comp.day = 1
-        
-        if let date = calendar.date(from: comp) {
-            cvm.currentMonth = date
-        }
-    }
 }
 #Preview() {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, configurations: config)
-    
-    let starbucks = Workplace(
-        name: "스타벅스",
-        hourlyWage: 10300,
-        defaultDays: "월/화/수/목/금/토/일",
-        defaultStartTime: Date.makeTime(9, 0),
-        defaultEndTime: Date.makeTime(18, 0),
-        defaultRestTime: 60
-    )
-    container.mainContext.insert(starbucks)
-    
     return CalendarView()
-        .modelContainer(container)
 }

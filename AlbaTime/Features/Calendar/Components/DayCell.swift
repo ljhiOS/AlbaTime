@@ -6,12 +6,11 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct DayCell: View {
     let date: Date
     let isSelected: Bool
-    let todayJobs: [Workplace]
+    let hasWork: Bool
     
     var body: some View {
         VStack(spacing: 4) {
@@ -23,7 +22,7 @@ struct DayCell: View {
                 .background(isSelected ? Color.theme.primary.opacity(0.1) : Color.clear)
                 .clipShape(Circle())
             
-            if !todayJobs.isEmpty {
+            if hasWork {
                 Circle()
                     .fill(Color.theme.primary)
                     .frame(width: 4, height: 4)
@@ -38,40 +37,22 @@ struct DayCell: View {
 
 #Preview("선택됨 + 근무 있음") {
     let today = Date()
-    let calendar = Calendar.current
-
-    let sampleJob = Workplace(
-        name: "알바타임 카페",
-        hourlyWage: 11000,
-        defaultDays: "월,수,금",
-        defaultStartTime: calendar.date(bySettingHour: 9, minute: 0, second: 0, of: today) ?? today,
-        defaultEndTime: calendar.date(bySettingHour: 18, minute: 0, second: 0, of: today) ?? today
-    )
 
     return DayCell(
         date: today,
         isSelected: true,
-        todayJobs: [sampleJob]
+        hasWork: true
     )
     .padding()
 }
 
 #Preview("선택 안 됨 + 근무 있음") {
     let today = Date()
-    let calendar = Calendar.current
-
-    let sampleJob = Workplace(
-        name: "알바타임 카페",
-        hourlyWage: 11000,
-        defaultDays: "월,수,금",
-        defaultStartTime: calendar.date(bySettingHour: 9, minute: 0, second: 0, of: today) ?? today,
-        defaultEndTime: calendar.date(bySettingHour: 18, minute: 0, second: 0, of: today) ?? today
-    )
 
     return DayCell(
         date: today,
         isSelected: false,
-        todayJobs: [sampleJob]
+        hasWork: true
     )
     .padding()
 }
@@ -80,7 +61,7 @@ struct DayCell: View {
     DayCell(
         date: Date(),
         isSelected: false,
-        todayJobs: []
+        hasWork: false
     )
     .padding()
 }
