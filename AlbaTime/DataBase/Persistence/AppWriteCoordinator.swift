@@ -8,6 +8,8 @@
 import Foundation
 import SwiftData
 
+// 저장 후처리
+
 struct AppWriteCoordinator {
     @MainActor
     func commit(context: ModelContext, affectedWorkplace: Workplace? = nil) throws {

@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @MainActor
-final class DataProvider {
+final class AppDataProvider {
     private let container: ModelContainer
     private let context: ModelContext
     
@@ -24,7 +24,7 @@ final class DataProvider {
         self.context = container.mainContext
     }
     
-    func fetch() throws -> [Workplace] {
+    func fetchWorkplaces() throws -> [Workplace] {
         let descriptor = FetchDescriptor<Workplace> (
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )

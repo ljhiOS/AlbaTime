@@ -19,6 +19,11 @@ struct ScheduleImportBottomButtons: View {
         VStack(spacing: 12) {
             // 저장하기 버튼
             Button {
+                if sivm.session.editingJob == nil {
+                    onSaved()
+                    return
+                }
+                
                 let didSave = sivm.saveToWorkplace(
                     context: modelContext,
                     targetWeekStart: selectedWeekStart,

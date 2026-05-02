@@ -26,6 +26,8 @@ class AddJobViewModel: ObservableObject {
     private let initialDefaultRestTime: Int?
     private var hasSavedChanges: Bool = false
     
+    private let saveJobUseCase = SaveJobUseCase()
+    
     // SheduleGroup에서 사용
     let days = ["월", "화", "수", "목", "금", "토", "일"]
     
@@ -115,42 +117,16 @@ class AddJobViewModel: ObservableObject {
     
     // MARK: 저장
     func save(context: ModelContext) -> Bool {
-        let jobSaveValidator = JobSaveValidator()
-        let applyBreakTime = ApplyBreakTime()
-        let appWriteCoordinator = AppWriteCoordinator()
-        
         let job = applyDraftToJob(context: context)
         
         do {
-            switch session.jobDraft.workType {
-                    case .fixed:
-                        let saveFixedJob = SaveFixedJob(
-                            jobSaveValidator: jobSaveValidator,
-                            applyBreakTime: applyBreakTime,
-                            appWriteCoordinator: appWriteCoordinator
-                        )
-
-                        try saveFixedJob.execute(
-                            job: job,
-                            initialDefaultRestTime: initialDefaultRestTime,
-                            context: context
-                        )
-
-                    case .flexible:
-                        let saveFlexibleJob = SaveFlexibleJob(
-                            jobSaveValidator: jobSaveValidator,
-                            applyBreakTime: applyBreakTime,
-                            appWriteCoordinator: appWriteCoordinator
-                        )
-
-                        try saveFlexibleJob.execute(
-                            job: job,
-                            targetWeeklyCount: session.jobDraft.targetWeeklyCount,
-                            expectedDailyHours: session.jobDraft.expectedDailyHours,
-                            initialDefaultRestTime: initialDefaultRestTime,
-                            context: context
-                        )
-                    }
+            try saveJobUseCase.execute(
+                job: job,
+                targetWeeklyCount: session.jobDraft.targetWeeklyCount,
+                expectedDailyHours: session.jobDraft.expectedDailyHours,
+                initialDefaultRestTime: initialDefaultRestTime,
+                context: context
+            )
             hasSavedChanges = true
             return true
         } catch {
@@ -191,6 +167,27 @@ class AddJobViewModel: ObservableObject {
         if session.jobDraft.workType == .flexible {
             job.targetWeeklyCount = session.jobDraft.targetWeeklyCount
             job.expectedDailyHours = session.jobDraft.expectedDailyHours
+
+            if session.editingJob == nil {
+                let batchID = UUID().uuidString
+
+                for parsed in session.scheduleImportDraft.parsedSchedule {
+                    let schedule = WorkSchedule(
+                        date: parsed.date,
+                        startTime: parsed.startTime,
+                        endTime: parsed.endTime,
+                        breakTime: session.jobDraft.defaultRestTime,
+                        memo: parsed.workLabel,
+                        isFromAIImport: true,
+                        aiImportBatchID: batchID,
+                        isEditedAfterAIImport: false,
+                        workplace: job
+                    )
+
+                    job.workSchedules.append(schedule)
+                }
+            }
+
             return job
         } else {
             job.targetWeeklyCount = nil
@@ -232,6 +229,27 @@ class AddJobViewModel: ObservableObject {
             job.defaultEndTime = firstSchedule.endTime
         }
 
+        if session.editingJob == nil {
+            let batchID = UUID().uuidString
+
+            for parsed in session.scheduleImportDraft.parsedSchedule {
+                let schedule = WorkSchedule(
+                    date: parsed.date,
+                    startTime: parsed.startTime,
+                    endTime: parsed.endTime,
+                    breakTime: session.jobDraft.defaultRestTime,
+                    memo: parsed.workLabel,
+                    isFromAIImport: true,
+                    aiImportBatchID: batchID,
+                    isEditedAfterAIImport: false,
+                    workplace: job
+                )
+
+                job.workSchedules.append(schedule)
+            }
+        }
+
         return job
     }
+
 }

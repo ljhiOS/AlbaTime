@@ -70,11 +70,12 @@ class ScheduleImportViewModel: ObservableObject {
     // processSelectedPhoto에서 사용
     func analyzeImage(targetName: String = "") {
         guard let image = selectedImage else { return }
-        guard session.editingJob != nil else {
-            errorMessage = "근무지 정보가 없습니다."
-            showAlert = true
-            return
-        }
+        
+//        guard session.editingJob != nil else {
+//            errorMessage = "근무지 정보가 없습니다."
+//            showAlert = true
+//            return
+//        }
 
         phase = .loading
         session.scheduleImportDraft.parsedSchedule = []

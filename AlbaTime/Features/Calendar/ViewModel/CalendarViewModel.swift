@@ -31,9 +31,9 @@ class CalendarViewModel: ObservableObject {
     
     private var workplaces: [Workplace] = []
     private var scheduleCache: [Date : [Workplace]] = [:]
-    private let dataProvider: DataProvider
+    private let dataProvider: AppDataProvider
     
-    init(dataProvider: DataProvider = DataProvider()) {
+    init(dataProvider: AppDataProvider = AppDataProvider()) {
         self.dataProvider = dataProvider
     }
     
@@ -55,7 +55,7 @@ class CalendarViewModel: ObservableObject {
     
     func load() {
         do {
-            workplaces = try dataProvider.fetch()
+            workplaces = try dataProvider.fetchWorkplaces()
             updateCache()
         } catch {
             print("캘린더 데이터 로드 실패: \(error)")

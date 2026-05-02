@@ -115,10 +115,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         }
         
         do {
-            try context.save()
-            NotificationManager.shared.refreshNotifications(for: job)
-            let workplaces = try context.fetch(FetchDescriptor<Workplace>())
-            NextShiftSyncService.sync(workplaces: workplaces)
+            try appWriteCoordinator.commit(context: context, affectedWorkplace: job)
             alertMessage = "스케줄 수정사항을 저장했어요."
             showAlert = true
         } catch {
