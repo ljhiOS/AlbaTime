@@ -43,6 +43,41 @@ class ScheduleImportViewModel: ObservableObject {
         self.session = session
     }
 
+    var hasSavedAISchedules: Bool {
+        guard let job = session.editingJob else { return false }
+        return job.workSchedules.contains { $0.isFromAIImport }
+    }
+
+    var panelDefaultBreakTime: Int {
+        session.jobDraft.defaultRestTime
+    }
+
+    var presetDrafts: [TimePresetDraft] {
+        session.scheduleImportDraft.presetDrafts
+    }
+
+    var hasScheduleDrafts: Bool {
+        !session.scheduleImportDraft.schedules.isEmpty
+    }
+
+    func shouldShowSchedulePanel(manualFocusToken: Int) -> Bool {
+        hasSavedAISchedules || manualFocusToken > 0
+    }
+
+    func makeSchedulePanelDraft(targetWeekStart: Date? = nil) -> ScheduleEditDraft {
+        if let job = session.editingJob {
+            return .fromSavedAISchedules(
+                job: job,
+                targetWeekStart: targetWeekStart
+            )
+        }
+
+        return session.scheduleImportDraft.makeEditDraft(
+            mode: .newJobInitialSchedules,
+            targetWeekStart: targetWeekStart
+        )
+    }
+
     // 뷰에서 .onChange로 뷰 상태 변경시 호출
     func processSelectedPhoto(item: PhotosPickerItem?, targetName: String) async {
         guard let item else { return }
@@ -172,6 +207,15 @@ class ScheduleImportViewModel: ObservableObject {
     }
 
     // ScheduleImportBottomButtons에서 저장버튼 누를시에 호출 -> ai 인식 결과 저장
+    func saveResultSchedules(context: ModelContext, targetWeekStart: Date? = nil) -> Bool {
+        guard session.editingJob != nil else { return true }
+
+        return saveToWorkplace(
+            context: context,
+            targetWeekStart: targetWeekStart
+        )
+    }
+
     func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil) -> Bool {
         do {
             try saveScheduleUseCase.execute(
@@ -192,7 +236,18 @@ class ScheduleImportViewModel: ObservableObject {
         }
     }
 
-    func saveManualDraft(_ draft: ScheduleEditDraft) {
+    func saveSchedulePanelDraft(
+        _ draft: ScheduleEditDraft,
+        context: ModelContext
+    ) throws {
+        if let job = session.editingJob {
+            try saveScheduleUseCase.execute(
+                .editDraft(job: job, draft: draft),
+                context: context
+            )
+            return
+        }
+
         session.scheduleImportDraft.schedules = draft.items
             .filter { $0.changeState != .deleted }
     }

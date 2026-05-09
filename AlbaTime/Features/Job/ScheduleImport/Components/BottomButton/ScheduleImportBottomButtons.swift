@@ -6,31 +6,17 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ScheduleImportBottomButtons: View {
-    @ObservedObject var sivm: ScheduleImportViewModel
-    @Environment(\.modelContext) var modelContext
-    let selectedWeekStart: Date?
-    let onSaved: () -> Void
+    let isSaveDisabled: Bool
+    let onSave: () -> Void
     let onManualInput: () -> Void
     
     var body: some View {
         VStack(spacing: 12) {
             // 저장하기 버튼
             Button {
-                if sivm.session.editingJob == nil {
-                    onSaved()
-                    return
-                }
-                
-                let didSave = sivm.saveToWorkplace(
-                    context: modelContext,
-                    targetWeekStart: selectedWeekStart
-                )
-                if didSave {
-                    onSaved()
-                }
+                onSave()
             } label: {
                 Text("저장하기")
                     .font(.headline).bold()
@@ -38,13 +24,13 @@ struct ScheduleImportBottomButtons: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
-                        sivm.session.scheduleImportDraft.schedules.isEmpty
+                        isSaveDisabled
                         ? Color.theme.disabled
                         : Color.theme.primary
                     )
                     .cornerRadius(12)
             }
-            .disabled(sivm.session.scheduleImportDraft.schedules.isEmpty)
+            .disabled(isSaveDisabled)
             
             // 취소 버튼
             Button {
@@ -62,31 +48,13 @@ struct ScheduleImportBottomButtons: View {
 }
 
 #Preview("Bottom Buttons") {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Workplace.self, configurations: config)
-
-    let viewModel = ScheduleImportViewModel(
-        session: JobEditingSession(type: .fixed)
-    )
-
-    viewModel.session.scheduleImportDraft.parsedSchedule = [
-        ParsedSchedule(
-            date: Date(),
-            startTime: Date.makeTime(9, 0),
-            endTime: Date.makeTime(18, 0),
-            workLabel: "테스트"
-        )
-    ]
-
     return VStack {
         Spacer()
 
         ScheduleImportBottomButtons(
-            sivm: viewModel,
-            selectedWeekStart: nil,
-            onSaved: {},
+            isSaveDisabled: false,
+            onSave: {},
             onManualInput: {}
         )
     }
-    .modelContainer(container)
 }

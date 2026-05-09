@@ -1,38 +1,25 @@
 import SwiftUI
-import SwiftData
 
 // 저장된 AI 스케줄 패널의 UI 조합만 담당한다.
 // 상단 타이틀/월주 선택/주차 카드/저장 버튼을 렌더링하고,
 // 상태/계산/저장 로직은 AISavedSchedulesPanelViewModel로 위임한다.
 struct AISavedSchedulesInlinePanel: View {
-    let job: Workplace?
     let requestedWeekStart: Date?
     let requestToken: Int
     let requestMonth: AIListMonthKey?
-    let onSaveDraft: ((ScheduleEditDraft) -> Void)?
+    let onSaveDraft: (ScheduleEditDraft) throws -> Void
 
-    @Environment(\.modelContext) private var modelContext
     @StateObject private var aspvm: AISavedSchedulesPanelViewModel
     @State private var weekCardPulse: Bool = false
 
-    init(job: Workplace, requestedWeekStart: Date? = nil, requestToken: Int = 0, requestMonth: AIListMonthKey? = nil) {
-        self.job = job
-        self.requestedWeekStart = requestedWeekStart
-        self.requestToken = requestToken
-        self.requestMonth = requestMonth
-        self.onSaveDraft = nil
-        _aspvm = StateObject(wrappedValue: AISavedSchedulesPanelViewModel(job: job))
-    }
-
     init(
-        draft: ScheduleImportDraft,
+        draft: ScheduleEditDraft,
         defaultBreakTime: Int,
         requestedWeekStart: Date? = nil,
         requestToken: Int = 0,
         requestMonth: AIListMonthKey? = nil,
-        onSaveDraft: @escaping (ScheduleEditDraft) -> Void
+        onSaveDraft: @escaping (ScheduleEditDraft) throws -> Void
     ) {
-        self.job = nil
         self.requestedWeekStart = requestedWeekStart
         self.requestToken = requestToken
         self.requestMonth = requestMonth
@@ -98,7 +85,6 @@ struct AISavedSchedulesInlinePanel: View {
                     Button("선택한 기간 수정사항 저장") {
                         // 현재 인라인 편집 상태를 SwiftData에 반영하고 동기화한다.
                         aspvm.saveChanges(
-                            context: modelContext,
                             onSaveDraft: onSaveDraft
                         )
                     }
@@ -111,7 +97,7 @@ struct AISavedSchedulesInlinePanel: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     
                     Button {
-                        aspvm.deleteSelectedSchedule(context: modelContext)
+                        aspvm.deleteSelectedSchedule()
                     } label: {
                         Text("선택한 기간 데이터 삭제")
                             .foregroundStyle(Color.red)
@@ -153,41 +139,26 @@ struct AISavedSchedulesInlinePanel: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(
-        for: Workplace.self,
-        WorkSchedule.self,
-        WorkTimePreset.self,
-        RegularSchedule.self,
-        configurations: config
-    )
-
     let calendar = Calendar.current
     let baseDate = calendar.startOfDay(for: Date())
-    let job = Workplace(
-        name: "GS25 강남점",
-        hourlyWage: 10320,
-        defaultDays: "월,화,수",
-        defaultStartTime: baseDate,
-        defaultEndTime: baseDate,
-        workType: .flexible
-    )
-
     let start1 = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: baseDate) ?? baseDate
     let end1 = calendar.date(bySettingHour: 15, minute: 0, second: 0, of: baseDate) ?? baseDate
     let nextDay = calendar.date(byAdding: .day, value: 1, to: baseDate) ?? baseDate
     let start2 = calendar.date(bySettingHour: 14, minute: 0, second: 0, of: nextDay) ?? nextDay
     let end2 = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: nextDay) ?? nextDay
+    let draft = ScheduleEditDraft(
+        mode: .newJobInitialSchedules,
+        targetWeekStart: baseDate,
+        items: [
+            ScheduleEditItem(id: UUID(), date: baseDate, startTime: start1, endTime: end1, breakTime: 0, memo: "오픈", source: .manual),
+            ScheduleEditItem(id: UUID(), date: nextDay, startTime: start2, endTime: end2, breakTime: 0, memo: "미들", source: .manual)
+        ]
+    )
 
-    let s1 = WorkSchedule(date: baseDate, startTime: start1, endTime: end1, memo: "오픈", isFromAIImport: true, workplace: job)
-    let s2 = WorkSchedule(date: nextDay, startTime: start2, endTime: end2, memo: "미들", isFromAIImport: true, workplace: job)
-    job.workSchedules.append(contentsOf: [s1, s2])
-
-    container.mainContext.insert(job)
-    container.mainContext.insert(s1)
-    container.mainContext.insert(s2)
-
-    return AISavedSchedulesInlinePanel(job: job)
+    return AISavedSchedulesInlinePanel(
+        draft: draft,
+        defaultBreakTime: 0,
+        onSaveDraft: { _ in }
+    )
         .padding()
-        .modelContainer(container)
 }

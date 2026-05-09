@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 import SwiftUI
 
 // 저장된 AI 스케줄 패널의 상태/필터링/주차 라벨 계산을 담당한다.
@@ -14,27 +13,17 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     @Published var forcedMonth: AIListMonthKey?
     @Published var editDraft: ScheduleEditDraft
 
-    let job: Workplace?
     private let defaultBreakTime: Int
 
-    private let saveScheduleUseCase = SaveScheduleUseCase()
-
-    init(job: Workplace) {
-        self.job = job
-        self.defaultBreakTime = job.defaultRestTime ?? 0
-        self.editDraft = .fromSavedAISchedules(job: job)
-    }
-
-    init(draft: ScheduleImportDraft, defaultBreakTime: Int) {
-        self.job = nil
+    init(draft: ScheduleEditDraft, defaultBreakTime: Int) {
         self.defaultBreakTime = defaultBreakTime
-        self.editDraft = draft.makeEditDraft(mode: .newJobInitialSchedules)
+        self.editDraft = draft
     }
 
     // 뷰에서 쓰일 데이터, 뷰에서 건수 나타내거나 비어있는지 확인을 함
     var aiSchedules: [ScheduleEditItem] {
         editDraft.items
-            .filter { $0.source == .aiImport && $0.changeState != .deleted }
+            .filter(isVisibleSchedule)
             .sorted(by: sortAISchedules)
     }
 
@@ -121,8 +110,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
 
     // 저장 버튼 누를 시에 뷰에서 호출
     func saveChanges(
-        context: ModelContext,
-        onSaveDraft: ((ScheduleEditDraft) -> Void)? = nil
+        onSaveDraft: (ScheduleEditDraft) throws -> Void
     ) {
         guard !schedulesForSelectedWeek.isEmpty || hasPendingChanges else {
             alertMessage = "선택한 기간에 저장된 스케줄이 없어요."
@@ -130,22 +118,8 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             return
         }
 
-        guard let job else {
-            onSaveDraft?(editDraft)
-            alertMessage = "스케줄 수정사항을 저장했어요."
-            showAlert = true
-            return
-        }
-
         do {
-            try saveScheduleUseCase.execute(
-                .editDraft(job: job, draft: editDraft),
-                context: context
-            )
-            editDraft = .fromSavedAISchedules(
-                job: job,
-                targetWeekStart: selectedWeekStart
-            )
+            try onSaveDraft(editDraft)
             alertMessage = "스케줄 수정사항을 저장했어요."
             showAlert = true
         } catch {
@@ -295,12 +269,23 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         }
     }
 
+    private func isVisibleSchedule(_ item: ScheduleEditItem) -> Bool {
+        guard item.changeState != .deleted else { return false }
+
+        if editDraft.mode == .newJobInitialSchedules {
+            return true
+        }
+
+        return item.source == .aiImport
+    }
+
     // 수기로 추가 및 ai 인식 스케줄 수정 데이터 저장 로직
-    func addSchedule(on day: Date, context: ModelContext) {
+    func addSchedule(on day: Date) {
         let calendar = Calendar.current
         let baseDate = calendar.startOfDay(for: day)
         let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: baseDate) ?? baseDate
         let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: baseDate) ?? baseDate
+        let source: ScheduleEditSource = editDraft.mode == .newJobInitialSchedules ? .manual : .aiImport
 
         let schedule = ScheduleEditItem(
             id: UUID(),
@@ -309,7 +294,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             endTime: end,
             breakTime: defaultBreakTime,
             memo: nil,
-            source: .aiImport,
+            source: source,
             changeState: .inserted
         )
 
@@ -317,11 +302,10 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     }
 
     // 수기 및 ai 추가한 데이터 삭제 로직
-    func deleteSchedule(on day: Date, context: ModelContext) {
+    func deleteSchedule(on day: Date) {
         guard let index = editDraft.items.firstIndex(where: {
             Calendar.current.isDate($0.date, inSameDayAs: day)
-            && $0.source == .aiImport
-            && $0.changeState != .deleted
+            && isVisibleSchedule($0)
         }) else {
             return
         }
@@ -333,7 +317,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         }
     }
 
-    func deleteSelectedSchedule(context: ModelContext) {
+    func deleteSelectedSchedule() {
         guard let weekStart = selectedWeekStart else { return }
 
         let calendar = Calendar.current
@@ -342,7 +326,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
 
         for index in editDraft.items.indices {
             guard
-                editDraft.items[index].source == .aiImport,
+                isVisibleSchedule(editDraft.items[index]),
                 editDraft.items[index].date >= start,
                 editDraft.items[index].date < endExclusive
             else {

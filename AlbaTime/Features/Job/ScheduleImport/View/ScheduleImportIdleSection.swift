@@ -4,9 +4,11 @@ struct ScheduleImportIdleSection: View {
     
     @Binding var name: String
     let onTapManualInput: () -> Void
-    let targetJob: Workplace?
     let presetDrafts: [TimePresetDraft]
-    let hasSavedAISchedules: Bool
+    let shouldShowSchedulePanel: Bool
+    let schedulePanelDraft: ScheduleEditDraft
+    let defaultBreakTime: Int
+    let onSaveSchedulePanelDraft: (ScheduleEditDraft) throws -> Void
     let isNameFieldFocused: FocusState<Bool>.Binding
     let sivm: ScheduleImportViewModel
 
@@ -53,24 +55,14 @@ struct ScheduleImportIdleSection: View {
 
     @ViewBuilder
     private var savedScheduleSection: some View {
-        if let job = targetJob, hasSavedAISchedules || ssvm.manualFocusToken > 0 {
+        if shouldShowSchedulePanel {
             AISavedSchedulesInlinePanel(
-                job: job,
-                requestedWeekStart: ssvm.manualWeekFocus,
-                requestToken: ssvm.manualFocusToken,
-                requestMonth: ssvm.manualMonthFocus
-            )
-            .transition(.move(edge: .top).combined(with: .opacity))
-        } else if ssvm.manualFocusToken > 0 {
-            AISavedSchedulesInlinePanel(
-                draft: sivm.session.scheduleImportDraft,
-                defaultBreakTime: sivm.session.jobDraft.defaultRestTime,
+                draft: schedulePanelDraft,
+                defaultBreakTime: defaultBreakTime,
                 requestedWeekStart: ssvm.manualWeekFocus,
                 requestToken: ssvm.manualFocusToken,
                 requestMonth: ssvm.manualMonthFocus,
-                onSaveDraft: { draft in
-                    sivm.saveManualDraft(draft)
-                }
+                onSaveDraft: onSaveSchedulePanelDraft
             )
             .transition(.move(edge: .top).combined(with: .opacity))
         } else {

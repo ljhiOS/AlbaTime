@@ -12,6 +12,7 @@ import PhotosUI
 // TODO: 너무 뷰 구성이 꼬여있어서 아키텍처 설계 다시 해야할듯 여기는
 struct ScheduleImportView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     @ObservedObject var ajvm: AddJobViewModel
     
@@ -27,11 +28,6 @@ struct ScheduleImportView: View {
     init(ajvm: AddJobViewModel) {
         self.ajvm = ajvm
         _sivm = StateObject(wrappedValue: ScheduleImportViewModel(session: ajvm.session))
-    }
-
-    var hasSavedAISchedules: Bool {
-        guard let job = ajvm.session.editingJob else { return false }
-        return job.workSchedules.contains(where: { $0.isFromAIImport })
     }
 
     var body: some View {
@@ -84,9 +80,20 @@ private extension ScheduleImportView {
                 onTapManualInput: {
                     triggerManualWeekFocus()
                 },
-                targetJob: ajvm.session.editingJob,
-                presetDrafts: sivm.session.scheduleImportDraft.presetDrafts,
-                hasSavedAISchedules: hasSavedAISchedules,
+                presetDrafts: sivm.presetDrafts,
+                shouldShowSchedulePanel: sivm.shouldShowSchedulePanel(
+                    manualFocusToken: ssvm.manualFocusToken
+                ),
+                schedulePanelDraft: sivm.makeSchedulePanelDraft(
+                    targetWeekStart: ssvm.manualWeekFocus
+                ),
+                defaultBreakTime: sivm.panelDefaultBreakTime,
+                onSaveSchedulePanelDraft: { draft in
+                    try sivm.saveSchedulePanelDraft(
+                        draft,
+                        context: modelContext
+                    )
+                },
                 isNameFieldFocused: $isNameFieldFocused,
                 sivm: sivm,
                 ssvm: ssvm)
@@ -108,10 +115,14 @@ private extension ScheduleImportView {
     var bottomButtons: some View {
         if sivm.phase == .result {
             ScheduleImportBottomButtons(
-                sivm: sivm,
-                selectedWeekStart: ssvm.selectedWeekStart,
-                onSaved: {
-                    dismiss()
+                isSaveDisabled: !sivm.hasScheduleDrafts,
+                onSave: {
+                    if sivm.saveResultSchedules(
+                        context: modelContext,
+                        targetWeekStart: ssvm.selectedWeekStart
+                    ) {
+                        dismiss()
+                    }
                 },
                 onManualInput: {
                     triggerManualWeekFocus()

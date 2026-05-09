@@ -1,12 +1,10 @@
 import SwiftUI
-import SwiftData
 
 // 선택된 주차의 스케줄을 "한 장의 카드"에서 요일 전환하며 편집한다.
 // 월~일 칩 선택, 시작/종료 시간 수정, 롱프레스 삭제 UX를 담당한다.
 struct AISavedWeekSingleCard: View {
     @ObservedObject var aspvm: AISavedSchedulesPanelViewModel
 
-    @Environment(\.modelContext) private var modelContext
     @State private var selectedDay: Date?
     @State private var suppressNextTap: Bool = false
     private let weekdaySymbols = ["월", "화", "수", "목", "금", "토", "일"]
@@ -84,7 +82,7 @@ struct AISavedWeekSingleCard: View {
 
                 Haptics.impact(.medium)
                 suppressNextTap = true
-                aspvm.deleteSchedule(on: day, context: modelContext)
+                aspvm.deleteSchedule(on: day)
 
                 if let selectedDay, Calendar.current.isDate(selectedDay, inSameDayAs: day) {
                     self.selectedDay = aspvm.schedulesForSelectedWeek
@@ -96,7 +94,7 @@ struct AISavedWeekSingleCard: View {
 
             case .tapAdd:
                 guard let selectedDay else { return }
-                aspvm.addSchedule(on: selectedDay, context: modelContext)
+                aspvm.addSchedule(on: selectedDay)
 
                 // View
             case let .changeStartTime(newValue):
@@ -118,19 +116,9 @@ struct AISavedWeekSingleCard: View {
 
 #Preview("AI 저장 스케줄 편집") {
     struct PreviewWrapper: View {
-        let container: ModelContainer
         let vm: AISavedSchedulesPanelViewModel
 
         init() {
-            let config = ModelConfiguration(isStoredInMemoryOnly: true)
-            container = try! ModelContainer(
-                for: Workplace.self,
-                WorkSchedule.self,
-                RegularSchedule.self,
-                WorkTimePreset.self,
-                configurations: config
-            )
-
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let weekday = calendar.component(.weekday, from: today)
@@ -145,43 +133,16 @@ struct AISavedWeekSingleCard: View {
             let thuStart = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: thursday) ?? thursday
             let thuEnd = calendar.date(bySettingHour: 15, minute: 0, second: 0, of: thursday) ?? thursday
 
-            let job = Workplace(
-                name: "테스트 매장",
-                hourlyWage: 11000,
-                defaultDays: "월,화,수,목,금",
-                defaultStartTime: tueStart,
-                defaultEndTime: tueEnd,
-                defaultRestTime: 60,
-                workType: .fixed
+            let draft = ScheduleEditDraft(
+                mode: .newJobInitialSchedules,
+                targetWeekStart: weekStart,
+                items: [
+                    ScheduleEditItem(id: UUID(), date: tuesday, startTime: tueStart, endTime: tueEnd, breakTime: 60, memo: "미들", source: .manual),
+                    ScheduleEditItem(id: UUID(), date: thursday, startTime: thuStart, endTime: thuEnd, breakTime: 30, memo: "오픈", source: .manual)
+                ]
             )
 
-            let s1 = WorkSchedule(
-                date: tuesday,
-                startTime: tueStart,
-                endTime: tueEnd,
-                breakTime: 60,
-                memo: "미들",
-                isFromAIImport: true
-            )
-
-            let s2 = WorkSchedule(
-                date: thursday,
-                startTime: thuStart,
-                endTime: thuEnd,
-                breakTime: 30,
-                memo: "오픈",
-                isFromAIImport: true
-            )
-
-            s1.workplace = job
-            s2.workplace = job
-            job.workSchedules.append(contentsOf: [s1, s2])
-
-            container.mainContext.insert(job)
-            container.mainContext.insert(s1)
-            container.mainContext.insert(s2)
-
-            let viewModel = AISavedSchedulesPanelViewModel(job: job)
+            let viewModel = AISavedSchedulesPanelViewModel(draft: draft, defaultBreakTime: 60)
             viewModel.selectedWeekStart = weekStart
             vm = viewModel
         }
@@ -189,7 +150,6 @@ struct AISavedWeekSingleCard: View {
         var body: some View {
             AISavedWeekSingleCard(aspvm: vm)
                 .padding()
-                .modelContainer(container)
         }
     }
 
