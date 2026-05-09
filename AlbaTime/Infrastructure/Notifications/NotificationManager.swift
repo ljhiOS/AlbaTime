@@ -10,7 +10,12 @@ class NotificationManager {
         let id: String
         let name: String
         let isAlarmEnabled: Bool
-        let upcomingStartTimes: [Date]
+        let upcomingShifts: [ShiftNotificationTime]
+    }
+
+    private struct ShiftNotificationTime {
+        let start: Date
+        let end: Date
     }
 
     private var isAppAlarmEnabled: Bool {
@@ -20,7 +25,7 @@ class NotificationManager {
         }
         return defaults.bool(forKey: appAlarmKey)
     }
-    
+
     // 알림 권한 요청
     func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(
@@ -32,7 +37,7 @@ class NotificationManager {
             print("알림 권한 상태:", granted)
         }
     }
-    
+
     // 출근 15분 전 알림 스케줄
     func scheduleWorkNotification(for workplace: Workplace) {
         let snapshot = makeSnapshot(from: workplace)
@@ -81,40 +86,72 @@ class NotificationManager {
         let now = Date()
         let center = UNUserNotificationCenter.current()
 
-        let upcomingSchedules = snapshot.upcomingStartTimes
-            .filter { $0 > now }
-            .sorted()
+        let upcomingShifts = snapshot.upcomingShifts
+            .filter { $0.start > now || $0.end > now }
+            .sorted { $0.start < $1.start }
 
-        guard !upcomingSchedules.isEmpty else {
+        guard !upcomingShifts.isEmpty else {
             print("다가오는 근무 스케줄이 없어 알림을 건너뜁니다. workplace=\(snapshot.name)")
             return
         }
 
-        for startTime in upcomingSchedules {
-            guard let triggerDate = calendar.date(byAdding: .minute, value: -15, to: startTime),
-                  triggerDate > now else { continue }
+        for shift in upcomingShifts {
+            if let triggerDate = calendar.date(byAdding: .minute, value: -15, to: shift.start),
+               triggerDate > now {
+                addNotification(
+                    center: center,
+                    identifier: "\(snapshot.id)_start_\(Int(shift.start.timeIntervalSince1970))",
+                    content: makeStartContent(workplaceName: snapshot.name),
+                    triggerDate: triggerDate
+                )
+            }
 
-            let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
-            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-
-            let request = UNNotificationRequest(
-                identifier: "\(snapshot.id)_shift_\(Int(startTime.timeIntervalSince1970))",
-                content: makeContent(workplaceName: snapshot.name),
-                trigger: trigger
-            )
-
-            center.add(request) { error in
-                if let error = error {
-                    print("❌ 알림 등록 실패:", error.localizedDescription)
-                }
+            if shift.end > now {
+                addNotification(
+                    center: center,
+                    identifier: "\(snapshot.id)_end_\(Int(shift.end.timeIntervalSince1970))",
+                    content: makeEndContent(workplaceName: snapshot.name),
+                    triggerDate: shift.end
+                )
             }
         }
     }
-    
-    private func makeContent(workplaceName: String) -> UNMutableNotificationContent {
+
+    private func addNotification(
+        center: UNUserNotificationCenter,
+        identifier: String,
+        content: UNMutableNotificationContent,
+        triggerDate: Date
+    ) {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+
+        center.add(request) { error in
+            if let error = error {
+                print("❌ 알림 등록 실패:", error.localizedDescription)
+            }
+        }
+    }
+
+    private func makeStartContent(workplaceName: String) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = "출근 15분 전"
         content.body = "\(workplaceName) 출근 준비하세요!"
+        content.sound = .default
+        return content
+    }
+
+    private func makeEndContent(workplaceName: String) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = "\(workplaceName) 근무 종료!"
+        content.body = "\(workplaceName) 근무가 끝났어요.\n변경된 누적금액을 확인해보세요."
         content.sound = .default
         return content
     }
@@ -149,16 +186,16 @@ class NotificationManager {
             id: workplace.id.uuidString,
             name: workplace.name,
             isAlarmEnabled: workplace.isAlarmEnabled,
-            upcomingStartTimes: upcomingShiftStartTimes(for: workplace, daysAhead: 30)
+            upcomingShifts: upcomingShiftTimes(for: workplace, daysAhead: 30)
         )
     }
 
-    private func upcomingShiftStartTimes(for workplace: Workplace, daysAhead: Int) -> [Date] {
+    private func upcomingShiftTimes(for workplace: Workplace, daysAhead: Int) -> [ShiftNotificationTime] {
         let calendar = Calendar.current
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
 
-        var results: [Date] = []
+        var results: [ShiftNotificationTime] = []
 
         for offset in 0...daysAhead {
             guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
@@ -166,12 +203,17 @@ class NotificationManager {
             guard let schedule = workplace.getSchedule(for: day) else { continue }
 
             let start = combineDateAndTime(date: day, time: schedule.startTime)
-            
-            guard start > now else { continue }
-            results.append(start)
+            var end = combineDateAndTime(date: day, time: schedule.endTime)
+
+            if end < start {
+                end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
+            }
+
+            guard start > now || end > now else { continue }
+            results.append(ShiftNotificationTime(start: start, end: end))
         }
 
-        return results.sorted()
+        return results.sorted { $0.start < $1.start }
     }
 
     private func combineDateAndTime(date: Date, time: Date) -> Date {
