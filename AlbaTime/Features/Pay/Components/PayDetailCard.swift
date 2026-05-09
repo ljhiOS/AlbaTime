@@ -84,21 +84,21 @@ struct PayDetailCard: View {
             }
             
             if taxAmount > 0 {
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading, spacing: 5) {
-                                    Text("세금 공제")
-                                        .font(.body)
-                                        .foregroundColor(.red)
-                                    Text("누적 공제액")
-                                        .font(.footnote)
-                                        .foregroundColor(.gray)
-                                }
-                                Spacer()
-                                Text("- ₩\(taxAmount.formatted())")
-                                    .font(.body)
-                                    .foregroundColor(.red)
-                            }
-                        }
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("세금 공제")
+                            .font(.body)
+                            .foregroundColor(.red)
+                        Text("누적 공제액")
+                            .font(.footnote)
+                            .foregroundColor(.gray)
+                    }
+                    Spacer()
+                    Text("- ₩\(taxAmount.formatted())")
+                        .font(.body)
+                        .foregroundColor(.red)
+                }
+            }
             
             Divider()
                 .padding(.vertical, 5)

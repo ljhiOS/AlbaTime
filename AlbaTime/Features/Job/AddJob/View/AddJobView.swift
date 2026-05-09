@@ -39,7 +39,7 @@ struct AddJobView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
 
-                BasicInfoGroup(ajvm: ajvm, focusedField: $focusedField)
+                BasicInfoGroup(session: ajvm.session, focusedField: $focusedField)
                     .padding(.horizontal)
                 
                 Divider().padding(.horizontal)
