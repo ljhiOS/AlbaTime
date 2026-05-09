@@ -101,7 +101,7 @@ struct HelpView: View {
                     } label: {
                         HStack {
                             Image(systemName: "bubble.right.fill")
-                            Text("개발자에게 직접 물어보기")
+                            Text("카카오톡으로 문의하기")
                         }
                         .fontWeight(.medium)
                         .foregroundStyle(Color.black)
