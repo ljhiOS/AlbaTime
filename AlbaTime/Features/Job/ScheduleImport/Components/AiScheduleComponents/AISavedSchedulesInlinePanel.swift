@@ -5,10 +5,11 @@ import SwiftData
 // 상단 타이틀/월주 선택/주차 카드/저장 버튼을 렌더링하고,
 // 상태/계산/저장 로직은 AISavedSchedulesPanelViewModel로 위임한다.
 struct AISavedSchedulesInlinePanel: View {
-    let job: Workplace
+    let job: Workplace?
     let requestedWeekStart: Date?
     let requestToken: Int
     let requestMonth: AIListMonthKey?
+    let onSaveDraft: ((ScheduleEditDraft) -> Void)?
 
     @Environment(\.modelContext) private var modelContext
     @StateObject private var aspvm: AISavedSchedulesPanelViewModel
@@ -19,7 +20,29 @@ struct AISavedSchedulesInlinePanel: View {
         self.requestedWeekStart = requestedWeekStart
         self.requestToken = requestToken
         self.requestMonth = requestMonth
+        self.onSaveDraft = nil
         _aspvm = StateObject(wrappedValue: AISavedSchedulesPanelViewModel(job: job))
+    }
+
+    init(
+        draft: ScheduleImportDraft,
+        defaultBreakTime: Int,
+        requestedWeekStart: Date? = nil,
+        requestToken: Int = 0,
+        requestMonth: AIListMonthKey? = nil,
+        onSaveDraft: @escaping (ScheduleEditDraft) -> Void
+    ) {
+        self.job = nil
+        self.requestedWeekStart = requestedWeekStart
+        self.requestToken = requestToken
+        self.requestMonth = requestMonth
+        self.onSaveDraft = onSaveDraft
+        _aspvm = StateObject(
+            wrappedValue: AISavedSchedulesPanelViewModel(
+                draft: draft,
+                defaultBreakTime: defaultBreakTime
+            )
+        )
     }
 
     var body: some View {
@@ -74,7 +97,10 @@ struct AISavedSchedulesInlinePanel: View {
                     
                     Button("선택한 기간 수정사항 저장") {
                         // 현재 인라인 편집 상태를 SwiftData에 반영하고 동기화한다.
-                        aspvm.saveChanges(context: modelContext)
+                        aspvm.saveChanges(
+                            context: modelContext,
+                            onSaveDraft: onSaveDraft
+                        )
                     }
                     .font(.subheadline)
                     .fontWeight(.semibold)

@@ -61,6 +61,18 @@ struct ScheduleImportIdleSection: View {
                 requestMonth: ssvm.manualMonthFocus
             )
             .transition(.move(edge: .top).combined(with: .opacity))
+        } else if ssvm.manualFocusToken > 0 {
+            AISavedSchedulesInlinePanel(
+                draft: sivm.session.scheduleImportDraft,
+                defaultBreakTime: sivm.session.jobDraft.defaultRestTime,
+                requestedWeekStart: ssvm.manualWeekFocus,
+                requestToken: ssvm.manualFocusToken,
+                requestMonth: ssvm.manualMonthFocus,
+                onSaveDraft: { draft in
+                    sivm.saveManualDraft(draft)
+                }
+            )
+            .transition(.move(edge: .top).combined(with: .opacity))
         } else {
             ScheduleImportEmptyView()
         }

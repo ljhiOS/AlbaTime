@@ -19,41 +19,41 @@ enum ScheduleImportPhase {
 
 @MainActor
 class ScheduleImportViewModel: ObservableObject {
-    
+
     // processSelectedPhoto에서 사용
     @Published var selectedImage: UIImage? // ScheduleImportResultList에 사진 보여주기
     @Published var phase: ScheduleImportPhase = .idle
-    
+
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
-    
+
     // preset 연관 변수
     @Published var isAddingPreset: Bool = false
     @Published var newPresetLabel: String = "" // 프리셋 이름
     @Published var newPresetStart: Date = Date.makeTime(9, 0)
     @Published var newPresetEnd: Date = Date.makeTime(18, 0)
-    
+
     var session: JobEditingSession
 
     // UseCase
-    private let saveParsedSchedules = SaveParsedSchedules(appWriteCoordinator: AppWriteCoordinator())
     private let analyzeScheduleImage = AnalyzeScheduleImage()
-    
+    private let saveScheduleUseCase = SaveScheduleUseCase()
+
     init(session: JobEditingSession) {
         self.session = session
     }
-    
+
     // 뷰에서 .onChange로 뷰 상태 변경시 호출
     func processSelectedPhoto(item: PhotosPickerItem?, targetName: String) async {
         guard let item else { return }
-        
+
         phase = .loading
-        
+
         do {
             // Transferable 프로토콜을 이용해 데이터 로드
             if let data = try await item.loadTransferable(type: Data.self),
                let image = UIImage(data: data) {
-                
+
                 self.selectedImage = image
                 self.analyzeImage(targetName: targetName)
             } else {
@@ -66,11 +66,11 @@ class ScheduleImportViewModel: ObservableObject {
             self.showAlert = true
         }
     }
-    
+
     // processSelectedPhoto에서 사용
     func analyzeImage(targetName: String = "") {
         guard let image = selectedImage else { return }
-        
+
 //        guard session.editingJob != nil else {
 //            errorMessage = "근무지 정보가 없습니다."
 //            showAlert = true
@@ -78,8 +78,8 @@ class ScheduleImportViewModel: ObservableObject {
 //        }
 
         phase = .loading
-        session.scheduleImportDraft.parsedSchedule = []
-        
+        session.scheduleImportDraft.schedules = []
+
         let presetModels = session.scheduleImportDraft.presetDrafts.map {
             WorkTimePreset(
                 label: $0.label,
@@ -96,7 +96,13 @@ class ScheduleImportViewModel: ObservableObject {
                     presets: presetModels
                 )
 
-                self.session.scheduleImportDraft.parsedSchedule = schedules
+                self.session.scheduleImportDraft.schedules = schedules.map {
+                    ScheduleDraftItem(
+                        parsedSchedule: $0,
+                        breakTime: self.session.jobDraft.defaultRestTime,
+                        source: .aiImport
+                    )
+                }
 
                 if schedules.isEmpty {
                     self.phase = .idle
@@ -121,24 +127,24 @@ class ScheduleImportViewModel: ObservableObject {
         let weekStart = calendar.startOfDay(for: targetWeekStart ?? Date())
         let weekEndExclusive = calendar.date(byAdding: .day, value: 7, to: weekStart) ?? weekStart
         var targetDate = weekStart
-        
+
         // 날짜순 정렬
-        let schedulesInWeek = session.scheduleImportDraft.parsedSchedule
+        let schedulesInWeek = session.scheduleImportDraft.schedules
             .filter { $0.date >= weekStart && $0.date < weekEndExclusive }
             .sorted(by: { $0.date < $1.date })
-        
+
         // UX 관점 이미 인식된 날짜 다음 날로 자동 생성 ex) 월 화 있으면 추가 버튼 누르면 수요일 자동생성
         if let lastSchedule = schedulesInWeek.last {
             if let nextDay = calendar.date(byAdding: .day, value: 1, to: lastSchedule.date) {
                 targetDate = nextDay
             }
         }
-        
+
         // 주 넘어가면 마지막날로 보정하기
         if targetDate >= weekEndExclusive {
             targetDate = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
         }
-        
+
         // 2. 기본 시간: 09:00 ~ 18:00 // guard let 구문으로 강제언래핑 제거
         guard let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: targetDate),
               let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: targetDate)
@@ -147,30 +153,36 @@ class ScheduleImportViewModel: ObservableObject {
             showAlert = true
             return
         }
-        
-        let newSchedule = ParsedSchedule(
+
+        let newSchedule = ScheduleDraftItem(
+            id: UUID(),
             date: targetDate,
             startTime: start,
             endTime: end,
-            workLabel: nil
+            breakTime: session.jobDraft.defaultRestTime,
+            memo: nil,
+            source: .manual
         )
-        
+
         // 추가
-        session.scheduleImportDraft.parsedSchedule.append(newSchedule)
-        
+        session.scheduleImportDraft.schedules.append(newSchedule)
+
         // 날짜순 정렬 (추가된 게 중간에 끼어들 수도 있으므로)
-        session.scheduleImportDraft.parsedSchedule.sort { $0.date < $1.date }
+        session.scheduleImportDraft.schedules.sort { $0.date < $1.date }
     }
-    
+
     // ScheduleImportBottomButtons에서 저장버튼 누를시에 호출 -> ai 인식 결과 저장
-    func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil, isFromAIImport: Bool = true) -> Bool {
+    func saveToWorkplace(context: ModelContext, targetWeekStart: Date? = nil) -> Bool {
         do {
-            try saveParsedSchedules.execute(
-                job: session.editingJob,
-                parsedSchedules: session.scheduleImportDraft.parsedSchedule,
-                targetWeekStart: targetWeekStart,
-                context: context,
-                isFromAIImport: isFromAIImport
+            try saveScheduleUseCase.execute(
+                .editDraft(
+                    job: session.editingJob,
+                    draft: session.scheduleImportDraft.makeEditDraft(
+                        mode: .existingJobAIImport,
+                        targetWeekStart: targetWeekStart
+                    )
+                ),
+                context: context
             )
             return true
         } catch {
@@ -179,20 +191,25 @@ class ScheduleImportViewModel: ObservableObject {
             return false
         }
     }
-    
+
+    func saveManualDraft(_ draft: ScheduleEditDraft) {
+        session.scheduleImportDraft.schedules = draft.items
+            .filter { $0.changeState != .deleted }
+    }
+
     // MARK: preset 연관 메서드
     // ScheduleImportPresetGroup에서 사용
-    
+
     func addNewPreset() {
         guard !newPresetLabel.isEmpty else {return}
-        
+
         let preset = TimePresetDraft(
             id: UUID(),
             label: newPresetLabel,
             startTime: newPresetStart,
             endTime: newPresetEnd
         )
-        
+
         session.scheduleImportDraft.presetDrafts.append(preset)
         newPresetLabel = "" // 입력창 초기화 다음 프리셋 추가를 위해
         isAddingPreset = false

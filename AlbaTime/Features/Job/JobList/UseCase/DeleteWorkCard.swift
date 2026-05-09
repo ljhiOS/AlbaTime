@@ -20,16 +20,12 @@ enum DeleteWorkplaceError: LocalizedError {
 }
 
 struct DeleteWorkCard {
+    private let appWriteCoordinator = AppWriteCoordinator()
+
     @MainActor
     func execute(workplace: Workplace, context: ModelContext) throws {
-        NotificationManager.shared.removeNotifications(for: workplace)
-        
-        context.delete(workplace)
-        
         do {
-            try context.save()
-            let workplaces = try context.fetch(FetchDescriptor<Workplace>())
-            NextShiftSyncService.sync(workplaces: workplaces)
+            try appWriteCoordinator.delete(workplace: workplace, context: context)
         } catch {
             throw DeleteWorkplaceError.deleteFailed(error.localizedDescription)
         }

@@ -30,14 +30,26 @@ struct ScheduleImportResultList: View {
             
             // 2. 스케줄 리스트 섹션 (인라인 편집)
             Section {
-                if sivm.session.scheduleImportDraft.parsedSchedule.isEmpty {
+                if sivm.session.scheduleImportDraft.schedules.isEmpty {
                     emptyStateView
                         .listRowBackground(Color.theme.field)
                 } else {
                     // 배열 Binding으로 각 행을 인라인 편집한다.
-                    ForEach($sivm.session.scheduleImportDraft.parsedSchedule) { $schedule in
-                        InlineEditRow(schedule: $schedule)
-                            .focused($focusedField, equals: schedule.id.uuidString)
+                    ForEach($sivm.session.scheduleImportDraft.schedules) { scheduleBinding in
+                        InlineEditRow(
+                            schedule: Binding(
+                                get: {
+                                    scheduleBinding.wrappedValue.parsedSchedule
+                                },
+                                set: { updated in
+                                    scheduleBinding.wrappedValue.date = updated.date
+                                    scheduleBinding.wrappedValue.startTime = updated.startTime
+                                    scheduleBinding.wrappedValue.endTime = updated.endTime
+                                    scheduleBinding.wrappedValue.memo = updated.workLabel
+                                }
+                            )
+                        )
+                            .focused($focusedField, equals: scheduleBinding.wrappedValue.id.uuidString)
                             .listRowBackground(Color.theme.field)
                     }
                     .onDelete(perform: deleteSchedule) // 스와이프 삭제 지원
@@ -46,7 +58,7 @@ struct ScheduleImportResultList: View {
                 VStack(alignment: .leading) {
                     
                     HStack {
-                        Text("인식된 스케줄 (\(sivm.session.scheduleImportDraft.parsedSchedule.count)건)")
+                        Text("인식된 스케줄 (\(sivm.session.scheduleImportDraft.schedules.count)건)")
                         Spacer()
                         // 헤더에 [+] 버튼 배치
                         Button {
@@ -57,7 +69,7 @@ struct ScheduleImportResultList: View {
                                 .fontWeight(.bold)
                         }
                     }
-                    if !sivm.session.scheduleImportDraft.parsedSchedule.isEmpty {
+                    if !sivm.session.scheduleImportDraft.schedules.isEmpty {
                         Text("시간을 터치하여 수정하고, 왼쪽으로 밀어서 삭제하세요.")
                             .font(.footnote)
                     }
@@ -75,7 +87,7 @@ struct ScheduleImportResultList: View {
     
     // MARK: - Actions
     private func deleteSchedule(at offsets: IndexSet) {
-        sivm.session.scheduleImportDraft.parsedSchedule.remove(atOffsets: offsets)
+        sivm.session.scheduleImportDraft.schedules.remove(atOffsets: offsets)
     }
     
     // MARK: - Subviews
@@ -119,4 +131,3 @@ struct ScheduleImportResultList: View {
 
     return ScheduleImportResultList(sivm: viewModel)
 }
-

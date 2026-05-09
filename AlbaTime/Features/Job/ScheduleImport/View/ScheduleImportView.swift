@@ -204,5 +204,3 @@ private extension ScheduleImportView {
     }
     .modelContainer(container)
 }
-
-

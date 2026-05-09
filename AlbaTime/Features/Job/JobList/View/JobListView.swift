@@ -61,6 +61,10 @@ struct JobListView: View {
                                     jlvm.delete(job, context: modelContext)
                                 }, onPin: {
                                     togglePin(job)
+                                }, onToggleAlarm: {
+                                    if jlvm.toggleAlarm(job, context: modelContext) {
+                                        Haptics.impact(.medium)
+                                    }
                                 }, onShowDetail: {
                                     selectedDetailJob = job
                                 }, onShowEdit: {
@@ -79,6 +83,10 @@ struct JobListView: View {
                                 jlvm.delete(job, context: modelContext)
                             }, onPin: {
                                 togglePin(job)
+                            }, onToggleAlarm: {
+                                if jlvm.toggleAlarm(job, context: modelContext) {
+                                    Haptics.impact(.medium)
+                                }
                             }, onShowDetail: {
                                 selectedDetailJob = job
                             }, onShowEdit: {
@@ -128,11 +136,10 @@ struct JobListView: View {
         }
     }
     
-    // MARK: - Logic
     private func togglePin(_ workplace: Workplace) {
-        withAnimation {
-            workplace.isPinned.toggle()
-        }
+        //withAnimation {
+            jlvm.togglePin(workplace, context: modelContext)
+        //}
     }
 }
 

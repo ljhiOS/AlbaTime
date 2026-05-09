@@ -14,6 +14,7 @@ struct WorkCard: View {
     
     var onDelete: () -> Void
     var onPin: () -> Void
+    var onToggleAlarm: () -> Void
     var onShowDetail: () -> Void
     var onShowEdit: () -> Void
     
@@ -64,10 +65,7 @@ struct WorkCard: View {
                                     Label("삭제", systemImage: "trash")
                                 }
                                 Button {
-                                    job.isAlarmEnabled.toggle()
-                                    NotificationManager.shared.refreshNotifications(for: job)
-                                    try? job.modelContext?.save()
-                                    Haptics.impact(.medium)
+                                    onToggleAlarm()
                                 } label: {
                                     Label(job.isAlarmEnabled ? "알람 해제" : "알람 허용", systemImage: job.isAlarmEnabled ? "bell.slash" : "bell")
                                 }
@@ -196,5 +194,5 @@ struct WorkCard: View {
         defaultStartTime: Date(),
         defaultEndTime: Date()
     )
-    return WorkCard(job: job, onDelete: {}, onPin: {}, onShowDetail: {}, onShowEdit: {})
+    return WorkCard(job: job, onDelete: {}, onPin: {}, onToggleAlarm: {}, onShowDetail: {}, onShowEdit: {})
 }

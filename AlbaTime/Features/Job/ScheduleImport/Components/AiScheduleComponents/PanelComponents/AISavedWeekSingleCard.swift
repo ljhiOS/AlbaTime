@@ -24,7 +24,7 @@ struct AISavedWeekSingleCard: View {
 
     // 선택된 요일에 매핑되는 스케줄 1건.
     // 카드 하단 시간 편집 영역은 이 스케줄을 기준으로 바인딩된다.
-    private var selectedSchedule: WorkSchedule? {
+    private var selectedSchedule: ScheduleEditItem? {
         guard let selectedDay else { return nil }
         return aspvm.schedulesForSelectedWeek
             .first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDay) })
@@ -195,4 +195,3 @@ struct AISavedWeekSingleCard: View {
 
     return PreviewWrapper()
 }
-

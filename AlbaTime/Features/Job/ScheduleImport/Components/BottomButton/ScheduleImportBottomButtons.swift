@@ -26,8 +26,7 @@ struct ScheduleImportBottomButtons: View {
                 
                 let didSave = sivm.saveToWorkplace(
                     context: modelContext,
-                    targetWeekStart: selectedWeekStart,
-                    isFromAIImport: true
+                    targetWeekStart: selectedWeekStart
                 )
                 if didSave {
                     onSaved()
@@ -39,13 +38,13 @@ struct ScheduleImportBottomButtons: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
-                        sivm.session.scheduleImportDraft.parsedSchedule.isEmpty
+                        sivm.session.scheduleImportDraft.schedules.isEmpty
                         ? Color.theme.disabled
                         : Color.theme.primary
                     )
                     .cornerRadius(12)
             }
-            .disabled(sivm.session.scheduleImportDraft.parsedSchedule.isEmpty)
+            .disabled(sivm.session.scheduleImportDraft.schedules.isEmpty)
             
             // 취소 버튼
             Button {

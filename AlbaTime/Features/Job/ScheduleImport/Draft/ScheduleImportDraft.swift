@@ -8,18 +8,38 @@
 import Foundation
 
 struct ScheduleImportDraft {
-    var parsedSchedule: [ParsedSchedule]
+    var schedules: [ScheduleDraftItem]
     var presetDrafts: [TimePresetDraft]
+
+    var parsedSchedule: [ParsedSchedule] {
+        get {
+            schedules.map(\.parsedSchedule)
+        }
+        set {
+            schedules = newValue.map {
+                ScheduleDraftItem(
+                    parsedSchedule: $0,
+                    breakTime: 0,
+                    source: .aiImport
+                )
+            }
+        }
+    }
 }
 
 extension ScheduleImportDraft {
     static func empty() -> ScheduleImportDraft {
-        ScheduleImportDraft(parsedSchedule: [], presetDrafts: [])
+        ScheduleImportDraft(schedules: [], presetDrafts: [])
     }
-    
+
     static func from(_ job: Workplace) -> ScheduleImportDraft {
         ScheduleImportDraft(
-            parsedSchedule: [],
+            schedules: job.workSchedules
+                .sorted {
+                    if $0.date != $1.date { return $0.date < $1.date }
+                    return $0.startTime < $1.startTime
+                }
+                .map(ScheduleDraftItem.init(workSchedule:)),
             presetDrafts: job.timePresets.map {
                 TimePresetDraft(
                     id: $0.id,
@@ -28,6 +48,17 @@ extension ScheduleImportDraft {
                     endTime: $0.endTime
                 )
             }
+        )
+    }
+
+    func makeEditDraft(
+        mode: ScheduleEditMode,
+        targetWeekStart: Date? = nil
+    ) -> ScheduleEditDraft {
+        ScheduleEditDraft(
+            mode: mode,
+            targetWeekStart: targetWeekStart,
+            items: schedules
         )
     }
 }

@@ -117,14 +117,12 @@ class AddJobViewModel: ObservableObject {
     
     // MARK: 저장
     func save(context: ModelContext) -> Bool {
-        let job = applyDraftToJob(context: context)
-        
         do {
             try saveJobUseCase.execute(
-                job: job,
-                targetWeeklyCount: session.jobDraft.targetWeeklyCount,
-                expectedDailyHours: session.jobDraft.expectedDailyHours,
-                initialDefaultRestTime: initialDefaultRestTime,
+                .jobDraft(
+                    session: session,
+                    initialDefaultRestTime: initialDefaultRestTime
+                ),
                 context: context
             )
             hasSavedChanges = true
@@ -144,112 +142,4 @@ class AddJobViewModel: ObservableObject {
         
         session.jobDraft = .from(editingJob)
     }
-    
-    // MARK: 임시 저장소 실제 DB 저장을 위한 변환 함수
-    private func applyDraftToJob(context: ModelContext) -> Workplace {
-        let job = session.editingJob ?? Workplace(
-            name: "",
-            hourlyWage: 0,
-            defaultDays: "",
-            defaultStartTime: Date.makeTime(9, 0),
-            defaultEndTime: Date.makeTime(18, 0),
-            workType: session.jobDraft.workType
-        )
-
-        job.name = session.jobDraft.name.trimmingCharacters(in: .whitespaces)
-        job.hourlyWage = session.jobDraft.hourlyWage
-        job.defaultRestTime = session.jobDraft.defaultRestTime
-        job.defaultMemo = session.jobDraft.defaultMemo.isEmpty ? nil : session.jobDraft.defaultMemo
-        job.taxType = session.jobDraft.taxType
-        job.allowanceType = session.jobDraft.allowanceType
-        job.workType = session.jobDraft.workType
-
-        if session.jobDraft.workType == .flexible {
-            job.targetWeeklyCount = session.jobDraft.targetWeeklyCount
-            job.expectedDailyHours = session.jobDraft.expectedDailyHours
-
-            if session.editingJob == nil {
-                let batchID = UUID().uuidString
-
-                for parsed in session.scheduleImportDraft.parsedSchedule {
-                    let schedule = WorkSchedule(
-                        date: parsed.date,
-                        startTime: parsed.startTime,
-                        endTime: parsed.endTime,
-                        breakTime: session.jobDraft.defaultRestTime,
-                        memo: parsed.workLabel,
-                        isFromAIImport: true,
-                        aiImportBatchID: batchID,
-                        isEditedAfterAIImport: false,
-                        workplace: job
-                    )
-
-                    job.workSchedules.append(schedule)
-                }
-            }
-
-            return job
-        } else {
-            job.targetWeeklyCount = nil
-            job.expectedDailyHours = nil
-        }
-
-        let existingSchedules = job.regularSchedules
-        job.regularSchedules.removeAll()
-
-        for schedule in existingSchedules where schedule.modelContext != nil {
-            context.delete(schedule)
-        }
-
-        let orderedSchedules = session.jobDraft.regularSchedules.sorted { left, right in
-            let leftIndex = days.firstIndex(of: left.dayOfWeek) ?? 0
-            let rightIndex = days.firstIndex(of: right.dayOfWeek) ?? 0
-            return leftIndex < rightIndex
-        }
-
-        for draftSchedule in orderedSchedules {
-            let schedule = RegularSchedule(
-                dayOfWeek: draftSchedule.dayOfWeek,
-                startTime: draftSchedule.startTime,
-                endTime: draftSchedule.endTime,
-                breakTime: draftSchedule.breakTime
-            )
-            schedule.workplace = job
-            job.regularSchedules.append(schedule)
-
-            if job.modelContext != nil {
-                context.insert(schedule)
-            }
-        }
-
-        job.defaultDays = orderedSchedules.map(\.dayOfWeek).joined(separator: ",")
-
-        if let firstSchedule = orderedSchedules.first {
-            job.defaultStartTime = firstSchedule.startTime
-            job.defaultEndTime = firstSchedule.endTime
-        }
-
-        if session.editingJob == nil {
-            let batchID = UUID().uuidString
-
-            for parsed in session.scheduleImportDraft.parsedSchedule {
-                let schedule = WorkSchedule(
-                    date: parsed.date,
-                    startTime: parsed.startTime,
-                    endTime: parsed.endTime,
-                    breakTime: session.jobDraft.defaultRestTime,
-                    memo: parsed.workLabel,
-                    isFromAIImport: true,
-                    aiImportBatchID: batchID,
-                    isEditedAfterAIImport: false,
-                    workplace: job
-                )
-
-                job.workSchedules.append(schedule)
-            }
-        }
-
-        return job
-    }
-
 }
