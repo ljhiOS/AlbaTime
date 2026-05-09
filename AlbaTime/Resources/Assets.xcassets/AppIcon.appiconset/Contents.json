@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "icon_final.png",
+      "filename" : "AlbaTime_AppIcon_Light_1024_FIXED_1_3x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "icon_final 1.png",
+      "filename" : "AlbaTime_AppIcon_Dark_1024_FIXED_1_3x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "icon_final 2.png",
+      "filename" : "AlbaTime_AppIcon_Light_1024_FIXED_1_3x 1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
