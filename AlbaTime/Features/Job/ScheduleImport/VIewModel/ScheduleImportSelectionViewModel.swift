@@ -104,7 +104,7 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
         
         // UX 힌트 띄우기
         showManualHint = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.showManualHint = false
         }
     }

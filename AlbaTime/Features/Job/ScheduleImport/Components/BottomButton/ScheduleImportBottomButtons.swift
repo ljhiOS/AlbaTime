@@ -18,7 +18,7 @@ struct ScheduleImportBottomButtons: View {
             Button {
                 onSave()
             } label: {
-                Text("저장하기")
+                Text("AI 인식 스케줄 적용")
                     .font(.headline).bold()
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)

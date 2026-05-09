@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 
-// TODO: 너무 뷰 구성이 꼬여있어서 아키텍처 설계 다시 해야할듯 여기는
 struct ScheduleImportView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext

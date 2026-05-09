@@ -8,12 +8,13 @@
 import SwiftUI
 import SwiftData
 
+// TODO: 나중에 로그인 기능 추가 시 알람에서 계정으로 Text 변경
 struct AccountDetail: View {
     @AppStorage("isAppAlarmOn") var isAppAlarmOn: Bool = true
     @Query var workplaces: [Workplace]
     var body: some View {
         VStack(alignment: .leading) {
-            Text("계정")
+            Text("알람")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .padding(.top)

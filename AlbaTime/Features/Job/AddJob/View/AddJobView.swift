@@ -49,7 +49,7 @@ struct AddJobView: View {
                         .padding(.horizontal)
                 } else {
                     
-                    FlexibleInfoGroup(ajvm: ajvm)
+                    FlexibleInfoGroup(session: ajvm.session)
                         .padding(.horizontal)
                 }
 
@@ -115,7 +115,7 @@ struct AddJobView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if focusedField == nil {
-                BottomButton(title: "저장하기", action: {
+                BottomButton(title: "근무지 및 스케줄 통합 저장", action: {
                     if ajvm.save(context: modelContext) { dismiss() }
                 })
             }

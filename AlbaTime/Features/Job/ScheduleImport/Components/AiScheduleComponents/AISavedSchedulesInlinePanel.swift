@@ -48,7 +48,7 @@ struct AISavedSchedulesInlinePanel: View {
             }
 
             if aspvm.aiSchedules.isEmpty {
-                Text("이 근무지에 저장된 스케줄이 없습니다.")
+                Text("근무지에 저장된 스케줄이 없습니다.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -82,7 +82,7 @@ struct AISavedSchedulesInlinePanel: View {
 
                 VStack(spacing: 10) {
                     
-                    Button("선택한 기간 수정사항 저장") {
+                    Button("선택 스케줄 적용") {
                         // 현재 인라인 편집 상태를 SwiftData에 반영하고 동기화한다.
                         aspvm.saveChanges(
                             onSaveDraft: onSaveDraft
@@ -99,7 +99,7 @@ struct AISavedSchedulesInlinePanel: View {
                     Button {
                         aspvm.deleteSelectedSchedule()
                     } label: {
-                        Text("선택한 기간 데이터 삭제")
+                        Text("선택한 기간 스케줄 삭제")
                             .foregroundStyle(Color.red)
                             .font(.subheadline)
                             .fontWeight(.semibold)

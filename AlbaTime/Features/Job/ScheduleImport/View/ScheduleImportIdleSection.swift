@@ -32,13 +32,15 @@ struct ScheduleImportIdleSection: View {
         .onTapGesture {
             isNameFieldFocused.wrappedValue = false
         }
-        .overlay(alignment: .bottom) {
+        .overlay(alignment: .top) {
             if ssvm.showManualHint {
                 Text("선택한 날짜를 수정한 뒤 저장하세요")
-                    .font(.caption)
+                    .font(.footnote)
+                    .foregroundStyle(.white)
+                    .bold()
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(.ultraThinMaterial)
+                    .background(Color.theme.primary)
                     .clipShape(Capsule())
                     .padding(.bottom, 8)
                     .transition(.opacity)

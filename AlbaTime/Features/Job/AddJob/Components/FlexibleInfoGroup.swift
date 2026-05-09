@@ -9,14 +9,11 @@ import SwiftUI
 import SwiftData
 
 struct FlexibleInfoGroup: View {
-    @ObservedObject var ajvm: AddJobViewModel
+    @ObservedObject var session: JobEditingSession
     
     var estimatedWeeklyPay: Int {
-        let wage = ajvm.session.jobDraft.hourlyWage
-        let count = ajvm.session.jobDraft.targetWeeklyCount
-        let hours = ajvm.session.jobDraft.expectedDailyHours
-
-        return Int(Double(wage) * Double(count) * hours)
+        let draft = session.jobDraft
+        return Int(Double(draft.hourlyWage) * Double(draft.targetWeeklyCount) * draft.expectedDailyHours)
     }
     
     var body: some View {
@@ -26,7 +23,7 @@ struct FlexibleInfoGroup: View {
                 HStack {
                     Text("일주일에 몇 번 가나요?")
                     Spacer()
-                    Text("주 \(ajvm.session.jobDraft.targetWeeklyCount)회")
+                    Text("주 \(session.jobDraft.targetWeeklyCount)회")
                         .bold()
                         .foregroundStyle(Color.theme.primary)
                 }
@@ -36,15 +33,15 @@ struct FlexibleInfoGroup: View {
                     ForEach(1...7, id: \.self) { day in
                         Button {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                ajvm.session.jobDraft.targetWeeklyCount = day
+                                session.jobDraft.targetWeeklyCount = day
                             }
                         } label: {
                             Circle()
-                                .fill(ajvm.session.jobDraft.targetWeeklyCount == day ? Color.theme.primary : Color.gray.opacity(0.1))
+                                .fill(session.jobDraft.targetWeeklyCount == day ? Color.theme.primary : Color.gray.opacity(0.1))
                                 .overlay(
                                     Text("\(day)")
                                         .font(.subheadline).bold()
-                                        .foregroundStyle(ajvm.session.jobDraft.targetWeeklyCount == day ? .white : .gray)
+                                        .foregroundStyle(session.jobDraft.targetWeeklyCount == day ? .white : .gray)
                                 )
                                 .frame(height: 44)
                         }
@@ -62,13 +59,13 @@ struct FlexibleInfoGroup: View {
                         .font(.subheadline)
                         .foregroundStyle(Color.theme.textSecondary)
                     Spacer()
-                    Text("\(String(format: "%.1f", ajvm.session.jobDraft.expectedDailyHours)) 시간")
+                    Text("\(String(format: "%.1f", session.jobDraft.expectedDailyHours)) 시간")
                         .bold()
                         .foregroundStyle(Color.theme.primary)
                 }
                 .font(.callout)
                 
-                Slider(value: $ajvm.session.jobDraft.expectedDailyHours, in: 1...12, step: 0.5) {
+                Slider(value: $session.jobDraft.expectedDailyHours, in: 1...12, step: 0.5) {
                     Text("Hours")
                 } minimumValueLabel: {
                     Text("1h")
@@ -81,7 +78,7 @@ struct FlexibleInfoGroup: View {
                 }
                 .tint(Color.theme.primary)
             }
-            if ajvm.session.jobDraft.hourlyWage > 0 {
+            if session.jobDraft.hourlyWage > 0 {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("예상 주급")
@@ -130,9 +127,7 @@ struct FlexibleInfoGroup: View {
 
     return ZStack {
         Color.gray.opacity(0.1).ignoresSafeArea()
-        FlexibleInfoGroup(ajvm: viewModel)
+        FlexibleInfoGroup(session: viewModel.session)
     }
     .modelContainer(container)
 }
-
-
