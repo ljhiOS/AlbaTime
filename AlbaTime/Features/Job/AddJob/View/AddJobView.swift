@@ -39,7 +39,7 @@ struct AddJobView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
 
-                BasicInfoGroup(ajvm: ajvm, focusedField: $focusedField)
+                BasicInfoGroup(session: ajvm.session, focusedField: $focusedField)
                     .padding(.horizontal)
                 
                 Divider().padding(.horizontal)
@@ -115,7 +115,7 @@ struct AddJobView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if focusedField == nil {
-                BottomButton(title: "근무지 및 스케줄 통합 저장", action: {
+                BottomButton(title: "저장하기", action: {
                     if ajvm.save(context: modelContext) { dismiss() }
                 })
             }
