@@ -34,6 +34,7 @@ class ScheduleImportViewModel: ObservableObject {
 
     // UseCase
     private let analyzeScheduleImage: AnalyzeScheduleImage
+    private var selectedImageData: Data?
 
     init(
         session: JobEditingSession,
@@ -90,9 +91,10 @@ class ScheduleImportViewModel: ObservableObject {
                let image = UIImage(data: data) {
 
                 self.selectedImage = image
+                self.selectedImageData = data
                 self.analyzeImage(targetName: targetName)
             } else {
-                self.errorMessage = "이미지 데이터를 불러올 수 없습니다."
+                self.errorMessage = "이미지 데이터를 불러올 수 없어요."
                 self.showAlert = true
             }
         } catch {
@@ -103,7 +105,7 @@ class ScheduleImportViewModel: ObservableObject {
     }
 
     func analyzeImage(targetName: String = "") {
-        guard let image = selectedImage else { return }
+        guard let imageData = selectedImageData else { return }
 
         phase = .loading
         session.scheduleImportDraft.schedules = []
@@ -111,7 +113,7 @@ class ScheduleImportViewModel: ObservableObject {
         Task {
             do {
                 let schedules = try await analyzeScheduleImage.execute(
-                    image: image,
+                    imageData: imageData,
                     targetName: targetName,
                     presets: session.scheduleImportDraft.presetDrafts
                 )

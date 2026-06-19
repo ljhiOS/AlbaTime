@@ -8,6 +8,17 @@
 import Foundation
 import UIKit
 
+enum ScheduleImageRecognitionError: LocalizedError {
+    case invalidImageData
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidImageData:
+            return "이미지 데이터를 불러올 수 없어요."
+        }
+    }
+}
+
 struct OCRScheduleImageTextRecognizer: ScheduleImageTextRecognizing {
     private let service: OCRService
 
@@ -15,8 +26,12 @@ struct OCRScheduleImageTextRecognizer: ScheduleImageTextRecognizing {
         self.service = service
     }
 
-    func recognize(from image: UIImage) async throws -> [RawTextBox] {
-        try await service.recognize(from: image)
+    func recognize(from imageData: Data) async throws -> [RawTextBox] {
+        guard let image = UIImage(data: imageData) else {
+            throw ScheduleImageRecognitionError.invalidImageData
+        }
+
+        return try await service.recognize(from: image)
     }
 }
 

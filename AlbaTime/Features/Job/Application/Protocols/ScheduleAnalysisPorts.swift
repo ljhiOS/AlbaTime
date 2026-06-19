@@ -5,10 +5,10 @@
 //  Created by Codex on 5/18/26.
 //
 
-import UIKit
+import Foundation
 
 protocol ScheduleImageTextRecognizing: Sendable {
-    func recognize(from image: UIImage) async throws -> [RawTextBox]
+    func recognize(from imageData: Data) async throws -> [RawTextBox]
 }
 
 protocol ScheduleTextParsing: Sendable {
