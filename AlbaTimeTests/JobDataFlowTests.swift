@@ -62,7 +62,7 @@ final class JobDataFlowTests: XCTestCase {
         let writer = SpyJobPersistenceWriter()
         let useCase = SaveJobUseCase(writer: writer)
         let session = JobEditingSession(
-            seed: JobFeatureComposition.makeEditingSeed(from: existingJob),
+            seed: JobEditingSeedFactory.make(from: existingJob),
             editingJobID: existingJob.id
         )
         session.jobDraft.workType = .flexible
@@ -85,6 +85,89 @@ final class JobDataFlowTests: XCTestCase {
         XCTAssertEqual(request.draft.expectedDailyHours, 6.5)
         XCTAssertTrue(request.orderedRegularSchedules.isEmpty)
         XCTAssertEqual(request.initialDefaultRestTime, 30)
+    }
+
+    func testJobEditingSeedFactoryBuildsEditingSeedFromWorkplace() {
+        let job = Workplace(
+            name: "Cafe",
+            hourlyWage: 10_000,
+            defaultDays: "월",
+            defaultStartTime: Date.makeTime(9, 0),
+            defaultEndTime: Date.makeTime(18, 0),
+            workType: .flexible
+        )
+        job.defaultRestTime = 45
+        job.defaultMemo = "마감 정산 확인"
+        job.targetWeeklyCount = 3
+        job.expectedDailyHours = 5.5
+
+        let seed = JobEditingSeedFactory.make(from: job)
+
+        XCTAssertEqual(seed.id, job.id)
+        XCTAssertEqual(seed.jobDraft.name, "Cafe")
+        XCTAssertEqual(seed.jobDraft.hourlyWage, 10_000)
+        XCTAssertEqual(seed.jobDraft.workType, .flexible)
+        XCTAssertEqual(seed.jobDraft.targetWeeklyCount, 3)
+        XCTAssertEqual(seed.jobDraft.expectedDailyHours, 5.5)
+        XCTAssertEqual(seed.scheduleImportDraft.presetDrafts.count, 0)
+        XCTAssertEqual(seed.savedAIScheduleItems.count, 0)
+        XCTAssertEqual(seed.initialDefaultRestTime, 45)
+    }
+
+    func testJobListViewStateMapperBuildsFixedScheduleSummaryInDayOrder() {
+        let job = Workplace(
+            name: "Store",
+            hourlyWage: 12_000,
+            defaultDays: "",
+            defaultStartTime: Date.makeTime(9, 0),
+            defaultEndTime: Date.makeTime(18, 0),
+            workType: .fixed
+        )
+        job.regularSchedules = [
+            RegularSchedule(
+                dayOfWeek: "수",
+                startTime: Date.makeTime(14, 0),
+                endTime: Date.makeTime(20, 0),
+                breakTime: 30
+            ),
+            RegularSchedule(
+                dayOfWeek: "월",
+                startTime: Date.makeTime(9, 0),
+                endTime: Date.makeTime(18, 0),
+                breakTime: 60
+            )
+        ]
+
+        let item = JobListViewStateMapper.makeItem(from: job)
+
+        XCTAssertEqual(item.card.id, job.id)
+        XCTAssertEqual(item.card.name, "Store")
+        XCTAssertEqual(item.card.scheduleSummary, "월: 09:00 ~ 18:00\n수: 14:00 ~ 20:00")
+        XCTAssertEqual(item.detail.fixedDaysText, "월/수")
+        XCTAssertEqual(item.editingSeed.id, job.id)
+    }
+
+    func testJobListViewStateMapperBuildsFlexibleSummaryAndMemo() {
+        let job = Workplace(
+            name: "Cafe",
+            hourlyWage: 11_000,
+            defaultDays: "",
+            defaultStartTime: Date.makeTime(9, 0),
+            defaultEndTime: Date.makeTime(18, 0),
+            workType: .flexible
+        )
+        job.targetWeeklyCount = 4
+        job.expectedDailyHours = 6.5
+        job.defaultRestTime = 30
+        job.defaultMemo = "피크타임 지원"
+
+        let item = JobListViewStateMapper.makeItem(from: job)
+
+        XCTAssertEqual(item.card.scheduleSummary, "주 4회 / 일 평균 6.5시간")
+        XCTAssertEqual(item.detail.memo, "피크타임 지원")
+        XCTAssertEqual(item.detail.targetWeeklyCount, 4)
+        XCTAssertEqual(item.detail.expectedDailyHours, 6.5)
+        XCTAssertEqual(item.detail.defaultRestTime, 30)
     }
 
     func testAddJobViewModelSavesThroughJobSavingProtocol() {
@@ -143,7 +226,7 @@ final class JobDataFlowTests: XCTestCase {
             workType: .flexible
         )
         let session = JobEditingSession(
-            seed: JobFeatureComposition.makeEditingSeed(from: job),
+            seed: JobEditingSeedFactory.make(from: job),
             editingJobID: job.id
         )
         let viewModel = ScheduleImportViewModel(session: session)

@@ -29,13 +29,7 @@ struct JobListRoute: View {
     }
 
     private func items(from workplaces: [Workplace]) -> [JobListItemViewState] {
-        workplaces.map {
-            JobListItemViewState(
-                card: JobFeatureComposition.makeCardState(from: $0),
-                detail: JobFeatureComposition.makeDetailState(from: $0),
-                editingSeed: JobFeatureComposition.makeEditingSeed(from: $0)
-            )
-        }
+        workplaces.map { JobListViewStateMapper.makeItem(from: $0) }
     }
 }
 
