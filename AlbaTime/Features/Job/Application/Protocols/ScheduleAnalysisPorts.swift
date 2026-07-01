@@ -18,3 +18,4 @@ protocol ScheduleTextParsing: Sendable {
         targetName: String
     ) -> [ParsedSchedule]
 }
+

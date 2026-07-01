@@ -7,6 +7,13 @@
 
 import Foundation
 
+enum SaveScheduleCommand {
+    case editDraft(
+        jobID: UUID?,
+        draft: ScheduleEditDraft
+    )
+}
+
 enum SaveScheduleError: LocalizedError {
     case missingJob
 
