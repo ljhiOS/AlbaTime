@@ -135,27 +135,6 @@ struct JobListView: View {
     }
 }
 
-@MainActor
-private enum PreviewJobListViewModelFactory {
-    static func make() -> JobListViewModel {
-        JobListViewModel(
-            workplaceDeleting: PreviewJobListCommand(),
-            alarmToggling: PreviewJobListCommand(),
-            pinToggling: PreviewJobListCommand(),
-            memoUpdating: PreviewJobListCommand()
-        )
-    }
-}
-
-@MainActor
-private struct PreviewJobListCommand:
-    WorkplaceDeleting,
-    WorkplaceAlarmToggling,
-    WorkplacePinToggling,
-    WorkplaceMemoUpdating {
-    func execute(workplaceID: UUID) throws { }
-    func execute(workplaceID: UUID, memo: String) throws { }
-}
 
 #Preview("순수 JobListView") {
     let card = JobCardViewState(
@@ -201,3 +180,24 @@ private struct PreviewJobListCommand:
     }
 }
 
+@MainActor
+private enum PreviewJobListViewModelFactory {
+    static func make() -> JobListViewModel {
+        JobListViewModel(
+            workplaceDeleting: PreviewJobListCommand(),
+            alarmToggling: PreviewJobListCommand(),
+            pinToggling: PreviewJobListCommand(),
+            memoUpdating: PreviewJobListCommand()
+        )
+    }
+}
+
+@MainActor
+private struct PreviewJobListCommand:
+    WorkplaceDeleting,
+    WorkplaceAlarmToggling,
+    WorkplacePinToggling,
+    WorkplaceMemoUpdating {
+    func execute(workplaceID: UUID) throws { }
+    func execute(workplaceID: UUID, memo: String) throws { }
+}
