@@ -7,6 +7,8 @@
 
 import SwiftData
 
+// TODO: 기능 단위(AddJob, JobList, ScheduleImport) Composition 분리 검토
+
 @MainActor
 enum JobFeatureComposition {
     static func makeJobSaving(context: ModelContext) -> SaveJobUseCase {

@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// TODO: delete components
+
 struct DayScheduleRow: View {
     let day: String
     let isScheduled: Bool
