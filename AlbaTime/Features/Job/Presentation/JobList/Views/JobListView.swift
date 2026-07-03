@@ -91,8 +91,8 @@ struct JobListView: View {
             }
             Button("취소", role: .cancel) {}
         }
-        .navigationDestination(item: $selectedWorkType) { type in
-            AddJobRoute(stateName: "알바 등록", selectedType: type)
+        .navigationDestination(item: $selectedWorkType) { selectedType in
+            AddJobRoute(stateName: "알바 등록", selectedType: selectedType)
         }
         .navigationDestination(item: $selectedDetailState) { state in
             DetailView(state: state) { memo in

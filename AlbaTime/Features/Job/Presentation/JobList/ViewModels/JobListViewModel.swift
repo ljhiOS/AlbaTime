@@ -11,7 +11,8 @@ import Foundation
 class JobListViewModel: ObservableObject {
     @Published var showDeleteError = false
     @Published var deleteErrorMessage = ""
-
+    
+    // 실제 UseCase는 Route/Composition에서 주입됩니다.
     private let workplaceDeleting: any WorkplaceDeleting
     private let alarmToggling: any WorkplaceAlarmToggling
     private let pinToggling: any WorkplacePinToggling

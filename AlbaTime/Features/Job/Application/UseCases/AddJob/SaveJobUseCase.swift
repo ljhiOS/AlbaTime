@@ -7,6 +7,17 @@
 
 import Foundation
 
+// AddJob 저장 UseCase에 전달되는 저장 명령입니다.
+enum JobSaveCommand {
+    // 신규/수정 근무지 저장 요청입니다.
+    case jobDraft(
+        editingJobID: UUID?,
+        draft: JobDraft,
+        scheduleImportDraft: ScheduleImportDraft,
+        initialDefaultRestTime: Int?
+    )
+}
+
 struct SaveJobUseCase: JobSaving {
     private let jobSaveValidator = JobSaveValidator()
     private let writer: any JobDraftPersistenceWriting

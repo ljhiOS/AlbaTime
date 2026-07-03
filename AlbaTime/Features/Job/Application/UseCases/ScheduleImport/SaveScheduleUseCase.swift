@@ -7,7 +7,9 @@
 
 import Foundation
 
+// 스케줄 편집 결과를 저장 UseCase에 전달하는 명령입니다.
 enum SaveScheduleCommand {
+    // 대상 근무지의 스케줄 추가/수정/삭제 내용을 저장합니다.
     case editDraft(
         jobID: UUID?,
         draft: ScheduleEditDraft

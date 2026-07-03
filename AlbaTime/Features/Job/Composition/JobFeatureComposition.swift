@@ -9,6 +9,8 @@ import SwiftData
 
 // TODO: 기능 단위(AddJob, JobList, ScheduleImport) Composition 분리 검토
 
+// ViewModel은 UseCase Protocol에만 의존하고
+// Composition에서 UseCase와 SwiftDataWriter 조립해 주입한다.
 @MainActor
 enum JobFeatureComposition {
     static func makeJobSaving(context: ModelContext) -> SaveJobUseCase {
