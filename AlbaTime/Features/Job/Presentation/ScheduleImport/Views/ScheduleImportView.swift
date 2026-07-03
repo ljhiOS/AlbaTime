@@ -11,9 +11,7 @@ import PhotosUI
 struct ScheduleImportView: View {
     @Environment(\.dismiss) private var dismiss
     private let scheduleSaving: any ScheduleSaving
-    
-    @ObservedObject var ajvm: AddJobViewModel
-    
+
     @AppStorage("myScheduleName") private var myName: String = ""
     @StateObject private var sivm: ScheduleImportViewModel
     @StateObject private var ssvm = ScheduleImportSelectionViewModel()
@@ -23,10 +21,18 @@ struct ScheduleImportView: View {
     
     @Environment(\.colorScheme) private var colorScheme
     
-    init(ajvm: AddJobViewModel, scheduleSaving: any ScheduleSaving) {
-        self.ajvm = ajvm
+    init(
+        session: JobEditingSession,
+        scheduleSaving: any ScheduleSaving,
+        analyzeScheduleImage: any ScheduleImageAnalyzing
+    ) {
         self.scheduleSaving = scheduleSaving
-        _sivm = StateObject(wrappedValue: ScheduleImportViewModel(session: ajvm.session))
+        _sivm = StateObject(
+            wrappedValue: ScheduleImportViewModel(
+                session: session,
+                analyzeScheduleImage: analyzeScheduleImage
+            )
+        )
     }
 
     var body: some View {
@@ -106,8 +112,7 @@ private extension ScheduleImportView {
     
     private func triggerManualWeekFocus() {
         ssvm.requestManualFocus()
-        sivm.selectedImage = nil
-        sivm.phase = .idle
+        sivm.enterManualInputMode()
     }
 
     @ViewBuilder
@@ -138,7 +143,11 @@ private extension ScheduleImportView {
     let ajvm = AddJobViewModel(type: .fixed, jobSaving: saving)
 
     NavigationStack {
-        ScheduleImportView(ajvm: ajvm, scheduleSaving: scheduleSaving)
+        ScheduleImportView(
+            session: ajvm.session,
+            scheduleSaving: scheduleSaving,
+            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+        )
     }
 }
 
@@ -210,7 +219,11 @@ private extension ScheduleImportView {
     )
 
     NavigationStack {
-        ScheduleImportView(ajvm: ajvm, scheduleSaving: PreviewScheduleSaving())
+        ScheduleImportView(
+            session: ajvm.session,
+            scheduleSaving: PreviewScheduleSaving(),
+            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+        )
     }
 }
 

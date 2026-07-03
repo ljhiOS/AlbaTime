@@ -6,7 +6,7 @@ class NotificationManager {
     static let shared = NotificationManager()
     private let appAlarmKey = "isAppAlarmOn"
     
-    private struct WorkplaceNotificationSnapshot {
+    private struct WorkPlaceNotificationSnapshot {
         let id: String
         let name: String
         let isAlarmEnabled: Bool
@@ -39,12 +39,12 @@ class NotificationManager {
     }
 
     // 출근 15분 전 알림 스케줄
-    func scheduleWorkNotification(for workplace: Workplace) {
-        let snapshot = makeSnapshot(from: workplace)
+    func scheduleWorkNotification(for workPlace: WorkPlace) {
+        let snapshot = makeSnapshot(from: workPlace)
         scheduleWorkNotification(using: snapshot)
     }
     
-    private func scheduleWorkNotification(using snapshot: WorkplaceNotificationSnapshot) {
+    private func scheduleWorkNotification(using snapshot: WorkPlaceNotificationSnapshot) {
         let center = UNUserNotificationCenter.current()
         
         guard isAppAlarmEnabled else {
@@ -71,8 +71,8 @@ class NotificationManager {
         }
     }
     
-    func refreshNotifications(for workplace: Workplace) {
-        let snapshot = makeSnapshot(from: workplace)
+    func refreshNotifications(for workPlace: WorkPlace) {
+        let snapshot = makeSnapshot(from: workPlace)
         removeNotifications(prefix: "\(snapshot.id)_") { [weak self] in
             guard let self else { return }
             Task { @MainActor in
@@ -81,7 +81,7 @@ class NotificationManager {
         }
     }
     
-    private func scheduleUpcomingNotifications(using snapshot: WorkplaceNotificationSnapshot) {
+    private func scheduleUpcomingNotifications(using snapshot: WorkPlaceNotificationSnapshot) {
         let calendar = Calendar.current
         let now = Date()
         let center = UNUserNotificationCenter.current()
@@ -91,7 +91,7 @@ class NotificationManager {
             .sorted { $0.start < $1.start }
 
         guard !upcomingShifts.isEmpty else {
-            print("다가오는 근무 스케줄이 없어 알림을 건너뜁니다. workplace=\(snapshot.name)")
+            print("다가오는 근무 스케줄이 없어 알림을 건너뜁니다. workPlace=\(snapshot.name)")
             return
         }
 
@@ -101,7 +101,7 @@ class NotificationManager {
                 addNotification(
                     center: center,
                     identifier: "\(snapshot.id)_start_\(Int(shift.start.timeIntervalSince1970))",
-                    content: makeStartContent(workplaceName: snapshot.name),
+                    content: makeStartContent(workPlaceName: snapshot.name),
                     triggerDate: triggerDate
                 )
             }
@@ -110,7 +110,7 @@ class NotificationManager {
                 addNotification(
                     center: center,
                     identifier: "\(snapshot.id)_end_\(Int(shift.end.timeIntervalSince1970))",
-                    content: makeEndContent(workplaceName: snapshot.name),
+                    content: makeEndContent(workPlaceName: snapshot.name),
                     triggerDate: shift.end
                 )
             }
@@ -140,25 +140,25 @@ class NotificationManager {
         }
     }
 
-    private func makeStartContent(workplaceName: String) -> UNMutableNotificationContent {
+    private func makeStartContent(workPlaceName: String) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = "출근 15분 전"
-        content.body = "\(workplaceName) 출근 준비하세요!"
+        content.body = "\(workPlaceName) 출근 준비하세요!"
         content.sound = .default
         return content
     }
 
-    private func makeEndContent(workplaceName: String) -> UNMutableNotificationContent {
+    private func makeEndContent(workPlaceName: String) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
-        content.title = "\(workplaceName) 근무 종료!"
-        content.body = "\(workplaceName) 근무가 끝났어요.\n변경된 누적금액을 확인해보세요."
+        content.title = "\(workPlaceName) 근무 종료!"
+        content.body = "\(workPlaceName) 근무가 끝났어요.\n변경된 누적금액을 확인해보세요."
         content.sound = .default
         return content
     }
     
     // 기존 알림 삭제
-    func removeNotifications(for workplace: Workplace) {
-        removeNotifications(prefix: "\(workplace.id.uuidString)_", completion: nil)
+    func removeNotifications(for workPlace: WorkPlace) {
+        removeNotifications(prefix: "\(workPlace.id.uuidString)_", completion: nil)
     }
     
     private func removeNotifications(prefix: String, completion: (@Sendable () -> Void)?) {
@@ -181,16 +181,16 @@ class NotificationManager {
         }
     }
     
-    private func makeSnapshot(from workplace: Workplace) -> WorkplaceNotificationSnapshot {
-        WorkplaceNotificationSnapshot(
-            id: workplace.id.uuidString,
-            name: workplace.name,
-            isAlarmEnabled: workplace.isAlarmEnabled,
-            upcomingShifts: upcomingShiftTimes(for: workplace, daysAhead: 30)
+    private func makeSnapshot(from workPlace: WorkPlace) -> WorkPlaceNotificationSnapshot {
+        WorkPlaceNotificationSnapshot(
+            id: workPlace.id.uuidString,
+            name: workPlace.name,
+            isAlarmEnabled: workPlace.isAlarmEnabled,
+            upcomingShifts: upcomingShiftTimes(for: workPlace, daysAhead: 30)
         )
     }
 
-    private func upcomingShiftTimes(for workplace: Workplace, daysAhead: Int) -> [ShiftNotificationTime] {
+    private func upcomingShiftTimes(for workPlace: WorkPlace, daysAhead: Int) -> [ShiftNotificationTime] {
         let calendar = Calendar.current
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
@@ -200,7 +200,7 @@ class NotificationManager {
         for offset in 0...daysAhead {
             guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
             
-            guard let schedule = workplace.getSchedule(for: day) else { continue }
+            guard let schedule = workPlace.getSchedule(for: day) else { continue }
 
             let start = combineDateAndTime(date: day, time: schedule.startTime)
             var end = combineDateAndTime(date: day, time: schedule.endTime)

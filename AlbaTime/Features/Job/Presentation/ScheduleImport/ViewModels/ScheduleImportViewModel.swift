@@ -33,12 +33,12 @@ class ScheduleImportViewModel: ObservableObject {
     var session: JobEditingSession
 
     // UseCase
-    private let analyzeScheduleImage: AnalyzeScheduleImage
+    private let analyzeScheduleImage: any ScheduleImageAnalyzing
     private var selectedImageData: Data?
 
     init(
         session: JobEditingSession,
-        analyzeScheduleImage: AnalyzeScheduleImage = DefaultScheduleAnalysis.makeUseCase()
+        analyzeScheduleImage: any ScheduleImageAnalyzing
     ) {
         self.session = session
         self.analyzeScheduleImage = analyzeScheduleImage
@@ -62,6 +62,11 @@ class ScheduleImportViewModel: ObservableObject {
 
     func shouldShowSchedulePanel(manualFocusToken: Int) -> Bool {
         hasSavedAISchedules || manualFocusToken > 0
+    }
+
+    func enterManualInputMode() {
+        selectedImage = nil
+        phase = .idle
     }
 
     func makeSchedulePanelDraft(targetWeekStart: Date? = nil) -> ScheduleEditDraft {
@@ -200,13 +205,13 @@ class ScheduleImportViewModel: ObservableObject {
     ) -> Bool {
         guard session.editingJobID != nil else { return true }
 
-        return saveToWorkplace(
+        return saveToWorkPlace(
             using: scheduleSaving,
             targetWeekStart: targetWeekStart
         )
     }
 
-    func saveToWorkplace(
+    func saveToWorkPlace(
         using scheduleSaving: any ScheduleSaving,
         targetWeekStart: Date? = nil
     ) -> Bool {

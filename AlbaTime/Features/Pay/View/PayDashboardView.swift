@@ -12,7 +12,7 @@ struct PayDashboardView: View {
     
     @Environment(\.scenePhase) private var scenePhase
     
-    @Query var workplaces: [Workplace]
+    @Query var workPlaces: [WorkPlace]
     
     @StateObject private var pvm = PayViewModel()
     
@@ -80,22 +80,22 @@ struct PayDashboardView: View {
             .background(Color.theme.surface)
             // 데이터가 로드되거나 변경될 때마다 ViewModel 업데이트
             .onAppear {
-                pvm.updateData(workplaces: workplaces)
+                pvm.updateData(workPlaces: workPlaces)
                 if !hasSeenPayCardHint {
                     showPayCardHint = true
                 }
             }
-            .onChange(of: workplaces) { oldValue, newValue in
+            .onChange(of: workPlaces) { oldValue, newValue in
                 
-                pvm.updateData(workplaces: newValue)
+                pvm.updateData(workPlaces: newValue)
             }
             // 월이 바뀌었을 때도 업데이트 필요하다면 추가
             .onChange(of: pvm.currentMonth) { oldValue, newValue in
-                pvm.updateData(workplaces: workplaces)
+                pvm.updateData(workPlaces: workPlaces)
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
-                    pvm.updateData(workplaces: workplaces)
+                    pvm.updateData(workPlaces: workPlaces)
                 }
             }
         }
@@ -108,10 +108,10 @@ struct PayDashboardView: View {
         // 1. 메모리 전용 SwiftData 컨테이너 설정
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         // ❌ WorkRecord.self 제거
-        let container = try! ModelContainer(for: Workplace.self, configurations: config)
+        let container = try! ModelContainer(for: WorkPlace.self, configurations: config)
         
-        // 2. 샘플 근무지(Workplace) 생성
-        let place = Workplace(
+        // 2. 샘플 근무지(WorkPlace) 생성
+        let place = WorkPlace(
             name: "GS25 강남점",
             hourlyWage: 10000,
             defaultDays: "월,수,금",

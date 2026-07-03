@@ -5,9 +5,9 @@ enum NextShiftSyncService {
     private static let appGroupID = "group.com.junhee.AlbaTime"
     private static let shiftsKey = "upcomingShifts"
 
-    static func sync(workplaces: [Workplace]) {
+    static func sync(workPlaces: [WorkPlace]) {
         let defaults = UserDefaults(suiteName: appGroupID)
-        let shifts = collectUpcomingShifts(workplaces: workplaces)
+        let shifts = collectUpcomingShifts(workPlaces: workPlaces)
 
         if let data = try? JSONEncoder().encode(shifts) {
             defaults?.set(data, forKey: shiftsKey)
@@ -18,7 +18,7 @@ enum NextShiftSyncService {
         WidgetCenter.shared.reloadTimelines(ofKind: "NextShiftWidget")
     }
 
-    private static func collectUpcomingShifts(workplaces: [Workplace]) -> [SharedShift] {
+    private static func collectUpcomingShifts(workPlaces: [WorkPlace]) -> [SharedShift] {
         let now = Date()
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: now)
@@ -28,7 +28,7 @@ enum NextShiftSyncService {
         for offset in 0...30 {
             guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
 
-            for job in workplaces {
+            for job in workPlaces {
                 guard let schedule = resolvedShift(for: job, day: day) else { continue }
                 let start = schedule.start
                 let end = schedule.end
@@ -39,7 +39,7 @@ enum NextShiftSyncService {
 
                 results.append(
                     SharedShift(
-                        workplaceName: job.name,
+                        workPlaceName: job.name,
                         startTimestamp: start.timeIntervalSince1970,
                         endTimestamp: end.timeIntervalSince1970,
                         plannedHours: hours
@@ -51,7 +51,7 @@ enum NextShiftSyncService {
         return results.sorted { $0.startTimestamp < $1.startTimestamp }
     }
 
-    private static func resolvedShift(for job: Workplace, day: Date) -> (start: Date, end: Date)? {
+    private static func resolvedShift(for job: WorkPlace, day: Date) -> (start: Date, end: Date)? {
         let calendar = Calendar.current
 
         // 1) 저장된 개별 스케줄이 있으면 우선 사용
@@ -106,7 +106,7 @@ enum NextShiftSyncService {
         ) ?? date
     }
 
-    private static func plannedHours(job: Workplace, day: Date, start: Date, end: Date) -> Double {
+    private static func plannedHours(job: WorkPlace, day: Date, start: Date, end: Date) -> Double {
         let calendar = Calendar.current
         var endDate = end
         if endDate < start {

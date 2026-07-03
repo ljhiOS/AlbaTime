@@ -1,5 +1,5 @@
 //
-//  ToggleWorkplaceAlarm.swift
+//  ToggleWorkPlaceAlarm.swift
 //  AlbaTime
 //
 //  Created by 이준희 on 3/25/26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ToggleWorkplaceAlarmError: LocalizedError {
+enum ToggleWorkPlaceAlarmError: LocalizedError {
     case saveFailed(String)
 
     var errorDescription: String? {
@@ -18,19 +18,19 @@ enum ToggleWorkplaceAlarmError: LocalizedError {
     }
 }
 
-struct ToggleWorkplaceAlarm: WorkplaceAlarmToggling {
-    private let writer: any WorkplaceAlarmStateWriting
+struct ToggleWorkPlaceAlarm: WorkPlaceAlarmToggling {
+    private let writer: any WorkPlaceAlarmStateWriting
 
-    init(writer: any WorkplaceAlarmStateWriting) {
+    init(writer: any WorkPlaceAlarmStateWriting) {
         self.writer = writer
     }
 
     @MainActor
-    func execute(workplaceID: UUID) throws {
+    func execute(workPlaceID: UUID) throws {
         do {
-            try writer.toggleAlarm(id: workplaceID)
+            try writer.toggleAlarm(id: workPlaceID)
         } catch {
-            throw ToggleWorkplaceAlarmError.saveFailed(error.localizedDescription)
+            throw ToggleWorkPlaceAlarmError.saveFailed(error.localizedDescription)
         }
     }
 }

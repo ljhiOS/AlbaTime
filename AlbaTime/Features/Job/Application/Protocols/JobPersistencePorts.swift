@@ -49,22 +49,22 @@ protocol ScheduleDraftPersistenceWriting {
 }
 
 @MainActor
-protocol WorkplacePersistenceDeleting {
-    func deleteWorkplace(id: UUID) throws
+protocol WorkPlacePersistenceDeleting {
+    func deleteWorkPlace(id: UUID) throws
 }
 
 @MainActor
-protocol WorkplaceAlarmStateWriting {
+protocol WorkPlaceAlarmStateWriting {
     func toggleAlarm(id: UUID) throws
 }
 
 @MainActor
-protocol WorkplacePinStateWriting {
+protocol WorkPlacePinStateWriting {
     func togglePin(id: UUID) throws
 }
 
 @MainActor
-protocol WorkplaceMemoWriting {
+protocol WorkPlaceMemoWriting {
     func updateMemo(id: UUID, memo: String) throws
 }
 
@@ -74,7 +74,7 @@ protocol WorkplaceMemoWriting {
 protocol JobPersistenceWriting:
     JobDraftPersistenceWriting,
     ScheduleDraftPersistenceWriting,
-    WorkplacePersistenceDeleting,
-    WorkplaceAlarmStateWriting,
-    WorkplacePinStateWriting,
-    WorkplaceMemoWriting { }
+    WorkPlacePersistenceDeleting,
+    WorkPlaceAlarmStateWriting,
+    WorkPlacePinStateWriting,
+    WorkPlaceMemoWriting { }

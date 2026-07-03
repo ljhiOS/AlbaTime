@@ -13,26 +13,26 @@ class JobListViewModel: ObservableObject {
     @Published var deleteErrorMessage = ""
     
     // 실제 UseCase는 Route/Composition에서 주입됩니다.
-    private let workplaceDeleting: any WorkplaceDeleting
-    private let alarmToggling: any WorkplaceAlarmToggling
-    private let pinToggling: any WorkplacePinToggling
-    private let memoUpdating: any WorkplaceMemoUpdating
+    private let workPlaceDeleting: any WorkPlaceDeleting
+    private let alarmToggling: any WorkPlaceAlarmToggling
+    private let pinToggling: any WorkPlacePinToggling
+    private let memoUpdating: any WorkPlaceMemoUpdating
 
     init(
-        workplaceDeleting: any WorkplaceDeleting,
-        alarmToggling: any WorkplaceAlarmToggling,
-        pinToggling: any WorkplacePinToggling,
-        memoUpdating: any WorkplaceMemoUpdating
+        workPlaceDeleting: any WorkPlaceDeleting,
+        alarmToggling: any WorkPlaceAlarmToggling,
+        pinToggling: any WorkPlacePinToggling,
+        memoUpdating: any WorkPlaceMemoUpdating
     ) {
-        self.workplaceDeleting = workplaceDeleting
+        self.workPlaceDeleting = workPlaceDeleting
         self.alarmToggling = alarmToggling
         self.pinToggling = pinToggling
         self.memoUpdating = memoUpdating
     }
     
-    func delete(workplaceID: UUID) {
+    func delete(workPlaceID: UUID) {
         do {
-            try workplaceDeleting.execute(workplaceID: workplaceID)
+            try workPlaceDeleting.execute(workPlaceID: workPlaceID)
         } catch {
             deleteErrorMessage = error.localizedDescription
             showDeleteError = true
@@ -40,9 +40,9 @@ class JobListViewModel: ObservableObject {
     }
 
     @discardableResult
-    func toggleAlarm(workplaceID: UUID) -> Bool {
+    func toggleAlarm(workPlaceID: UUID) -> Bool {
         do {
-            try alarmToggling.execute(workplaceID: workplaceID)
+            try alarmToggling.execute(workPlaceID: workPlaceID)
             return true
         } catch {
             deleteErrorMessage = error.localizedDescription
@@ -52,9 +52,9 @@ class JobListViewModel: ObservableObject {
     }
 
     @discardableResult
-    func togglePin(workplaceID: UUID) -> Bool {
+    func togglePin(workPlaceID: UUID) -> Bool {
         do {
-            try pinToggling.execute(workplaceID: workplaceID)
+            try pinToggling.execute(workPlaceID: workPlaceID)
             return true
         } catch {
             deleteErrorMessage = error.localizedDescription
@@ -64,11 +64,11 @@ class JobListViewModel: ObservableObject {
     }
 
     func updateMemo(
-        workplaceID: UUID,
+        workPlaceID: UUID,
         memo: String
     ) {
         do {
-            try memoUpdating.execute(workplaceID: workplaceID, memo: memo)
+            try memoUpdating.execute(workPlaceID: workPlaceID, memo: memo)
         } catch {
             deleteErrorMessage = error.localizedDescription
             showDeleteError = true

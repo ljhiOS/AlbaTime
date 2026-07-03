@@ -8,7 +8,7 @@
 import Foundation
 
 extension JobDraft {
-    static func from(_ job: Workplace) -> JobDraft {
+    static func from(_ job: WorkPlace) -> JobDraft {
         JobDraft(
             name: job.name,
             hourlyWage: job.hourlyWage,

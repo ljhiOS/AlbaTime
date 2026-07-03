@@ -21,28 +21,32 @@ enum JobFeatureComposition {
         SaveScheduleUseCase(writer: makePersistenceWriter(context: context))
     }
 
-    static func makeWorkplaceDeleting(context: ModelContext) -> DeleteWorkCard {
+    static func makeScheduleImageAnalyzer() -> any ScheduleImageAnalyzing {
+        DefaultScheduleAnalysis.makeUseCase()
+    }
+
+    static func makeWorkPlaceDeleting(context: ModelContext) -> DeleteWorkCard {
         DeleteWorkCard(writer: makePersistenceWriter(context: context))
     }
 
-    static func makeWorkplacePinToggling(context: ModelContext) -> ToggleWorkplacePin {
-        ToggleWorkplacePin(writer: makePersistenceWriter(context: context))
+    static func makeWorkPlacePinToggling(context: ModelContext) -> ToggleWorkPlacePin {
+        ToggleWorkPlacePin(writer: makePersistenceWriter(context: context))
     }
 
-    static func makeWorkplaceAlarmToggling(context: ModelContext) -> ToggleWorkplaceAlarm {
-        ToggleWorkplaceAlarm(writer: makePersistenceWriter(context: context))
+    static func makeWorkPlaceAlarmToggling(context: ModelContext) -> ToggleWorkPlaceAlarm {
+        ToggleWorkPlaceAlarm(writer: makePersistenceWriter(context: context))
     }
 
-    static func makeWorkplaceMemoUpdating(context: ModelContext) -> UpdateWorkplaceMemo {
-        UpdateWorkplaceMemo(writer: makePersistenceWriter(context: context))
+    static func makeWorkPlaceMemoUpdating(context: ModelContext) -> UpdateWorkPlaceMemo {
+        UpdateWorkPlaceMemo(writer: makePersistenceWriter(context: context))
     }
 
-    static func makeWorkplaceSyncing() -> any WorkplaceSyncing {
-        NextShiftWorkplaceSyncing()
+    static func makeWorkPlaceSyncing() -> any WorkPlaceSyncing {
+        NextShiftWorkPlaceSyncing()
     }
 
-    static func sync(workplaces: [Workplace]) {
-        makeWorkplaceSyncing().sync(workplaces: workplaces)
+    static func sync(workPlaces: [WorkPlace]) {
+        makeWorkPlaceSyncing().sync(workPlaces: workPlaces)
     }
 
     private static func makePersistenceWriter(context: ModelContext) -> SwiftDataJobPersistenceWriter {

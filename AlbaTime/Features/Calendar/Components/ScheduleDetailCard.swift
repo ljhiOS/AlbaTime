@@ -71,7 +71,7 @@ struct ScheduleDetailCard: View {
                         ForEach(schedules) { schedule in
                             HStack(alignment: .center) {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(schedule.workplaceName)
+                                    Text(schedule.workPlaceName)
                                         .font(.headline)
                                     
                                     HStack(spacing: 6) {
@@ -122,14 +122,14 @@ struct ScheduleDetailCard: View {
     let schedules = [
         CalendarScheduleState(
             id: UUID(),
-            workplaceName: "GS25 강남점",
+            workPlaceName: "GS25 강남점",
             timeRange: "09:00 - 14:00",
             estimatedPay: 44370,
             hourlyWage: 9860
         ),
         CalendarScheduleState(
             id: UUID(),
-            workplaceName: "스타벅스",
+            workPlaceName: "스타벅스",
             timeRange: "18:00 - 22:00",
             estimatedPay: 44000,
             hourlyWage: 11000

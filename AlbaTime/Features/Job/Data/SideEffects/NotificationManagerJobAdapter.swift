@@ -8,18 +8,18 @@
 import Foundation
 
 @MainActor
-struct NotificationManagerJobAdapter: WorkplaceNotificationScheduling {
+struct NotificationManagerJobAdapter: WorkPlaceNotificationScheduling {
     private let manager: NotificationManager
 
     init(manager: NotificationManager = .shared) {
         self.manager = manager
     }
 
-    func refreshNotifications(for workplace: Workplace) {
-        manager.refreshNotifications(for: workplace)
+    func refreshNotifications(for workPlace: WorkPlace) {
+        manager.refreshNotifications(for: workPlace)
     }
 
-    func removeNotifications(for workplace: Workplace) {
-        manager.removeNotifications(for: workplace)
+    func removeNotifications(for workPlace: WorkPlace) {
+        manager.removeNotifications(for: workPlace)
     }
 }

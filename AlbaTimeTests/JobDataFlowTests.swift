@@ -51,7 +51,7 @@ final class JobDataFlowTests: XCTestCase {
     }
 
     func testSaveFlexibleJobCreatesFlexiblePersistenceRequest() throws {
-        let existingJob = Workplace(
+        let existingJob = WorkPlace(
             name: "Cafe",
             hourlyWage: 10_000,
             defaultDays: "월",
@@ -87,8 +87,8 @@ final class JobDataFlowTests: XCTestCase {
         XCTAssertEqual(request.initialDefaultRestTime, 30)
     }
 
-    func testJobEditingSeedFactoryBuildsEditingSeedFromWorkplace() {
-        let job = Workplace(
+    func testJobEditingSeedFactoryBuildsEditingSeedFromWorkPlace() {
+        let job = WorkPlace(
             name: "Cafe",
             hourlyWage: 10_000,
             defaultDays: "월",
@@ -115,7 +115,7 @@ final class JobDataFlowTests: XCTestCase {
     }
 
     func testJobListViewStateMapperBuildsFixedScheduleSummaryInDayOrder() {
-        let job = Workplace(
+        let job = WorkPlace(
             name: "Store",
             hourlyWage: 12_000,
             defaultDays: "",
@@ -148,7 +148,7 @@ final class JobDataFlowTests: XCTestCase {
     }
 
     func testJobListViewStateMapperBuildsFlexibleSummaryAndMemo() {
-        let job = Workplace(
+        let job = WorkPlace(
             name: "Cafe",
             hourlyWage: 11_000,
             defaultDays: "",
@@ -189,35 +189,35 @@ final class JobDataFlowTests: XCTestCase {
     }
 
     func testJobListViewModelUsesCommandProtocols() {
-        let job = Workplace(
+        let job = WorkPlace(
             name: "Store",
             hourlyWage: 12_000,
             defaultDays: "월",
             defaultStartTime: Date.makeTime(9, 0),
             defaultEndTime: Date.makeTime(18, 0)
         )
-        let delete = SpyWorkplaceDeleting()
-        let alarm = SpyWorkplaceAlarmToggling()
-        let pin = SpyWorkplacePinToggling()
-        let memo = SpyWorkplaceMemoUpdating()
+        let delete = SpyWorkPlaceDeleting()
+        let alarm = SpyWorkPlaceAlarmToggling()
+        let pin = SpyWorkPlacePinToggling()
+        let memo = SpyWorkPlaceMemoUpdating()
         let viewModel = JobListViewModel(
-            workplaceDeleting: delete,
+            workPlaceDeleting: delete,
             alarmToggling: alarm,
             pinToggling: pin,
             memoUpdating: memo
         )
 
-        viewModel.delete(workplaceID: job.id)
-        XCTAssertTrue(viewModel.toggleAlarm(workplaceID: job.id))
-        XCTAssertTrue(viewModel.togglePin(workplaceID: job.id))
+        viewModel.delete(workPlaceID: job.id)
+        XCTAssertTrue(viewModel.toggleAlarm(workPlaceID: job.id))
+        XCTAssertTrue(viewModel.togglePin(workPlaceID: job.id))
 
-        XCTAssertEqual(delete.deletedWorkplaceIDs, [job.id])
-        XCTAssertEqual(alarm.toggledWorkplaceIDs, [job.id])
-        XCTAssertEqual(pin.toggledWorkplaceIDs, [job.id])
+        XCTAssertEqual(delete.deletedWorkPlaceIDs, [job.id])
+        XCTAssertEqual(alarm.toggledWorkPlaceIDs, [job.id])
+        XCTAssertEqual(pin.toggledWorkPlaceIDs, [job.id])
     }
 
     func testScheduleImportViewModelSavesExistingJobThroughScheduleSavingProtocol() {
-        let job = Workplace(
+        let job = WorkPlace(
             name: "Store",
             hourlyWage: 12_000,
             defaultDays: "",
@@ -229,7 +229,10 @@ final class JobDataFlowTests: XCTestCase {
             seed: JobEditingSeedFactory.make(from: job),
             editingJobID: job.id
         )
-        let viewModel = ScheduleImportViewModel(session: session)
+        let viewModel = ScheduleImportViewModel(
+            session: session,
+            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+        )
         let saving = SpyScheduleSaving()
 
         XCTAssertTrue(viewModel.saveResultSchedules(using: saving))
@@ -245,7 +248,10 @@ final class JobDataFlowTests: XCTestCase {
 
     func testScheduleImportViewModelKeepsNewJobPanelDraftInSessionWithoutPersistence() throws {
         let session = JobEditingSession(type: .flexible)
-        let viewModel = ScheduleImportViewModel(session: session)
+        let viewModel = ScheduleImportViewModel(
+            session: session,
+            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+        )
         let saving = SpyScheduleSaving()
         let kept = makeScheduleDraftItem(changeState: .inserted)
         let deleted = makeScheduleDraftItem(changeState: .deleted)
@@ -281,7 +287,7 @@ final class JobDataFlowTests: XCTestCase {
 private final class SpyJobPersistenceWriter: JobPersistenceWriting {
     var savedJobDraftRequests: [JobDraftPersistenceRequest] = []
     var savedScheduleDraftRequests: [ScheduleDraftPersistenceRequest] = []
-    var deletedWorkplaceIDs: [UUID] = []
+    var deletedWorkPlaceIDs: [UUID] = []
     var alarmToggledIDs: [UUID] = []
     var pinToggledIDs: [UUID] = []
     var memoUpdates: [(id: UUID, memo: String)] = []
@@ -294,8 +300,8 @@ private final class SpyJobPersistenceWriter: JobPersistenceWriting {
         savedScheduleDraftRequests.append(request)
     }
 
-    func deleteWorkplace(id: UUID) {
-        deletedWorkplaceIDs.append(id)
+    func deleteWorkPlace(id: UUID) {
+        deletedWorkPlaceIDs.append(id)
     }
 
     func toggleAlarm(id: UUID) {
@@ -338,37 +344,37 @@ private final class SpyScheduleSaving: ScheduleSaving {
 }
 
 @MainActor
-private final class SpyWorkplaceDeleting: WorkplaceDeleting {
-    var deletedWorkplaceIDs: [UUID] = []
+private final class SpyWorkPlaceDeleting: WorkPlaceDeleting {
+    var deletedWorkPlaceIDs: [UUID] = []
 
-    func execute(workplaceID: UUID) throws {
-        deletedWorkplaceIDs.append(workplaceID)
+    func execute(workPlaceID: UUID) throws {
+        deletedWorkPlaceIDs.append(workPlaceID)
     }
 }
 
 @MainActor
-private final class SpyWorkplaceAlarmToggling: WorkplaceAlarmToggling {
-    var toggledWorkplaceIDs: [UUID] = []
+private final class SpyWorkPlaceAlarmToggling: WorkPlaceAlarmToggling {
+    var toggledWorkPlaceIDs: [UUID] = []
 
-    func execute(workplaceID: UUID) throws {
-        toggledWorkplaceIDs.append(workplaceID)
+    func execute(workPlaceID: UUID) throws {
+        toggledWorkPlaceIDs.append(workPlaceID)
     }
 }
 
 @MainActor
-private final class SpyWorkplacePinToggling: WorkplacePinToggling {
-    var toggledWorkplaceIDs: [UUID] = []
+private final class SpyWorkPlacePinToggling: WorkPlacePinToggling {
+    var toggledWorkPlaceIDs: [UUID] = []
 
-    func execute(workplaceID: UUID) throws {
-        toggledWorkplaceIDs.append(workplaceID)
+    func execute(workPlaceID: UUID) throws {
+        toggledWorkPlaceIDs.append(workPlaceID)
     }
 }
 
 @MainActor
-private final class SpyWorkplaceMemoUpdating: WorkplaceMemoUpdating {
+private final class SpyWorkPlaceMemoUpdating: WorkPlaceMemoUpdating {
     var memoUpdates: [(id: UUID, memo: String)] = []
 
-    func execute(workplaceID: UUID, memo: String) throws {
-        memoUpdates.append((workplaceID, memo))
+    func execute(workPlaceID: UUID, memo: String) throws {
+        memoUpdates.append((workPlaceID, memo))
     }
 }

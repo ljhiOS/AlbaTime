@@ -1,5 +1,5 @@
 //
-//  ToggleWorkplacePin.swift
+//  ToggleWorkPlacePin.swift
 //  AlbaTime
 //
 //  Created by Codex on 5/9/26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ToggleWorkplacePinError: LocalizedError {
+enum ToggleWorkPlacePinError: LocalizedError {
     case saveFailed(String)
 
     var errorDescription: String? {
@@ -18,19 +18,19 @@ enum ToggleWorkplacePinError: LocalizedError {
     }
 }
 
-struct ToggleWorkplacePin: WorkplacePinToggling {
-    private let writer: any WorkplacePinStateWriting
+struct ToggleWorkPlacePin: WorkPlacePinToggling {
+    private let writer: any WorkPlacePinStateWriting
 
-    init(writer: any WorkplacePinStateWriting) {
+    init(writer: any WorkPlacePinStateWriting) {
         self.writer = writer
     }
 
     @MainActor
-    func execute(workplaceID: UUID) throws {
+    func execute(workPlaceID: UUID) throws {
         do {
-            try writer.togglePin(id: workplaceID)
+            try writer.togglePin(id: workPlaceID)
         } catch {
-            throw ToggleWorkplacePinError.saveFailed(error.localizedDescription)
+            throw ToggleWorkPlacePinError.saveFailed(error.localizedDescription)
         }
     }
 }

@@ -96,7 +96,7 @@ struct JobListView: View {
         }
         .navigationDestination(item: $selectedDetailState) { state in
             DetailView(state: state) { memo in
-                jlvm.updateMemo(workplaceID: state.id, memo: memo)
+                jlvm.updateMemo(workPlaceID: state.id, memo: memo)
             }
         }
         .navigationDestination(item: $selectedEditSeed) { seed in
@@ -112,13 +112,13 @@ struct JobListView: View {
         WorkCard(
             state: item.card,
             onDelete: {
-                jlvm.delete(workplaceID: item.id)
+                jlvm.delete(workPlaceID: item.id)
             },
             onPin: {
-                jlvm.togglePin(workplaceID: item.id)
+                jlvm.togglePin(workPlaceID: item.id)
             },
             onToggleAlarm: {
-                if jlvm.toggleAlarm(workplaceID: item.id) {
+                if jlvm.toggleAlarm(workPlaceID: item.id) {
                     Haptics.impact(.medium)
                 }
             },
@@ -184,7 +184,7 @@ struct JobListView: View {
 private enum PreviewJobListViewModelFactory {
     static func make() -> JobListViewModel {
         JobListViewModel(
-            workplaceDeleting: PreviewJobListCommand(),
+            workPlaceDeleting: PreviewJobListCommand(),
             alarmToggling: PreviewJobListCommand(),
             pinToggling: PreviewJobListCommand(),
             memoUpdating: PreviewJobListCommand()
@@ -194,10 +194,10 @@ private enum PreviewJobListViewModelFactory {
 
 @MainActor
 private struct PreviewJobListCommand:
-    WorkplaceDeleting,
-    WorkplaceAlarmToggling,
-    WorkplacePinToggling,
-    WorkplaceMemoUpdating {
-    func execute(workplaceID: UUID) throws { }
-    func execute(workplaceID: UUID, memo: String) throws { }
+    WorkPlaceDeleting,
+    WorkPlaceAlarmToggling,
+    WorkPlacePinToggling,
+    WorkPlaceMemoUpdating {
+    func execute(workPlaceID: UUID) throws { }
+    func execute(workPlaceID: UUID, memo: String) throws { }
 }

@@ -22,7 +22,7 @@ extension ScheduleDraftItem {
 }
 
 extension ScheduleImportDraft {
-    static func from(_ job: Workplace) -> ScheduleImportDraft {
+    static func from(_ job: WorkPlace) -> ScheduleImportDraft {
         ScheduleImportDraft(
             schedules: job.workSchedules
                 .sorted {
@@ -44,7 +44,7 @@ extension ScheduleImportDraft {
 
 extension ScheduleEditDraft {
     static func fromSavedAISchedules(
-        job: Workplace,
+        job: WorkPlace,
         targetWeekStart: Date? = nil
         ) -> ScheduleEditDraft {
         ScheduleEditDraft(

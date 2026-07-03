@@ -6,3 +6,12 @@
 //
 
 import Foundation
+
+@MainActor
+protocol ScheduleImageAnalyzing {
+    func execute(
+        imageData: Data,
+        targetName: String,
+        presets: [TimePresetDraft]
+    ) async throws -> [ParsedSchedule]
+}

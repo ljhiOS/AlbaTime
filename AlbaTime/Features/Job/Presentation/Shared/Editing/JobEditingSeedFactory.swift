@@ -9,16 +9,16 @@ import Foundation
 
 @MainActor
 enum JobEditingSeedFactory {
-    // 근무지 수정을 위해 Workplace로 시드를 생성합니다.
-    static func make(from workplace: Workplace) -> JobEditingSeed {
+    // 근무지 수정을 위해 WorkPlace로 시드를 생성합니다.
+    static func make(from workPlace: WorkPlace) -> JobEditingSeed {
         JobEditingSeed(
-            id: workplace.id,
-            jobDraft: .from(workplace),
-            scheduleImportDraft: .from(workplace),
+            id: workPlace.id,
+            jobDraft: .from(workPlace),
+            scheduleImportDraft: .from(workPlace),
             savedAIScheduleItems: ScheduleEditDraft
-                .fromSavedAISchedules(job: workplace)
+                .fromSavedAISchedules(job: workPlace)
                 .items,
-            initialDefaultRestTime: workplace.defaultRestTime
+            initialDefaultRestTime: workPlace.defaultRestTime
         )
     }
 }

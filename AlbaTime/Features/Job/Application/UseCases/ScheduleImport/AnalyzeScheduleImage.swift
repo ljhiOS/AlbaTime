@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AnalyzeScheduleImage: Sendable {
+struct AnalyzeScheduleImage: ScheduleImageAnalyzing, Sendable {
     private let textRecognizer: any ScheduleImageTextRecognizing
     private let textParser: any ScheduleTextParsing
 

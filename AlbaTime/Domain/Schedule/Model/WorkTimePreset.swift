@@ -16,7 +16,8 @@ class WorkTimePreset {
     var startTime: Date
     var endTime: Date
     
-    var workplace: Workplace? // 부모 가게
+    @Relationship(originalName: "workplace")
+    var workPlace: WorkPlace? // 부모 가게
     
     init(label: String, startTime: Date, endTime: Date) {
         self.id = UUID()

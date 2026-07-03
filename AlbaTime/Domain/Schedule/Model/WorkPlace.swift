@@ -1,5 +1,5 @@
 //
-//  Workplace.swift
+//  WorkPlace.swift
 //  AlbaTime
 //
 //  Created by 이준희 on 12/8/25.
@@ -14,9 +14,9 @@ import SwiftData
 // 3) 근무 기록 관계 집합(workSchedules, regularSchedules, timePresets)
 // 4) 특정 날짜 근무 결정 로직(getSchedule(for:))
 
-// MARK: - Workplace Model
+// MARK: - WorkPlace Model
 @Model
-class Workplace {
+class WorkPlace {
     var id: UUID
     var name: String
     var hourlyWage: Int
@@ -44,13 +44,13 @@ class Workplace {
     var expectedDailyHours: Double?
     
     // Relationships
-    @Relationship(deleteRule: .cascade, inverse: \WorkSchedule.workplace)
+    @Relationship(deleteRule: .cascade, inverse: \WorkSchedule.workPlace)
     var workSchedules: [WorkSchedule] = []
     
-    @Relationship(deleteRule: .cascade, inverse: \WorkTimePreset.workplace)
+    @Relationship(deleteRule: .cascade, inverse: \WorkTimePreset.workPlace)
     var timePresets: [WorkTimePreset] = []
     
-    @Relationship(deleteRule: .cascade, inverse: \RegularSchedule.workplace)
+    @Relationship(deleteRule: .cascade, inverse: \RegularSchedule.workPlace)
     var regularSchedules: [RegularSchedule] = []
     
     init(
@@ -102,7 +102,7 @@ class Workplace {
 }
 
 // MARK: - Logic Extension (충돌 해결의 핵심)
-extension Workplace {
+extension WorkPlace {
     // 고정 근무지일 경우 해당 주 ai 스케줄로 변경시 그 데이터로 변경(캘린더 반영)
     func hasAIOverrideInWeek(containing date: Date) -> Bool {
         ScheduleResolver.hasAIOverride(in: self, containing: date)
@@ -112,6 +112,6 @@ extension Workplace {
     /// - 1순위: AI/수기로 저장된 기록 (무조건 최우선)
     /// - 2순위: 고정 근무 패턴 (자율 근무제는 해당 없음)
     func getSchedule(for date: Date) -> (startTime: Date, endTime: Date, title: String?)? {
-        ScheduleResolver.resolve(workplace: self, for: date)
+        ScheduleResolver.resolve(workPlace: self, for: date)
     }
 }

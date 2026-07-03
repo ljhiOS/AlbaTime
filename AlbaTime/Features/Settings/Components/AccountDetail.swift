@@ -11,7 +11,7 @@ import SwiftData
 // TODO: 나중에 로그인 기능 추가 시 알람에서 계정으로 Text 변경
 struct AccountDetail: View {
     @AppStorage("isAppAlarmOn") var isAppAlarmOn: Bool = true
-    @Query var workplaces: [Workplace]
+    @Query var workPlaces: [WorkPlace]
     var body: some View {
         VStack(alignment: .leading) {
             Text("알람")
@@ -37,7 +37,7 @@ struct AccountDetail: View {
                     .onChange(of: isAppAlarmOn) { oldValue, newValue in
                            if newValue {
                                print("앱 알림 허용")
-                               for place in workplaces {
+                               for place in workPlaces {
                                    // 기존에 알림 켜둔 알바처만 다시 등록
                                    if place.isAlarmEnabled {
                                        NotificationManager.shared.refreshNotifications(for: place)

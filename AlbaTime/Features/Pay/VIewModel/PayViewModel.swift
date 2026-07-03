@@ -20,16 +20,16 @@ class PayViewModel: ObservableObject {
     @Published var averageWage: Int = 0
     
     // MARK: - Logic
-    func updateData(workplaces: [Workplace]) {
+    func updateData(workPlaces: [WorkPlace]) {
         // 누적 급여
         let accrued = SalaryCalculator.calculateAccruedMonthlyPay(
-            workplaces: workplaces,
+            workPlaces: workPlaces,
             targetMonth: currentMonth,
             asOf: Date()
         )
         // 예상 급여
         let projected = SalaryCalculator.calculateTotalMonthlyPay(
-            workplaces: workplaces,
+            workPlaces: workPlaces,
             targetMonth: currentMonth
         )
         

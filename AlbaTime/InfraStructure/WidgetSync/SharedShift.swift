@@ -8,7 +8,7 @@
 import Foundation
 
 struct SharedShift: Codable {
-    let workplaceName: String
+    let workPlaceName: String
     let startTimestamp: TimeInterval
     let endTimestamp: TimeInterval
     let plannedHours: Double?

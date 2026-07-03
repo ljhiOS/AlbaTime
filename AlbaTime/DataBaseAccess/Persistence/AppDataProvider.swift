@@ -17,7 +17,7 @@ final class AppDataProvider {
     
     init() {
         self.container = try! ModelContainer(
-            for: Workplace.self,
+            for: WorkPlace.self,
             MonthlyRecord.self,
             RegularSchedule.self,
             WorkSchedule.self,
@@ -26,8 +26,8 @@ final class AppDataProvider {
         self.context = container.mainContext
     }
     
-    func fetchWorkplaces() throws -> [Workplace] {
-        let descriptor = FetchDescriptor<Workplace> (
+    func fetchWorkPlaces() throws -> [WorkPlace] {
+        let descriptor = FetchDescriptor<WorkPlace> (
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
         

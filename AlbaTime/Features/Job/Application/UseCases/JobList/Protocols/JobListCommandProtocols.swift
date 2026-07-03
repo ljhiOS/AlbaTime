@@ -8,21 +8,21 @@
 import Foundation
 
 @MainActor
-protocol WorkplaceDeleting {
-    func execute(workplaceID: UUID) throws
+protocol WorkPlaceDeleting {
+    func execute(workPlaceID: UUID) throws
 }
 
 @MainActor
-protocol WorkplaceAlarmToggling {
-    func execute(workplaceID: UUID) throws
+protocol WorkPlaceAlarmToggling {
+    func execute(workPlaceID: UUID) throws
 }
 
 @MainActor
-protocol WorkplacePinToggling {
-    func execute(workplaceID: UUID) throws
+protocol WorkPlacePinToggling {
+    func execute(workPlaceID: UUID) throws
 }
 
 @MainActor
-protocol WorkplaceMemoUpdating {
-    func execute(workplaceID: UUID, memo: String) throws
+protocol WorkPlaceMemoUpdating {
+    func execute(workPlaceID: UUID, memo: String) throws
 }

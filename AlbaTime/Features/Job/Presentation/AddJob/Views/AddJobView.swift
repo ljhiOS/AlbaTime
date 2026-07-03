@@ -12,7 +12,6 @@ struct AddJobView: View {
     @Environment(\.dismiss) private var dismiss
 
     var stateName: String
-    private let scheduleSaving: any ScheduleSaving
 
     @FocusState private var focusedField: AddJobField?
     private let keyboardNav = KeyboardUX.Navigator<AddJobField>(
@@ -23,10 +22,8 @@ struct AddJobView: View {
         stateName: String = "근무지 등록",
         editingSeed: JobEditingSeed? = nil,
         selectedType: WorkType? = nil,
-        jobSaving: any JobSaving,
-        scheduleSaving: any ScheduleSaving
+        jobSaving: any JobSaving
     ) {
-        self.scheduleSaving = scheduleSaving
         if let editingSeed {
             self.stateName = "근무지 수정"
             _ajvm = StateObject(wrappedValue: AddJobViewModel(editingSeed: editingSeed, jobSaving: jobSaving))
@@ -108,7 +105,7 @@ struct AddJobView: View {
         .navigationTitle(stateName)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $ajvm.isAIImportPresented) {
-            ScheduleImportView(ajvm: ajvm, scheduleSaving: scheduleSaving)
+            ScheduleImportRoute(session: ajvm.session)
         }
         .onDisappear {
             ajvm.restoreEditsIfNeeded()
@@ -133,8 +130,7 @@ struct AddJobView: View {
         AddJobView(
             stateName: "알바 등록",
             selectedType: .fixed,
-            jobSaving: PreviewAddJobSaving(),
-            scheduleSaving: PreviewAddJobScheduleSaving()
+            jobSaving: PreviewAddJobSaving()
         )
     }
 }
@@ -142,9 +138,4 @@ struct AddJobView: View {
 @MainActor
 private struct PreviewAddJobSaving: JobSaving {
     func execute(_ command: JobSaveCommand) throws { }
-}
-
-@MainActor
-private struct PreviewAddJobScheduleSaving: ScheduleSaving {
-    func execute(_ command: SaveScheduleCommand) throws { }
 }

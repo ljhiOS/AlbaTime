@@ -32,7 +32,7 @@ struct SalaryCalculator {
     // MARK: - Accrued Monthly Pay
     // 이번 달 1일부터 기준일(asOf)까지의 스케줄만 반영한다.
     static func calculateAccruedMonthlyPay(
-        workplaces: [Workplace],
+        workPlaces: [WorkPlace],
         targetMonth: Date,
         asOf: Date = Date()
     ) -> SalaryBreakdown {
@@ -46,7 +46,7 @@ struct SalaryCalculator {
         let cutoffDate = min(asOf, endOfMonth)
         let cutoffDay = calendar.startOfDay(for: cutoffDate)
 
-        for job in workplaces {
+        for job in workPlaces {
             var jobBreakdown = SalaryBreakdown.empty
             var weeklyHours: [WeekKey: Double] = [:]
 
@@ -104,7 +104,7 @@ struct SalaryCalculator {
     
     // MARK: - Monthly Pay
     // 실제 기록을 우선 반영하고, 부족한 구간만 예측치로 보완한다.
-    static func calculateTotalMonthlyPay(workplaces: [Workplace], targetMonth: Date) -> SalaryBreakdown {
+    static func calculateTotalMonthlyPay(workPlaces: [WorkPlace], targetMonth: Date) -> SalaryBreakdown {
         var grandTotal = SalaryBreakdown.empty
         let calendar = Calendar.current
         
@@ -112,7 +112,7 @@ struct SalaryCalculator {
         let startOfMonth = monthInterval.start
         let endOfMonth = monthInterval.end
         
-        for job in workplaces {
+        for job in workPlaces {
             var jobBreakdown = SalaryBreakdown.empty
             var weeklyHours: [WeekKey: Double] = [:]
             
@@ -325,7 +325,7 @@ struct SalaryCalculator {
         return month
     }
 
-    private static func resolvedRestMinutes(job: Workplace, day: Date) -> Int {
+    private static func resolvedRestMinutes(job: WorkPlace, day: Date) -> Int {
         let calendar = Calendar.current
 
         if let actual = job.workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: day) }) {

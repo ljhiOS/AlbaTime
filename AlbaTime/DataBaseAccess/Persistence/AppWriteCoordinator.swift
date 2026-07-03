@@ -13,21 +13,21 @@ import SwiftData
 
 struct AppWriteCoordinator {
     @MainActor
-    func commit(context: ModelContext, affectedWorkplace: Workplace? = nil) throws {
+    func commit(context: ModelContext, affectedWorkPlace: WorkPlace? = nil) throws {
         try context.save()
 
-        if let affectedWorkplace {
-            NotificationManager.shared.refreshNotifications(for: affectedWorkplace)
+        if let affectedWorkPlace {
+            NotificationManager.shared.refreshNotifications(for: affectedWorkPlace)
         }
 
-        let workplaces = try context.fetch(FetchDescriptor<Workplace>())
-        NextShiftSyncService.sync(workplaces: workplaces)
+        let workPlaces = try context.fetch(FetchDescriptor<WorkPlace>())
+        NextShiftSyncService.sync(workPlaces: workPlaces)
     }
 
     @MainActor
-    func delete(workplace: Workplace, context: ModelContext) throws {
-        NotificationManager.shared.removeNotifications(for: workplace)
-        context.delete(workplace)
+    func delete(workPlace: WorkPlace, context: ModelContext) throws {
+        NotificationManager.shared.removeNotifications(for: workPlace)
+        context.delete(workPlace)
         try commit(context: context)
     }
 }

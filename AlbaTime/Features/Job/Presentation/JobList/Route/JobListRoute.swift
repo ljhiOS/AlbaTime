@@ -9,34 +9,34 @@ import SwiftData
 import SwiftUI
 
 struct JobListRoute: View {
-    @Query(sort: \Workplace.createdAt, order: .reverse) private var workplaces: [Workplace]
+    @Query(sort: \WorkPlace.createdAt, order: .reverse) private var workPlaces: [WorkPlace]
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         JobListView(
-            pinnedJobs: items(from: workplaces.filter(\.isPinned)),
-            normalJobs: items(from: workplaces.filter { !$0.isPinned }),
+            pinnedJobs: items(from: workPlaces.filter(\.isPinned)),
+            normalJobs: items(from: workPlaces.filter { !$0.isPinned }),
             viewModel: JobListViewModel(
-                workplaceDeleting: JobFeatureComposition.makeWorkplaceDeleting(context: modelContext),
-                alarmToggling: JobFeatureComposition.makeWorkplaceAlarmToggling(context: modelContext),
-                pinToggling: JobFeatureComposition.makeWorkplacePinToggling(context: modelContext),
-                memoUpdating: JobFeatureComposition.makeWorkplaceMemoUpdating(context: modelContext)
+                workPlaceDeleting: JobFeatureComposition.makeWorkPlaceDeleting(context: modelContext),
+                alarmToggling: JobFeatureComposition.makeWorkPlaceAlarmToggling(context: modelContext),
+                pinToggling: JobFeatureComposition.makeWorkPlacePinToggling(context: modelContext),
+                memoUpdating: JobFeatureComposition.makeWorkPlaceMemoUpdating(context: modelContext)
             ),
             onAppear: {
-                JobFeatureComposition.sync(workplaces: workplaces)
+                JobFeatureComposition.sync(workPlaces: workPlaces)
             }
         )
     }
 
-    private func items(from workplaces: [Workplace]) -> [JobListItemViewState] {
-        return workplaces.map { JobListViewStateMapper.makeItem(from: $0) }
+    private func items(from workPlaces: [WorkPlace]) -> [JobListItemViewState] {
+        return workPlaces.map { JobListViewStateMapper.makeItem(from: $0) }
     }
 }
 
 #Preview("데이터 없음") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: Workplace.self,
+        for: WorkPlace.self,
         RegularSchedule.self,
         WorkTimePreset.self,
         configurations: config
@@ -49,13 +49,13 @@ struct JobListRoute: View {
 #Preview("데이터있음") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: Workplace.self,
+        for: WorkPlace.self,
         RegularSchedule.self,
         WorkTimePreset.self,
         configurations: config
     )
 
-    let sample = Workplace(
+    let sample = WorkPlace(
         name: "자울 테스트",
         hourlyWage: 10320,
         defaultDays: "월/화/수/목/금",

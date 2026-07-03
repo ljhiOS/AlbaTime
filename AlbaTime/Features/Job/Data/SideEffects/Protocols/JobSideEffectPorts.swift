@@ -8,13 +8,13 @@
 import Foundation
 
 @MainActor
-protocol WorkplaceNotificationScheduling {
-    func refreshNotifications(for workplace: Workplace)
-    func removeNotifications(for workplace: Workplace)
+protocol WorkPlaceNotificationScheduling {
+    func refreshNotifications(for workPlace: WorkPlace)
+    func removeNotifications(for workPlace: WorkPlace)
 }
 
 @MainActor
-protocol WorkplaceSyncing {
-    func sync(workplaces: [Workplace])
+protocol WorkPlaceSyncing {
+    func sync(workPlaces: [WorkPlace])
 }
 

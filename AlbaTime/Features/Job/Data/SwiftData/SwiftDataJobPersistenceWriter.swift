@@ -9,11 +9,11 @@ import Foundation
 import SwiftData
 
 enum JobPersistenceError: LocalizedError {
-    case missingWorkplace
+    case missingWorkPlace
 
     var errorDescription: String? {
         switch self {
-        case .missingWorkplace:
+        case .missingWorkPlace:
             return "저장할 근무지 정보가 없습니다."
         }
     }
@@ -22,23 +22,23 @@ enum JobPersistenceError: LocalizedError {
 @MainActor
 struct SwiftDataJobPersistenceWriter: JobPersistenceWriting {
     private let context: ModelContext
-    private let notificationScheduler: any WorkplaceNotificationScheduling
-    private let workplaceSyncing: any WorkplaceSyncing
+    private let notificationScheduler: any WorkPlaceNotificationScheduling
+    private let workPlaceSyncing: any WorkPlaceSyncing
     private let breakTimeApplier = ApplyBreakTime()
     private let workScheduleFactory = WorkScheduleFactory()
 
     init(
         context: ModelContext,
-        notificationScheduler: any WorkplaceNotificationScheduling = NotificationManagerJobAdapter(),
-        workplaceSyncing: any WorkplaceSyncing = NextShiftWorkplaceSyncing()
+        notificationScheduler: any WorkPlaceNotificationScheduling = NotificationManagerJobAdapter(),
+        workPlaceSyncing: any WorkPlaceSyncing = NextShiftWorkPlaceSyncing()
     ) {
         self.context = context
         self.notificationScheduler = notificationScheduler
-        self.workplaceSyncing = workplaceSyncing
+        self.workPlaceSyncing = workPlaceSyncing
     }
 
     func saveJobDraft(_ request: JobDraftPersistenceRequest) throws {
-        let job = try workplace(for: request.editingJobID) ?? Workplace(
+        let job = try workPlace(for: request.editingJobID) ?? WorkPlace(
             name: "",
             hourlyWage: 0,
             defaultDays: "",
@@ -77,12 +77,12 @@ struct SwiftDataJobPersistenceWriter: JobPersistenceWriting {
             initialDefaultRestTime: request.initialDefaultRestTime
         )
 
-        try commit(affectedWorkplace: job)
+        try commit(affectedWorkPlace: job)
     }
 
     func saveScheduleDraft(_ request: ScheduleDraftPersistenceRequest) throws {
-        guard let job = try workplace(for: request.jobID) else {
-            throw JobPersistenceError.missingWorkplace
+        guard let job = try workPlace(for: request.jobID) else {
+            throw JobPersistenceError.missingWorkPlace
         }
 
         let aiImportBatchID = UUID().uuidString
@@ -111,7 +111,7 @@ struct SwiftDataJobPersistenceWriter: JobPersistenceWriting {
                     targetWeekStart: request.draft.targetWeekStart,
                     aiImportBatchID: aiImportBatchID
                 )
-                schedule.workplace = job
+                schedule.workPlace = job
                 job.workSchedules.append(schedule)
                 context.insert(schedule)
 
@@ -128,65 +128,65 @@ struct SwiftDataJobPersistenceWriter: JobPersistenceWriting {
                         targetWeekStart: request.draft.targetWeekStart,
                         aiImportBatchID: aiImportBatchID
                     )
-                    schedule.workplace = job
+                    schedule.workPlace = job
                     job.workSchedules.append(schedule)
                     context.insert(schedule)
                 }
             }
         }
 
-        try commit(affectedWorkplace: job)
+        try commit(affectedWorkPlace: job)
     }
 
-    func deleteWorkplace(id: UUID) throws {
-        guard let workplace = try workplace(for: id) else {
-            throw JobPersistenceError.missingWorkplace
+    func deleteWorkPlace(id: UUID) throws {
+        guard let workPlace = try workPlace(for: id) else {
+            throw JobPersistenceError.missingWorkPlace
         }
 
-        notificationScheduler.removeNotifications(for: workplace)
-        context.delete(workplace)
-        try commit(affectedWorkplace: nil)
+        notificationScheduler.removeNotifications(for: workPlace)
+        context.delete(workPlace)
+        try commit(affectedWorkPlace: nil)
     }
 
     func toggleAlarm(id: UUID) throws {
-        guard let workplace = try workplace(for: id) else {
-            throw JobPersistenceError.missingWorkplace
+        guard let workPlace = try workPlace(for: id) else {
+            throw JobPersistenceError.missingWorkPlace
         }
 
-        workplace.isAlarmEnabled.toggle()
-        try commit(affectedWorkplace: workplace)
+        workPlace.isAlarmEnabled.toggle()
+        try commit(affectedWorkPlace: workPlace)
     }
 
     func togglePin(id: UUID) throws {
-        guard let workplace = try workplace(for: id) else {
-            throw JobPersistenceError.missingWorkplace
+        guard let workPlace = try workPlace(for: id) else {
+            throw JobPersistenceError.missingWorkPlace
         }
 
-        workplace.isPinned.toggle()
-        try commit(affectedWorkplace: nil)
+        workPlace.isPinned.toggle()
+        try commit(affectedWorkPlace: nil)
     }
 
     func updateMemo(id: UUID, memo: String) throws {
-        guard let workplace = try workplace(for: id) else {
-            throw JobPersistenceError.missingWorkplace
+        guard let workPlace = try workPlace(for: id) else {
+            throw JobPersistenceError.missingWorkPlace
         }
 
-        workplace.defaultMemo = memo
-        try commit(affectedWorkplace: nil)
+        workPlace.defaultMemo = memo
+        try commit(affectedWorkPlace: nil)
     }
 }
 
 private extension SwiftDataJobPersistenceWriter {
-    func workplace(for id: UUID?) throws -> Workplace? {
+    func workPlace(for id: UUID?) throws -> WorkPlace? {
         guard let id else { return nil }
-        var descriptor = FetchDescriptor<Workplace>(
+        var descriptor = FetchDescriptor<WorkPlace>(
             predicate: #Predicate { $0.id == id }
         )
         descriptor.fetchLimit = 1
         return try context.fetch(descriptor).first
     }
 
-    func applyBaseDraft(_ draft: JobDraft, to job: Workplace) {
+    func applyBaseDraft(_ draft: JobDraft, to job: WorkPlace) {
         job.name = draft.name.trimmingCharacters(in: .whitespaces)
         job.hourlyWage = draft.hourlyWage
         job.defaultRestTime = draft.defaultRestTime
@@ -198,7 +198,7 @@ private extension SwiftDataJobPersistenceWriter {
 
     func replaceRegularSchedules(
         _ drafts: [RegularScheduleDraft],
-        on job: Workplace
+        on job: WorkPlace
     ) {
         deleteRegularSchedules(on: job)
 
@@ -210,7 +210,7 @@ private extension SwiftDataJobPersistenceWriter {
                 breakTime: draft.breakTime
             )
 
-            schedule.workplace = job
+            schedule.workPlace = job
             job.regularSchedules.append(schedule)
             context.insert(schedule)
         }
@@ -225,7 +225,7 @@ private extension SwiftDataJobPersistenceWriter {
         }
     }
 
-    func deleteRegularSchedules(on job: Workplace) {
+    func deleteRegularSchedules(on job: WorkPlace) {
         let schedulesToDelete = job.regularSchedules
         job.regularSchedules.removeAll()
 
@@ -236,7 +236,7 @@ private extension SwiftDataJobPersistenceWriter {
 
     func appendInitialAISchedulesIfNeeded(
         _ items: [ScheduleDraftItem],
-        to job: Workplace,
+        to job: WorkPlace,
         isNewJob: Bool
     ) {
         guard isNewJob else { return }
@@ -248,7 +248,7 @@ private extension SwiftDataJobPersistenceWriter {
                 from: item,
                 aiImportBatchID: batchID
             )
-            schedule.workplace = job
+            schedule.workPlace = job
             job.workSchedules.append(schedule)
             context.insert(schedule)
         }
@@ -256,7 +256,7 @@ private extension SwiftDataJobPersistenceWriter {
 
     func findExistingSchedule(
         for item: ScheduleEditItem,
-        in job: Workplace
+        in job: WorkPlace
     ) -> WorkSchedule? {
         if let originalScheduleID = item.originalScheduleID,
            let byID = job.workSchedules.first(where: { $0.id == originalScheduleID }) {
@@ -271,7 +271,7 @@ private extension SwiftDataJobPersistenceWriter {
     func deleteExistingSchedules(
         on originalDate: Date,
         targetWeekStart: Date?,
-        in job: Workplace
+        in job: WorkPlace
     ) {
         let mappedDate = workScheduleFactory.mappedDate(
             originalDate: originalDate,
@@ -287,14 +287,14 @@ private extension SwiftDataJobPersistenceWriter {
         }
     }
 
-    func commit(affectedWorkplace: Workplace?) throws {
+    func commit(affectedWorkPlace: WorkPlace?) throws {
         try context.save()
 
-        if let affectedWorkplace {
-            notificationScheduler.refreshNotifications(for: affectedWorkplace)
+        if let affectedWorkPlace {
+            notificationScheduler.refreshNotifications(for: affectedWorkPlace)
         }
 
-        let workplaces = try context.fetch(FetchDescriptor<Workplace>())
-        workplaceSyncing.sync(workplaces: workplaces)
+        let workPlaces = try context.fetch(FetchDescriptor<WorkPlace>())
+        workPlaceSyncing.sync(workPlaces: workPlaces)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  DeleteWorkplace.swift
+//  DeleteWorkPlace.swift
 //  AlbaTime
 //
 //  Created by 이준희 on 3/24/26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum DeleteWorkplaceError: LocalizedError {
+enum DeleteWorkPlaceError: LocalizedError {
     case deleteFailed(String)
 
     var errorDescription: String? {
@@ -18,19 +18,19 @@ enum DeleteWorkplaceError: LocalizedError {
     }
 }
 
-struct DeleteWorkCard: WorkplaceDeleting {
-    private let writer: any WorkplacePersistenceDeleting
+struct DeleteWorkCard: WorkPlaceDeleting {
+    private let writer: any WorkPlacePersistenceDeleting
 
-    init(writer: any WorkplacePersistenceDeleting) {
+    init(writer: any WorkPlacePersistenceDeleting) {
         self.writer = writer
     }
 
     @MainActor
-    func execute(workplaceID: UUID) throws {
+    func execute(workPlaceID: UUID) throws {
         do {
-            try writer.deleteWorkplace(id: workplaceID)
+            try writer.deleteWorkPlace(id: workPlaceID)
         } catch {
-            throw DeleteWorkplaceError.deleteFailed(error.localizedDescription)
+            throw DeleteWorkPlaceError.deleteFailed(error.localizedDescription)
         }
     }
 }

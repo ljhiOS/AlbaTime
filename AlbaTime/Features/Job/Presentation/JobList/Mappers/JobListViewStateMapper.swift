@@ -7,48 +7,48 @@
 
 import Foundation
 
-// TODO: Workplace 모델 정리 이후 JobListViewState의 책임 범위 재검토
+// TODO: WorkPlace 모델 정리 이후 JobListViewState의 책임 범위 재검토
 
 @MainActor
 enum JobListViewStateMapper {
-    static func makeItem(from workplace: Workplace) -> JobListItemViewState {
+    static func makeItem(from workPlace: WorkPlace) -> JobListItemViewState {
         JobListItemViewState(
-            card: makeCard(from: workplace),
-            detail: makeDetail(from: workplace),
-            editingSeed: JobEditingSeedFactory.make(from: workplace)
+            card: makeCard(from: workPlace),
+            detail: makeDetail(from: workPlace),
+            editingSeed: JobEditingSeedFactory.make(from: workPlace)
         )
     }
 
-    static func makeCard(from workplace: Workplace) -> JobCardViewState {
+    static func makeCard(from workPlace: WorkPlace) -> JobCardViewState {
         JobCardViewState(
-            id: workplace.id,
-            name: workplace.name,
-            hourlyWage: workplace.hourlyWage,
-            isPinned: workplace.isPinned,
-            isAlarmEnabled: workplace.isAlarmEnabled,
-            scheduleSummary: scheduleSummary(for: workplace)
+            id: workPlace.id,
+            name: workPlace.name,
+            hourlyWage: workPlace.hourlyWage,
+            isPinned: workPlace.isPinned,
+            isAlarmEnabled: workPlace.isAlarmEnabled,
+            scheduleSummary: scheduleSummary(for: workPlace)
         )
     }
 
-    static func makeDetail(from workplace: Workplace) -> JobDetailViewState {
+    static func makeDetail(from workPlace: WorkPlace) -> JobDetailViewState {
         let salaryData = SalaryCalculator.calculateAccruedMonthlyPay(
-            workplaces: [workplace],
+            workPlaces: [workPlace],
             targetMonth: Date(),
             asOf: Date()
         )
 
         return JobDetailViewState(
-            id: workplace.id,
-            name: workplace.name,
-            hourlyWage: workplace.hourlyWage,
-            workType: workplace.workType,
-            fixedDaysText: fixedDaysText(for: workplace),
-            defaultStartTime: workplace.defaultStartTime,
-            defaultEndTime: workplace.defaultEndTime,
-            targetWeeklyCount: workplace.targetWeeklyCount ?? 0,
-            expectedDailyHours: workplace.expectedDailyHours ?? 0,
-            defaultRestTime: workplace.defaultRestTime,
-            memo: workplace.defaultMemo ?? "",
+            id: workPlace.id,
+            name: workPlace.name,
+            hourlyWage: workPlace.hourlyWage,
+            workType: workPlace.workType,
+            fixedDaysText: fixedDaysText(for: workPlace),
+            defaultStartTime: workPlace.defaultStartTime,
+            defaultEndTime: workPlace.defaultEndTime,
+            targetWeeklyCount: workPlace.targetWeeklyCount ?? 0,
+            expectedDailyHours: workPlace.expectedDailyHours ?? 0,
+            defaultRestTime: workPlace.defaultRestTime,
+            memo: workPlace.defaultMemo ?? "",
             totalDays: salaryData.workingDays,
             totalHours: salaryData.totalHours,
             totalWage: salaryData.totalPay
@@ -57,22 +57,22 @@ enum JobListViewStateMapper {
 }
 
 private extension JobListViewStateMapper {
-    static func scheduleSummary(for workplace: Workplace) -> String {
-        if workplace.workType == .flexible {
-            let count = workplace.targetWeeklyCount ?? 0
-            let hours = workplace.expectedDailyHours ?? 0
+    static func scheduleSummary(for workPlace: WorkPlace) -> String {
+        if workPlace.workType == .flexible {
+            let count = workPlace.targetWeeklyCount ?? 0
+            let hours = workPlace.expectedDailyHours ?? 0
             return "주 \(count)회 / 일 평균 \(String(format: "%.1f", hours))시간"
         }
 
         var timeGroups: [String: Set<String>] = [:]
 
-        for schedule in workplace.regularSchedules {
+        for schedule in workPlace.regularSchedules {
             let time = "\(schedule.startTime.time24h) ~ \(schedule.endTime.time24h)"
             timeGroups[time, default: []].insert(schedule.dayOfWeek)
         }
 
-        if timeGroups.isEmpty && !workplace.defaultDays.isEmpty {
-            return "\(workplace.defaultDays): \(workplace.defaultStartTime.time24h) ~ \(workplace.defaultEndTime.time24h)"
+        if timeGroups.isEmpty && !workPlace.defaultDays.isEmpty {
+            return "\(workPlace.defaultDays): \(workPlace.defaultStartTime.time24h) ~ \(workPlace.defaultEndTime.time24h)"
         }
 
         if timeGroups.isEmpty { return "설정된 근무가 없습니다" }
@@ -99,14 +99,14 @@ private extension JobListViewStateMapper {
             .joined(separator: "\n")
     }
 
-    static func fixedDaysText(for workplace: Workplace) -> String {
+    static func fixedDaysText(for workPlace: WorkPlace) -> String {
         let order = ["월", "화", "수", "목", "금", "토", "일"]
-        let days = Array(Set(workplace.regularSchedules.map(\.dayOfWeek)))
+        let days = Array(Set(workPlace.regularSchedules.map(\.dayOfWeek)))
             .sorted { (order.firstIndex(of: $0) ?? 99) < (order.firstIndex(of: $1) ?? 99) }
 
         if !days.isEmpty { return days.joined(separator: "/") }
 
-        let raw = workplace.defaultDays.trimmingCharacters(in: .whitespacesAndNewlines)
+        let raw = workPlace.defaultDays.trimmingCharacters(in: .whitespacesAndNewlines)
         return raw.isEmpty ? "요일 미설정" : raw
     }
 }

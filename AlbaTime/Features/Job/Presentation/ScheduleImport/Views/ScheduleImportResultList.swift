@@ -93,7 +93,8 @@ struct ScheduleImportResultList: View {
 
 #Preview("데이터 없음") {
     let viewModel = ScheduleImportViewModel(
-        session: JobEditingSession(type: .fixed)
+        session: JobEditingSession(type: .fixed),
+        analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
     )
 
     return ScheduleImportResultList(sivm: viewModel)
@@ -101,7 +102,8 @@ struct ScheduleImportResultList: View {
 
 #Preview("데이터 있음") {
     let viewModel = ScheduleImportViewModel(
-        session: JobEditingSession(type: .fixed)
+        session: JobEditingSession(type: .fixed),
+        analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
     )
 
     let calendar = Calendar.current

@@ -29,8 +29,7 @@ struct AddJobRoute: View {
             stateName: stateName,
             editingSeed: editingSeed,
             selectedType: selectedType,
-            jobSaving: JobFeatureComposition.makeJobSaving(context: modelContext),
-            scheduleSaving: JobFeatureComposition.makeScheduleSaving(context: modelContext)
+            jobSaving: JobFeatureComposition.makeJobSaving(context: modelContext)
         )
     }
 }
@@ -39,7 +38,7 @@ struct AddJobRoute: View {
 #Preview("고정 근무") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: Workplace.self,
+        for: WorkPlace.self,
         RegularSchedule.self,
         WorkTimePreset.self,
         configurations: config
@@ -54,7 +53,7 @@ struct AddJobRoute: View {
 #Preview("자율 근무") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: Workplace.self,
+        for: WorkPlace.self,
         RegularSchedule.self,
         WorkTimePreset.self,
         configurations: config

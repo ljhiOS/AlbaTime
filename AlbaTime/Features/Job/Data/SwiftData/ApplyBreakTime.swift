@@ -8,7 +8,7 @@
 import Foundation
 
 struct ApplyBreakTime {
-    func breakTime(job: Workplace, initialDefaultRestTime: Int?) {
+    func breakTime(job: WorkPlace, initialDefaultRestTime: Int?) {
         let updatedBreakTime = max(0, job.defaultRestTime ?? 0)
         
         if job.defaultRestTime == nil {

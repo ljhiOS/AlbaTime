@@ -1,5 +1,5 @@
 //
-//  UpdateWorkplaceMemo.swift
+//  UpdateWorkPlaceMemo.swift
 //  AlbaTime
 //
 //  Created by Codex on 5/18/26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum UpdateWorkplaceMemoError: LocalizedError {
+enum UpdateWorkPlaceMemoError: LocalizedError {
     case saveFailed(String)
 
     var errorDescription: String? {
@@ -18,19 +18,19 @@ enum UpdateWorkplaceMemoError: LocalizedError {
     }
 }
 
-struct UpdateWorkplaceMemo: WorkplaceMemoUpdating {
-    private let writer: any WorkplaceMemoWriting
+struct UpdateWorkPlaceMemo: WorkPlaceMemoUpdating {
+    private let writer: any WorkPlaceMemoWriting
 
-    init(writer: any WorkplaceMemoWriting) {
+    init(writer: any WorkPlaceMemoWriting) {
         self.writer = writer
     }
 
     @MainActor
-    func execute(workplaceID: UUID, memo: String) throws {
+    func execute(workPlaceID: UUID, memo: String) throws {
         do {
-            try writer.updateMemo(id: workplaceID, memo: memo)
+            try writer.updateMemo(id: workPlaceID, memo: memo)
         } catch {
-            throw UpdateWorkplaceMemoError.saveFailed(error.localizedDescription)
+            throw UpdateWorkPlaceMemoError.saveFailed(error.localizedDescription)
         }
     }
 }

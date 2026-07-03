@@ -21,8 +21,9 @@ class WorkSchedule {
     var aiImportBatchID: String?
     var isEditedAfterAIImport: Bool = false
     
-    // Workplace와의 관계 (Inverse)
-    var workplace: Workplace?
+    // WorkPlace와의 관계 (Inverse)
+    @Relationship(originalName: "workplace")
+    var workPlace: WorkPlace?
     
     init(
         date: Date,
@@ -33,7 +34,7 @@ class WorkSchedule {
         isFromAIImport: Bool = false,
         aiImportBatchID: String? = nil,
         isEditedAfterAIImport: Bool = false,
-        workplace: Workplace? = nil
+        workPlace: WorkPlace? = nil
     ) {
         self.id = UUID()
         self.date = date
@@ -44,6 +45,6 @@ class WorkSchedule {
         self.isFromAIImport = isFromAIImport
         self.aiImportBatchID = aiImportBatchID
         self.isEditedAfterAIImport = isEditedAfterAIImport
-        self.workplace = workplace
+        self.workPlace = workPlace
     }
 }
