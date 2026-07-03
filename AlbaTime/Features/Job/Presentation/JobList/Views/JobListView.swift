@@ -58,14 +58,14 @@ struct JobListView: View {
                     if !pinnedJobs.isEmpty {
                         Section(header: Label("고정됨", systemImage: "pin.fill")) {
                             ForEach(pinnedJobs) { item in
-                                card(item)
+                                makeCard(item)
                             }
                         }
                     }
 
                     Section {
                         ForEach(normalJobs) { item in
-                            card(item)
+                            makeCard(item)
                         }
                     }
 
@@ -108,7 +108,7 @@ struct JobListView: View {
         }
     }
 
-    private func card(_ item: JobListItemViewState) -> some View {
+    private func makeCard(_ item: JobListItemViewState) -> some View {
         WorkCard(
             state: item.card,
             onDelete: {
