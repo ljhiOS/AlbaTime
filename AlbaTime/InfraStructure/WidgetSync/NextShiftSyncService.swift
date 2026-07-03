@@ -28,18 +28,18 @@ enum NextShiftSyncService {
         for offset in 0...30 {
             guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
 
-            for job in workPlaces {
-                guard let schedule = resolvedShift(for: job, day: day) else { continue }
+            for workPlace in workPlaces {
+                guard let schedule = resolvedShift(for: workPlace, day: day) else { continue }
                 let start = schedule.start
                 let end = schedule.end
                 guard start > now else { continue }
 
-                let hours = plannedHours(job: job, day: day, start: start, end: end)
+                let hours = plannedHours(workPlace: workPlace, day: day, start: start, end: end)
                 guard hours > 0 else { continue }
 
                 results.append(
                     SharedShift(
-                        workPlaceName: job.name,
+                        workPlaceName: workPlace.name,
                         startTimestamp: start.timeIntervalSince1970,
                         endTimestamp: end.timeIntervalSince1970,
                         plannedHours: hours
@@ -51,11 +51,11 @@ enum NextShiftSyncService {
         return results.sorted { $0.startTimestamp < $1.startTimestamp }
     }
 
-    private static func resolvedShift(for job: WorkPlace, day: Date) -> (start: Date, end: Date)? {
+    private static func resolvedShift(for workPlace: WorkPlace, day: Date) -> (start: Date, end: Date)? {
         let calendar = Calendar.current
 
         // 1) 저장된 개별 스케줄이 있으면 우선 사용
-        if let actual = job.workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: day) }) {
+        if let actual = workPlace.workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: day) }) {
             let start = combineDateAndTime(date: day, time: actual.startTime)
             var end = combineDateAndTime(date: day, time: actual.endTime)
             if end < start {
@@ -65,16 +65,16 @@ enum NextShiftSyncService {
             // 비정상(0분) 데이터는 고정 근무일 때만 패턴으로 fallback
             if end > start {
                 return (start, end)
-            } else if job.workType != .fixed {
+            } else if workPlace.workType != .fixed {
                 return nil
             }
         }
 
         // 2) 고정 근무는 패턴(regular/default)에서 계산
-        guard job.workType == .fixed else { return nil }
+        guard workPlace.workType == .fixed else { return nil }
         let weekday = day.koreanWeekday
 
-        if let regular = job.regularSchedules.first(where: { $0.dayOfWeek == weekday }) {
+        if let regular = workPlace.regularSchedules.first(where: { $0.dayOfWeek == weekday }) {
             let start = combineDateAndTime(date: day, time: regular.startTime)
             var end = combineDateAndTime(date: day, time: regular.endTime)
             if end < start {
@@ -83,9 +83,9 @@ enum NextShiftSyncService {
             return end > start ? (start, end) : nil
         }
 
-        if job.regularSchedules.isEmpty && job.defaultDays.contains(weekday) {
-            let start = combineDateAndTime(date: day, time: job.defaultStartTime)
-            var end = combineDateAndTime(date: day, time: job.defaultEndTime)
+        if workPlace.regularSchedules.isEmpty && workPlace.defaultDays.contains(weekday) {
+            let start = combineDateAndTime(date: day, time: workPlace.defaultStartTime)
+            var end = combineDateAndTime(date: day, time: workPlace.defaultEndTime)
             if end < start {
                 end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
             }
@@ -106,7 +106,7 @@ enum NextShiftSyncService {
         ) ?? date
     }
 
-    private static func plannedHours(job: WorkPlace, day: Date, start: Date, end: Date) -> Double {
+    private static func plannedHours(workPlace: WorkPlace, day: Date, start: Date, end: Date) -> Double {
         let calendar = Calendar.current
         var endDate = end
         if endDate < start {

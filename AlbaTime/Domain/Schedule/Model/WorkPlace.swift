@@ -16,7 +16,7 @@ import SwiftData
 
 // MARK: - WorkPlace Model
 @Model
-class WorkPlace {
+class Workplace {
     var id: UUID
     var name: String
     var hourlyWage: Int
@@ -101,8 +101,11 @@ class WorkPlace {
     }
 }
 
-// MARK: - Logic Extension (충돌 해결의 핵심)
-extension WorkPlace {
+// 기존 SwiftData 저장소의 모델명이 Workplace로 배포되어 실제 @Model 클래스명은 유지합니다.
+// 앱 코드에서는 typealias WorkPlace를 통해 WorkPlace 네이밍을 사용합니다.
+typealias WorkPlace = Workplace
+
+extension Workplace {
     // 고정 근무지일 경우 해당 주 ai 스케줄로 변경시 그 데이터로 변경(캘린더 반영)
     func hasAIOverrideInWeek(containing date: Date) -> Bool {
         ScheduleResolver.hasAIOverride(in: self, containing: date)

@@ -39,7 +39,7 @@ enum KeyboardUX {
     }
 }
 
-enum AddJobField: Hashable {
+enum AddWorkPlaceField: Hashable {
     case name, wage, restTime, memo
 }
 

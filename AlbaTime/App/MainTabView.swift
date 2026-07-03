@@ -21,7 +21,7 @@ struct MainTabView: View {
             
             // 2번 탭: 근무지 관리
             NavigationStack {
-                JobListRoute()
+                WorkPlaceListRoute()
             }
             .tabItem {
                 Image(systemName: "briefcase.fill")

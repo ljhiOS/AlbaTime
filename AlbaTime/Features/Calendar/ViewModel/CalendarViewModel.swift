@@ -101,15 +101,15 @@ class CalendarViewModel: ObservableObject {
         guard let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)?.addingTimeInterval(-1) else { return }
         
         // 1. [자율 근무 & 개별 기록] 처리 (데이터 -> 날짜 매핑 방식)
-        for job in workPlaces {
+        for workPlace in workPlaces {
             // 이번 달에 해당하는 스케줄만 필터링 (속도 향상)
-            let monthSchedules = job.workSchedules.filter {
+            let monthSchedules = workPlace.workSchedules.filter {
                 $0.date >= startOfMonth && $0.date <= endOfMonth
             }
             
             for schedule in monthSchedules {
                 let dateKey = calendar.startOfDay(for: schedule.date)
-                newCache[dateKey, default: []].append(job)
+                newCache[dateKey, default: []].append(workPlace)
             }
         }
         
@@ -120,9 +120,9 @@ class CalendarViewModel: ObservableObject {
             let dateKey = calendar.startOfDay(for: date)
             let weekdayStr = date.koreanWeekday
             
-            for job in workPlaces where job.workType == .fixed {
-                if job.hasAIOverrideInWeek(containing: date) {
-                    let hasActualWorkOnThatDay = job.workSchedules.contains {
+            for workPlace in workPlaces where workPlace.workType == .fixed {
+                if workPlace.hasAIOverrideInWeek(containing: date) {
+                    let hasActualWorkOnThatDay = workPlace.workSchedules.contains {
                         calendar.isDate($0.date, inSameDayAs: date)
                     }
                     if !hasActualWorkOnThatDay {
@@ -130,16 +130,16 @@ class CalendarViewModel: ObservableObject {
                     }
                 }
                 // 이미 위에서 AI 스케줄로 등록된 경우(Override), 중복 추가 방지
-                if let existingJobs = newCache[dateKey], existingJobs.contains(where: { $0.id == job.id }) {
+                if let existingWorkPlaces = newCache[dateKey], existingWorkPlaces.contains(where: { $0.id == workPlace.id }) {
                     continue
                 }
                 
                 // 고정 스케줄 확인
-                let hasFixedSchedule = job.regularSchedules.contains { $0.dayOfWeek == weekdayStr }
-                let hasSimpleFixed = job.regularSchedules.isEmpty && job.defaultDays.contains(weekdayStr)
+                let hasFixedSchedule = workPlace.regularSchedules.contains { $0.dayOfWeek == weekdayStr }
+                let hasSimpleFixed = workPlace.regularSchedules.isEmpty && workPlace.defaultDays.contains(weekdayStr)
                 
                 if hasFixedSchedule || hasSimpleFixed {
-                    newCache[dateKey, default: []].append(job)
+                    newCache[dateKey, default: []].append(workPlace)
                 }
             }
         }

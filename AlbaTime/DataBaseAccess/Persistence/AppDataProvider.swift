@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-// TODO: Job 설계 구조에 맞춰 전체 프로젝트 설계 변경 완료시 삭제
+// TODO: WorkPlace 설계 구조에 맞춰 전체 프로젝트 설계 변경 완료시 삭제
 
 @MainActor
 final class AppDataProvider {
