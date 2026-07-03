@@ -7,6 +7,8 @@
 
 import Foundation
 
+// TODO: Workplace 모델 정리 이후 JobListViewState의 책임 범위 재검토
+
 @MainActor
 enum JobListViewStateMapper {
     static func makeItem(from workplace: Workplace) -> JobListItemViewState {
