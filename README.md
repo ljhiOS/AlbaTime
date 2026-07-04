@@ -55,9 +55,10 @@ Tools: Xcode 16+
 ```
 ```text
 6. 아키텍처 및 데이터 흐름 (Architecture & Data Flow)
-이 프로젝트는 SwiftUI 기반 MVVM 구조에서 출발하여, v2.0.0 기준으로 Job 기능을 Presentation / Application / Domain / Data / Composition 계층으로 분리했습니다.
-ViewModel은 화면 상태와 사용자 액션을 담당하고, 저장/수정/삭제 같은 비즈니스 흐름은 UseCase와 Protocol을 통해 처리합니다.
-SwiftData 저장 이후 알림 갱신과 위젯 동기화가 함께 실행되도록 데이터 저장 경계를 정리했습니다.
+이 프로젝트는 SwiftUI 기반 MVVM 구조에서 출발하여, v2.0.0 기준으로 기능별 Feature 구조와 Protocol-Oriented Clean Architecture 형태로 정리했습니다.
+WorkPlace, Calendar, Pay, Setting 기능은 Presentation / Application / Data / Composition 계층을 기준으로 구성하고, WorkPlace처럼 기능 내부 상태가 복잡한 경우에만 Feature 내부 Domain 계층을 둡니다.
+ViewModel은 화면 상태와 사용자 액션을 담당하고, 저장/수정/삭제/조회 같은 비즈니스 흐름은 UseCase와 Protocol을 통해 처리합니다.
+SwiftData 접근은 각 Feature의 Data 계층으로 모으고, 화면에서 필요한 의존성은 Composition에서 조립하도록 정리했습니다.
 
 폴더 구조 (Folder Structure)
 
@@ -66,8 +67,6 @@ AlbaTime
 │   ├── AlbaTimeApp.swift              # 앱 진입점, SwiftData ModelContainer 설정, 알림 권한 요청
 │   ├── MainTabView.swift              # 캘린더 / 근무지 / 급여 / 설정 탭 구성
 │   └── SplashView.swift               # 스플래시 화면
-├── DataBaseAccess
-│   └── Persistence                    # 앱 데이터 접근/쓰기 조정 계층
 ├── Domain
 │   ├── Payroll
 │   │   ├── Model                      # SalaryBreakdown, MonthlyRecord
@@ -77,17 +76,29 @@ AlbaTime
 │       ├── Service                    # ScheduleResolver
 │       └── Type                       # WorkType, TaxType, AllowanceType
 ├── Features
-│   ├── Calendar                       # 캘린더 화면, 날짜별 근무 표시, 상세 카드
-│   ├── Pay                            # 급여 대시보드, 예상/누적 급여, 실제 수령액 기록
-│   ├── Settings                       # 앱 정보, 도움말, 개인정보 관련 화면
-│   └── Job
-│       ├── Presentation               # AddJob, JobList, ScheduleImport 화면/ViewModel/컴포넌트
-│       ├── Application                # AddJob, JobList, ScheduleImport UseCase 및 Protocol
-│       ├── Domain                     # JobDraft, ScheduleDraft, 저장 검증 정책
+│   ├── Calendar
+│   │   ├── Presentation               # 캘린더 화면, 날짜 셀, 상세 카드, Route, ViewModel
+│   │   ├── Application                # 캘린더 조회 UseCase 및 Protocol
+│   │   ├── Data                       # SwiftData 기반 근무지 Reader
+│   │   └── Composition                # CalendarFeatureComposition 의존성 조립
+│   ├── Pay
+│   │   ├── Presentation               # 급여 대시보드, 실제 수령액 기록 화면, Route, ViewModel
+│   │   ├── Application                # 월별 수령액 저장/삭제 UseCase 및 Protocol
+│   │   ├── Data                       # SwiftData 기반 월별 기록 Writer
+│   │   └── Composition                # PayFeatureComposition 의존성 조립
+│   ├── Setting
+│   │   ├── Presentation               # 설정 홈, 앱 정보, 도움말, 개인정보 화면
+│   │   ├── Application                # 앱 알림 설정 UseCase 및 Protocol
+│   │   ├── Data                       # NotificationManager Adapter
+│   │   └── Composition                # SettingFeatureComposition 의존성 조립
+│   └── WorkPlace
+│       ├── Presentation               # AddWorkPlace, WorkPlaceList, ScheduleImport 화면/ViewModel/컴포넌트
+│       ├── Application                # WorkPlace 저장/수정/삭제/스케줄 분석 UseCase 및 Protocol
+│       ├── Domain                     # WorkPlaceDraft, ScheduleDraft, 저장 검증 정책
 │       ├── Data                       # SwiftData Writer, Mapper, SideEffect Adapter
-│       └── Composition                # JobFeatureComposition 의존성 조립
-├── Infrastructure
-│   ├── AI Engine                      # OCRService, TextLayoutAnalyzer, ScheduleParser
+│       └── Composition                # WorkPlaceFeatureComposition 의존성 조립
+├── InfraStructure
+│   ├── AIEngine                       # OCRService, TextLayoutAnalyzer, ScheduleParser
 │   ├── Notifications                  # NotificationManager
 │   └── WidgetSync                     # NextShiftSyncService, SharedShift
 ├── Shared
@@ -108,12 +119,16 @@ AlbaTimeWidget
 └── Assets.xcassets
 
 AlbaTimeTests
-└── JobDataFlowTests.swift             # Job 기능 UseCase/ViewModel 데이터 흐름 테스트
+└── WorkPlaceDataFlowTests.swift       # WorkPlace 기능 UseCase/ViewModel 데이터 흐름 테스트
 ```
 
-<img width="1300" height="1000" alt="SwiftData Workplace-2026-03-07-081530" src="https://github.com/user-attachments/assets/4b4b978f-8459-4bb1-b9ad-46a0af1061ac" />
+## 아키텍처 / 데이터 플로우
 
-<img width="500" height="1500" alt="image" src="https://github.com/user-attachments/assets/d18321de-243c-41d7-9cf3-8f3d023b6519" />
+### App Architecture Flow
+<img width="900" alt="AlbaTime App Architecture Flow" src="READMEAssets/architecture-flow.png" />
+
+### SwiftData Write & Side Effect Flow
+<img width="520" alt="AlbaTime SwiftData Write and Side Effect Flow" src="READMEAssets/data-write-side-effect-flow.png" />
 
 
 
@@ -136,6 +151,7 @@ AlbaTimeTests
 2026.1.24 ~ 2026.2.18
 
 업데이트
+```text
 1. AI 스케줄 관리 개선
    1-1) 월/주차 기준으로 AI 스케줄 저장 및 불러오기 구조 정리
    1-2) 저장된 AI 스케줄을 주차 단위로 수정할 수 있는 편집 흐름 추가
@@ -162,6 +178,7 @@ AlbaTimeTests
    7-1) AI 스케줄 저장/수정 시 반영 누락 문제 수정
    7-2) 자율근무에서 저장 실패하던 케이스 수정
    7-3) 위젯/근무시간 표시 관련 예외 케이스 수정
+```
 
 ## V1.2.1 개발기간
 2026.2.18 ~ 2026.3.1
@@ -201,6 +218,7 @@ AlbaTimeTests
 2026.3.1 ~ 2026.6.19
 
 업데이트
+```text
 1. 프로젝트 아키텍처 대규모 리팩토링
    1-1) Job 기능을 Presentation / Application / Domain / Data / Composition 계층으로 분리
    1-2) ViewModel이 SwiftData에 직접 의존하던 흐름을 UseCase + Protocol 기반으로 정리
@@ -242,3 +260,37 @@ AlbaTimeTests
    8-1) JobDataFlowTests 추가
    8-2) SaveJobUseCase, AddJobViewModel, JobListViewModel, ScheduleImportViewModel의 데이터 흐름 검증
    8-3) Protocol 기반 Spy 객체를 사용해 SwiftData 없이 UseCase/ViewModel 단위 테스트 가능하도록 개선
+```
+## V2.0.1 개발기간
+2026.6.19 ~ 2026.7.4
+
+업데이트
+```text
+1. Feature 단위 프로젝트 구조 정리
+   1-1) Job 명칭을 실제 도메인에 맞춰 WorkPlace 중심 구조로 정리
+   1-2) WorkPlace, Calendar, Pay, Setting 폴더를 기능 단위로 재구성
+   1-3) Feature 내부 폴더명을 Application / Data / Presentation / Composition 기준으로 통일
+   1-4) Protocol, UseCase, View, ViewModel, Component, Route 등 하위 폴더명을 단수형으로 정리
+
+2. Protocol-Oriented Clean Architecture 적용 범위 확장
+   2-1) Calendar, Pay, Setting 기능도 WorkPlace와 같은 계층 구조를 따르도록 개선
+   2-2) ViewModel이 직접 저장소나 외부 객체를 다루던 흐름을 UseCase + Protocol 기반으로 정리
+   2-3) 화면에서 필요한 의존성은 Feature별 Composition에서 조립하도록 개선
+   2-4) SwiftData 접근은 각 Feature의 Data 계층으로 이동
+
+3. 공통 데이터 접근 계층 제거
+   3-1) 기존 DataBaseAccess 폴더 제거
+   3-2) AppDataProvider / AppWriteCoordinator 의존 흐름 제거
+   3-3) Calendar는 SwiftData Reader, Pay는 SwiftData Writer 방식으로 Feature 내부에서 데이터 접근 처리
+
+4. Setting 구조 정리
+   4-1) Setting 화면을 SettingHome, AppInfo, Help, PersonalInfo, Shared 기준으로 분리
+   4-2) 앱 알림 토글 흐름을 ToggleAppAlarm UseCase와 AppAlarmProtocol로 분리
+   4-3) 카카오톡 오픈채팅 링크는 Shared SettingExternalLink로 공통 관리
+
+5. 프로젝트 명명 규칙 정리
+   5-1) Settings를 Setting으로 정리
+   5-2) AI Engine을 AIEngine으로 정리
+   5-3) Infrastructure를 실제 폴더명인 InfraStructure 기준으로 문서화
+   5-4) WorkPlaceDataFlowTests 기준으로 테스트 문서 최신화
+```
