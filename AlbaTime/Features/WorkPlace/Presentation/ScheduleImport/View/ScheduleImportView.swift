@@ -57,7 +57,7 @@ struct ScheduleImportView: View {
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
                 await sivm.processSelectedPhoto(item: newItem, targetName: myName)
-
+                selectedPhotoItem = nil
             }
         }
         // 근무 형태에 따라 에러 처리 버튼 동작을 분기한다.
