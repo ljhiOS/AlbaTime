@@ -264,7 +264,7 @@ AlbaTimeTests
    8-3) Protocol 기반 Spy 객체를 사용해 SwiftData 없이 UseCase/ViewModel 단위 테스트 가능하도록 개선
 ```
 ## V2.0.1 개발기간
-2026.6.19 ~ 2026.7.4
+2026.6.19 ~ 
 
 업데이트
 ```text
