@@ -105,6 +105,7 @@ class Workplace {
 // 앱 코드에서는 typealias WorkPlace를 통해 WorkPlace 네이밍을 사용합니다.
 typealias WorkPlace = Workplace
 
+// MARK: extensions
 extension Workplace {
     // 고정 근무지일 경우 해당 주 ai 스케줄로 변경시 그 데이터로 변경(캘린더 반영)
     func hasAIOverrideInWeek(containing date: Date) -> Bool {
