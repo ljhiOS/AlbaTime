@@ -75,7 +75,7 @@ struct PayDashboardView: View {
                         holidayPay: pvm.salaryData.holidayPay,
                         taxAmount: pvm.salaryData.taxAmount,
                         totalPay: pvm.salaryData.totalPay,
-                        totalHours: pvm.salaryData.totalHours,
+                        totalHours: pvm.salaryData.accruedWorkHours,
                         workingDays: pvm.salaryData.workingDays
                     )
                     

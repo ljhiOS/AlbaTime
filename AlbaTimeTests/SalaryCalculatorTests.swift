@@ -29,7 +29,7 @@ final class SalaryCalculatorTests: XCTestCase {
         XCTAssertEqual(beforeShiftEnds.workingDays, 0)
         XCTAssertEqual(afterShiftEnds.basicPay, 40_000)
         XCTAssertEqual(afterShiftEnds.totalPay, 40_000)
-        XCTAssertEqual(afterShiftEnds.totalHours, 4)
+        XCTAssertEqual(afterShiftEnds.accruedWorkHours, 4)
         XCTAssertEqual(afterShiftEnds.workingDays, 1)
     }
 
@@ -52,7 +52,7 @@ final class SalaryCalculatorTests: XCTestCase {
 
         XCTAssertEqual(result.basicPay, 80_000)
         XCTAssertEqual(result.totalPay, 80_000)
-        XCTAssertEqual(result.totalHours, 8)
+        XCTAssertEqual(result.accruedWorkHours, 8)
         XCTAssertEqual(result.workingDays, 1)
     }
 
@@ -82,7 +82,7 @@ final class SalaryCalculatorTests: XCTestCase {
         XCTAssertEqual(beforeShiftEnds.workingDays, 0)
         XCTAssertEqual(afterShiftEnds.basicPay, 40_000)
         XCTAssertEqual(afterShiftEnds.totalPay, 40_000)
-        XCTAssertEqual(afterShiftEnds.totalHours, 4)
+        XCTAssertEqual(afterShiftEnds.accruedWorkHours, 4)
         XCTAssertEqual(afterShiftEnds.workingDays, 1)
     }
 

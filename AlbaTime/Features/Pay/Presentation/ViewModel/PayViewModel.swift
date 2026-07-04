@@ -37,7 +37,7 @@ class PayViewModel: ObservableObject {
         self.projectedSalaryData = projected
         self.averageWage = SalaryCalculator.calculateAverageWage(
             basicPay: accrued.basicPay,
-            totalHours: accrued.totalHours
+            totalHours: accrued.accruedWorkHours
         )
     }
 }

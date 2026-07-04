@@ -33,7 +33,7 @@ struct DetailView: View {
                 
                 StaticDetailView(
                     totalDays: state.totalDays,
-                    totalHours: state.totalHours,
+                    totalHours: state.accruedWorkHours,
                     totalWage: state.totalWage
                 )
                 .padding(.horizontal, 30)
@@ -67,7 +67,8 @@ struct DetailView: View {
         defaultRestTime: nil,
         memo: "",
         totalDays: 12,
-        totalHours: 48,
+        accruedWorkHours: 32,
+        monthlyWorkHours: 48,
         totalWage: 540000
     ))
 }

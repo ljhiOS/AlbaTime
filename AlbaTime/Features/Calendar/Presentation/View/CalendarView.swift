@@ -143,11 +143,6 @@ struct CalendarView: View {
                     }
                     .frame(height: 160)
                     
-                    Button("적용") {
-                        cvm.applyPickedYearMonth(year: pickedYear, month: pickedMonth)
-                        showMonthPicker = false
-                    }
-                    .buttonStyle(.borderedProminent)
                 }
                 .padding()
                 .navigationTitle("연도/월 선택")
@@ -155,6 +150,12 @@ struct CalendarView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("취소") { showMonthPicker = false }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("적용") {
+                            cvm.applyPickedYearMonth(year: pickedYear, month: pickedMonth)
+                            showMonthPicker = false
+                        }
                     }
                 }
             }

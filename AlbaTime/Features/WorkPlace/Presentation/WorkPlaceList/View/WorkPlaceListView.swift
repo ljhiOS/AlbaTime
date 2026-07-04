@@ -158,7 +158,8 @@ struct WorkPlaceListView: View {
         defaultRestTime: 60,
         memo: "사장님이 화, 목 오후 2시에 오십니다.",
         totalDays: 12,
-        totalHours: 48,
+        accruedWorkHours: 32,
+        monthlyWorkHours: 48,
         totalWage: 540000
     )
     let seed = WorkPlaceEditingSeed(

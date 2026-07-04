@@ -31,10 +31,14 @@ enum WorkPlaceListViewStateMapper {
     }
 
     static func makeDetail(from workPlace: WorkPlace) -> WorkPlaceDetailViewState {
-        let salaryData = SalaryCalculator.calculateAccruedMonthlyPay(
+        let accruedSalaryData = SalaryCalculator.calculateAccruedMonthlyPay(
             workPlaces: [workPlace],
             targetMonth: Date(),
             asOf: Date()
+        )
+        let monthlySalaryData = SalaryCalculator.calculateTotalMonthlyPay(
+            workPlaces: [workPlace],
+            targetMonth: Date()
         )
 
         return WorkPlaceDetailViewState(
@@ -49,9 +53,10 @@ enum WorkPlaceListViewStateMapper {
             expectedDailyHours: workPlace.expectedDailyHours ?? 0,
             defaultRestTime: workPlace.defaultRestTime,
             memo: workPlace.defaultMemo ?? "",
-            totalDays: salaryData.workingDays,
-            totalHours: salaryData.totalHours,
-            totalWage: salaryData.totalPay
+            totalDays: accruedSalaryData.workingDays,
+            accruedWorkHours: accruedSalaryData.accruedWorkHours,
+            monthlyWorkHours: monthlySalaryData.monthlyWorkHours,
+            totalWage: accruedSalaryData.totalPay
         )
     }
 }

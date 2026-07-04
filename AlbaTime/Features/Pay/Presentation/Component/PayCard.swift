@@ -38,19 +38,22 @@ struct PayCard: View {
                 .background(Color.white)
                 .padding(.horizontal)
             
-            HStack(alignment: .top) {
+            HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("총 근무 시간")
+                    Text(showExpected ? "이번 달 총 근무시간" : "이번 달 누적 근무시간")
                         .font(.subheadline)
                         .foregroundStyle(.white)
                     
-                    Text(String(format: "%.1f시간", pvm.salaryData.totalHours))
+                    Text(String(
+                        format: "%.1f시간",
+                        showExpected ? pvm.projectedSalaryData.monthlyWorkHours : pvm.salaryData.accruedWorkHours
+                        )
+                    )
                         .foregroundStyle(.white)
                         .font(.system(size: 20))
                         .bold()
                 }
-                
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("평균 시급")
@@ -62,8 +65,7 @@ struct PayCard: View {
                         .font(.system(size: 20))
                         .bold(true)
                 }
-                
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             }.padding()
         }
         .background(Color.theme.primary)
@@ -107,7 +109,8 @@ struct PayCard: View {
         holidayPay: 120000,
         taxAmount: 120500,
         totalPay: 1142720,
-        totalHours: 108.5,
+        monthlyWorkHours: 200.0,
+        accruedWorkHours: 108.5,
         workingDays: 12
     )
     pvm.projectedSalaryData = SalaryBreakdown(
@@ -116,7 +119,8 @@ struct PayCard: View {
         holidayPay: 160000,
         taxAmount: 138800,
         totalPay: 1371200,
-        totalHours: 128.0,
+        monthlyWorkHours: 200.0,
+        accruedWorkHours: 128.0,
         workingDays: 14
     )
     pvm.averageWage = 10530
@@ -124,5 +128,3 @@ struct PayCard: View {
     return PayCard(pvm: pvm)
         .padding()
 }
-
-

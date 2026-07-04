@@ -7,7 +7,6 @@
 
 import Foundation
 
-// TODO: 누적 급여 계산 고쳐야 할거 같음
 struct SalaryCalculator {
     private struct WeekKey: Hashable {
         let yearForWeekOfYear: Int
@@ -29,6 +28,7 @@ struct SalaryCalculator {
         return payData.totalPay
     }
 
+    // TODO: 시간 계산과 급여계산 로직 분기 검토
     // MARK: - Accrued Monthly Pay
     // 이번 달 1일부터 기준일(asOf)까지의 스케줄만 반영한다.
     static func calculateAccruedMonthlyPay(
@@ -238,7 +238,7 @@ struct SalaryCalculator {
                             let predictedHours = Double(remainingCount) * avgHours
                             
                             workPlaceBreakdown.basicPay += predictedBasicPay
-                            workPlaceBreakdown.totalHours += predictedHours
+                            workPlaceBreakdown.monthlyWorkHours += predictedHours
                             workPlaceBreakdown.workingDays += remainingCount
 
                             let weekDate = schedulesInThisWeek.first?.date
@@ -387,7 +387,8 @@ struct SalaryCalculator {
             holidayPay: 0,
             taxAmount: 0,
             totalPay: total,
-            totalHours: hours.total,
+            monthlyWorkHours: hours.total,
+            accruedWorkHours: hours.total,
             workingDays: 1
         )
     }

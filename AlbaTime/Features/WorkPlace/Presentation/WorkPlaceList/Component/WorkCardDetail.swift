@@ -72,11 +72,11 @@ struct WorkCardDetail: View {
                 Spacer()
                 
                 VStack(alignment: .leading) {
-                    Text("이번 달")
+                    Text("총 근무 시간")
                         .font(.subheadline)
                         .foregroundStyle(.white)
                     
-                    Text(String(format: "%.1f시간", state.totalHours))
+                    Text(String(format: "%.1f시간", state.monthlyWorkHours))
                         .foregroundStyle(.white)
                         .font(.system(size: 20))
                         .bold()
@@ -117,7 +117,8 @@ struct WorkCardDetail: View {
             defaultRestTime: 60,
             memo: "",
             totalDays: 12,
-            totalHours: 48,
+            accruedWorkHours: 32,
+            monthlyWorkHours: 48,
             totalWage: 480000
         )
     )
@@ -137,7 +138,8 @@ struct WorkCardDetail: View {
             defaultRestTime: nil,
             memo: "",
             totalDays: 12,
-            totalHours: 48,
+            accruedWorkHours: 32,
+            monthlyWorkHours: 48,
             totalWage: 480000
         )
     )
