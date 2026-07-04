@@ -12,7 +12,7 @@ struct MainTabView: View {
         TabView {
             // 1번 탭: 캘린더
             NavigationStack {
-                CalendarView()
+                CalendarRoute()
             }
             .tabItem {
                 Image(systemName: "calendar")
@@ -30,7 +30,7 @@ struct MainTabView: View {
             
             // 3번 탭: 급여
             NavigationStack {
-                PayDashboardView()
+                PayDashboardRoute()
             }
             .tabItem {
                 Image(systemName: "wonsign.circle.fill")
@@ -39,7 +39,7 @@ struct MainTabView: View {
             
             // 4번 탭: 설정
             NavigationStack {
-                SettingView()
+                SettingRoute()
             }
             .tabItem {
                 Image(systemName: "gearshape.fill")
