@@ -17,7 +17,8 @@ class RegularSchedule {
     var endTime: Date
     var breakTime: Int // 휴게시간
     
-    var workplace: Workplace?
+    @Relationship(originalName: "workplace")
+    var workPlace: WorkPlace?
     
     // 휴게시간을 함께 저장한다.
     init(dayOfWeek: String, startTime: Date, endTime: Date, breakTime: Int = 60) {

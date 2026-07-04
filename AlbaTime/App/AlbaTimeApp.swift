@@ -20,7 +20,7 @@ struct AlbaTimeApp: App {
             SplashView()
         }
         .modelContainer(for: [
-            Workplace.self,
+            WorkPlace.self,
             MonthlyRecord.self,
             RegularSchedule.self,
             WorkSchedule.self,
