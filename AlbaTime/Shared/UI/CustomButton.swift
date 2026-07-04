@@ -65,7 +65,7 @@ struct PlusButton: View {
                         .frame(width: 50, height: 50)
                 }
                 
-                Text("새 알바 추가하기")
+                Text("근무지 추가하기")
                     .foregroundStyle(Color.theme.textSecondary)
             }
         }

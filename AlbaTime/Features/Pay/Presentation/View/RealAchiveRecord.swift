@@ -10,7 +10,9 @@ import SwiftUI
 struct RealAchiveRecord: View {
     let records: [MonthlyRecord]
     @StateObject private var ravm: RealAchiveRecordViewModel
-
+    
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(
         records: [MonthlyRecord],
         viewModel: RealAchiveRecordViewModel
@@ -69,7 +71,7 @@ struct RealAchiveRecord: View {
                 ravm.isAdding = true
             } label: {
                 Image(systemName: "plus")
-                    .tint(.black)
+                    .foregroundStyle(colorScheme == .dark ? .white : .black )
             }
         }
         .sheet(isPresented: $ravm.isAdding) {

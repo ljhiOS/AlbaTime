@@ -86,7 +86,7 @@ struct WorkPlaceListView: View {
             Button("요일 고정 알바") {
                 selectedWorkType = .fixed
             }
-            Button("자율/횟수 중심 알바") {
+            Button("요일 비고정 알바") {
                 selectedWorkType = .flexible
             }
             Button("취소", role: .cancel) {}
