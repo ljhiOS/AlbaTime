@@ -231,7 +231,7 @@ final class WorkPlaceDataFlowTests: XCTestCase {
         )
         let viewModel = ScheduleImportViewModel(
             session: session,
-            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+            analyzeScheduleImage: StubScheduleImageAnalyzer()
         )
         let saving = SpyScheduleSaving()
 
@@ -250,7 +250,7 @@ final class WorkPlaceDataFlowTests: XCTestCase {
         let session = WorkPlaceEditingSession(type: .flexible)
         let viewModel = ScheduleImportViewModel(
             session: session,
-            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+            analyzeScheduleImage: StubScheduleImageAnalyzer()
         )
         let saving = SpyScheduleSaving()
         let kept = makeScheduleDraftItem(changeState: .inserted)
@@ -340,6 +340,17 @@ private final class SpyScheduleSaving: ScheduleSaving {
 
     func execute(_ command: SaveScheduleCommand) throws {
         receivedCommands.append(command)
+    }
+}
+
+@MainActor
+private struct StubScheduleImageAnalyzer: ScheduleImageAnalyzing {
+    func execute(
+        imageData: Data,
+        targetName: String,
+        presets: [TimePresetDraft]
+    ) async throws -> [ParsedSchedule] {
+        []
     }
 }
 
