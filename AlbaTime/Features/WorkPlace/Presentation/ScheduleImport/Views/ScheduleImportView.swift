@@ -146,7 +146,7 @@ private extension ScheduleImportView {
         ScheduleImportView(
             session: ajvm.session,
             scheduleSaving: scheduleSaving,
-            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+            analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer()
         )
     }
 }
@@ -222,7 +222,7 @@ private extension ScheduleImportView {
         ScheduleImportView(
             session: ajvm.session,
             scheduleSaving: PreviewScheduleSaving(),
-            analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+            analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer()
         )
     }
 }

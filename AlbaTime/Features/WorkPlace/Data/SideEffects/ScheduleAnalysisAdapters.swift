@@ -60,13 +60,3 @@ struct ScheduleParserWorkPlaceAdapter: ScheduleTextParsing {
         )
     }
 }
-
-enum DefaultScheduleAnalysis {
-    @MainActor
-    static func makeUseCase() -> any ScheduleImageAnalyzing {
-        AnalyzeScheduleImage(
-            textRecognizer: OCRScheduleImageTextRecognizer(),
-            textParser: ScheduleParserWorkPlaceAdapter()
-        )
-    }
-}

@@ -95,7 +95,7 @@ struct ScheduleImportPresetGroup: View {
 #Preview("ScheduleImport Preset Group") {
     let viewModel = ScheduleImportViewModel(
         session: WorkPlaceEditingSession(type: .fixed),
-        analyzeScheduleImage: DefaultScheduleAnalysis.makeUseCase()
+        analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer()
     )
 
     viewModel.session.scheduleImportDraft.presetDrafts = [
@@ -119,5 +119,4 @@ struct ScheduleImportPresetGroup: View {
     )
     .padding()
 }
-
 

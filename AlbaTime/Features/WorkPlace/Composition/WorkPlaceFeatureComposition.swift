@@ -21,10 +21,6 @@ enum WorkPlaceFeatureComposition {
         SaveScheduleUseCase(writer: makePersistenceWriter(context: context))
     }
 
-    static func makeScheduleImageAnalyzer() -> any ScheduleImageAnalyzing {
-        DefaultScheduleAnalysis.makeUseCase()
-    }
-
     static func makeWorkPlaceDeleting(context: ModelContext) -> DeleteWorkCard {
         DeleteWorkCard(writer: makePersistenceWriter(context: context))
     }
@@ -43,6 +39,13 @@ enum WorkPlaceFeatureComposition {
 
     static func makeWorkPlaceSyncing() -> any WorkPlaceSyncing {
         NextShiftWorkPlaceSyncing()
+    }
+    
+    static func makeScheduleImageAnalyzer() -> any ScheduleImageAnalyzing {
+        AnalyzeScheduleImage(
+            textRecognizer: OCRScheduleImageTextRecognizer(),
+            textParser: ScheduleParserWorkPlaceAdapter()
+        )
     }
 
     static func sync(workPlaces: [WorkPlace]) {
