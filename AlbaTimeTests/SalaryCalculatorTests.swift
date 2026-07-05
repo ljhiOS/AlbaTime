@@ -85,6 +85,93 @@ final class SalaryCalculatorTests: XCTestCase {
         XCTAssertEqual(afterShiftEnds.accruedWorkHours, 4)
         XCTAssertEqual(afterShiftEnds.workingDays, 1)
     }
+    
+    func testHolidayAllowanceIsZeroUnderFifteenWeeklyHours() {
+        var bucket = WeeklyHolidayAllowanceCalculator.makeBucket()
+        WeeklyHolidayAllowanceCalculator.addHours(
+            14,
+            on: makeDate(2026, 7, 6),
+            calendar: Calendar(identifier: .gregorian),
+            to: &bucket
+        )
+        
+        let result = WeeklyHolidayAllowanceCalculator.holidayPay(from: bucket, hourlyWage: 10_000)
+        
+        XCTAssertEqual(result, 0)
+    }
+    
+    func testHolidayAllowanceUsesProportionalHoursUnderFortyWeeklyHours() {
+        var bucket = WeeklyHolidayAllowanceCalculator.makeBucket()
+        WeeklyHolidayAllowanceCalculator.addHours(
+            20,
+            on: makeDate(2026, 7, 6),
+            calendar: Calendar(identifier: .gregorian),
+            to: &bucket
+        )
+        
+        let result = WeeklyHolidayAllowanceCalculator.holidayPay(from: bucket, hourlyWage: 10_000)
+        
+        XCTAssertEqual(result, 40_000)
+    }
+    
+    func testHolidayAllowanceUsesEightHoursAtFortyWeeklyHours() {
+        var bucket = WeeklyHolidayAllowanceCalculator.makeBucket()
+        WeeklyHolidayAllowanceCalculator.addHours(
+            40,
+            on: makeDate(2026, 7, 6),
+            calendar: Calendar(identifier: .gregorian),
+            to: &bucket
+        )
+        
+        let result = WeeklyHolidayAllowanceCalculator.holidayPay(from: bucket, hourlyWage: 10_000)
+        
+        XCTAssertEqual(result, 80_000)
+    }
+    
+    func testHolidayAllowanceCapsAtEightHoursOverFortyWeeklyHours() {
+        var bucket = WeeklyHolidayAllowanceCalculator.makeBucket()
+        WeeklyHolidayAllowanceCalculator.addHours(
+            50,
+            on: makeDate(2026, 7, 6),
+            calendar: Calendar(identifier: .gregorian),
+            to: &bucket
+        )
+        
+        let result = WeeklyHolidayAllowanceCalculator.holidayPay(from: bucket, hourlyWage: 10_000)
+        
+        XCTAssertEqual(result, 80_000)
+    }
+    
+    func testTotalMonthlyPayUsesRegularScheduleBreakTimeForFixedPrediction() {
+        let workPlace = WorkPlace(
+            name: "Fixed",
+            hourlyWage: 10_000,
+            defaultDays: "",
+            defaultStartTime: makeDate(2026, 7, 6, 9, 0),
+            defaultEndTime: makeDate(2026, 7, 6, 18, 0),
+            defaultRestTime: 60,
+            taxType: .none,
+            allowanceType: .none,
+            workType: .fixed
+        )
+        workPlace.regularSchedules = [
+            RegularSchedule(
+                dayOfWeek: "월",
+                startTime: makeDate(2026, 7, 6, 9, 0),
+                endTime: makeDate(2026, 7, 6, 18, 0),
+                breakTime: 30
+            )
+        ]
+        
+        let result = SalaryCalculator.calculateTotalMonthlyPay(
+            workPlaces: [workPlace],
+            targetMonth: makeDate(2026, 7, 1)
+        )
+        
+        XCTAssertEqual(result.basicPay, 340_000)
+        XCTAssertEqual(result.monthlyWorkHours, 34)
+        XCTAssertEqual(result.workingDays, 4)
+    }
 
     private func makeWorkPlace(hourlyWage: Int) -> WorkPlace {
         WorkPlace(
