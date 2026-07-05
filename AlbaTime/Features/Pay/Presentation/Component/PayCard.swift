@@ -20,7 +20,7 @@ struct PayCard: View {
         VStack(alignment: .leading) {
             
             VStack(alignment: .leading) {
-                Text(showExpected ? "이번 달 예상 급여" : "이번 달 누적 급여")
+                Text(showExpected ? "이번 달 총 예상 급여" : "이번 달 누적 급여")
                     .font(.subheadline)
                     .foregroundStyle(.white)
                     .padding(.top)

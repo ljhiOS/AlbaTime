@@ -84,7 +84,6 @@ struct WorkCard: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "clock")
                     .foregroundColor(.gray)
-                    .padding(.top, 2)
                 
                 // 요일 순으로 정렬된 스케줄 텍스트
                 Text(state.scheduleSummary)

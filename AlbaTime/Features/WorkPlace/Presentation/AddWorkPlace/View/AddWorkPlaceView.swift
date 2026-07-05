@@ -10,6 +10,7 @@ import SwiftUI
 struct AddWorkPlaceView: View {
     @StateObject private var ajvm: AddWorkPlaceViewModel
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("onboarding.addWorkPlaceAICondition") private var hasSeenAIConditionOnboarding = false
 
     var stateName: String
 
@@ -73,34 +74,41 @@ struct AddWorkPlaceView: View {
                         .padding(6)
                         .background(Color.theme.primary.opacity(0.1))
                         .cornerRadius(20)
-                        .spotlightTarget(.addWorkPlaceAICondition)
                 }
             }
             ToolbarItemGroup(placement: .keyboard) {
-                Button {
-                    focusedField = keyboardNav.previous(from: focusedField)
-                } label: {
-                    Image(systemName: "chevron.up")
-                        .font(.system(size: 14, weight: .semibold))
-                }
-                .disabled(!keyboardNav.canMovePrevious(from: focusedField))
+                HStack(spacing: 12) {
+                    Button {
+                        focusedField = keyboardNav.previous(from: focusedField)
+                    } label: {
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(width: 32, height: 32)
+                    }
+                    .disabled(!keyboardNav.canMovePrevious(from: focusedField))
 
-                Button {
-                    focusedField = keyboardNav.next(from: focusedField)
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 14, weight: .semibold))
-                }
-                .disabled(!keyboardNav.canMoveNext(from: focusedField))
+                    Button {
+                        focusedField = keyboardNav.next(from: focusedField)
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(width: 32, height: 32)
+                    }
+                    .disabled(!keyboardNav.canMoveNext(from: focusedField))
 
-                Spacer(minLength: 8)
+                    Spacer(minLength: 8)
 
-                Button {
-                    focusedField = nil
-                } label: {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
+                    Button {
+                        focusedField = nil
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(width: 32, height: 32)
+                    }
                 }
+                .padding(.horizontal, 8)
+                .padding(.top, 4)
+                .padding(.bottom, 10)
             }
         }
         .navigationTitle(stateName)
@@ -123,12 +131,58 @@ struct AddWorkPlaceView: View {
         } message: {
             Text(ajvm.errorMessage)
         }
-        .spotlightOnboarding(steps: [
-            SpotlightOnboardingStep(
-                key: .addWorkPlaceAICondition,
-                message: "매장명과 시급을 입력하면 AI 스케줄을 사용할 수 있어요."
-            )
-        ])
+        .overlay {
+            if !hasSeenAIConditionOnboarding {
+                ZStack(alignment: .topTrailing) {
+                    Color.gray.opacity(0.62)
+                        .ignoresSafeArea()
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            hasSeenAIConditionOnboarding = true
+                        }
+
+                    AddWorkPlaceAIConditionHint {
+                        hasSeenAIConditionOnboarding = true
+                    }
+                    .padding(.top, 8)
+                    .padding(.trailing, 16)
+                }
+            }
+        }
+    }
+
+}
+
+private struct AddWorkPlaceAIConditionHint: View {
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: "lightbulb.fill")
+                Text("1/1")
+                    .font(.caption.bold())
+                Spacer()
+                Button("건너뛰기", action: onDismiss)
+                    .font(.caption.bold())
+            }
+            .foregroundStyle(Color.theme.primary)
+
+            Text("매장명과 시급을 입력하면 AI 스케줄을 사용할 수 있어요.")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("화면 아무 곳이나 누르면 닫혀요.")
+                .font(.caption)
+                .foregroundStyle(Color.theme.textSecondary)
+        }
+        .padding(14)
+        .frame(width: 300, alignment: .leading)
+        .background(Color.theme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.18), radius: 18, x: 0, y: 8)
+        .onTapGesture(perform: onDismiss)
     }
 }
 

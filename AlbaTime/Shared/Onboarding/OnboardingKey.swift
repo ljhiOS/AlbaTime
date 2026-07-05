@@ -15,6 +15,8 @@ enum OnboardingKey: String, CaseIterable {
     case scheduleImportDateBase
     case scheduleImportNameInput
     case scheduleImportPresetInput
+    case calendarMonthPickerButton
+    case calendarSwipeArea
     case payDashboardCard
 }
 
@@ -28,6 +30,8 @@ extension OnboardingKey {
              .scheduleImportDateBase,
              .scheduleImportNameInput,
              .scheduleImportPresetInput,
+             .calendarMonthPickerButton,
+             .calendarSwipeArea,
              .payDashboardCard:
             return 0
         }
@@ -40,13 +44,15 @@ extension OnboardingKey {
             return 8
 
         case .workPlaceListAddButton,
+             .calendarMonthPickerButton,
              .addWorkPlaceAICondition,
              .payDashboardCard:
             return 20
 
         case .scheduleImportDateBase,
              .scheduleImportNameInput,
-             .scheduleImportPresetInput:
+             .scheduleImportPresetInput,
+             .calendarSwipeArea:
             return 14
         }
     }
@@ -56,12 +62,32 @@ extension OnboardingKey {
         case .addWorkPlaceAICondition,
              .scheduleImportDateBase,
              .scheduleImportNameInput,
-             .scheduleImportPresetInput:
+             .scheduleImportPresetInput,
+             .calendarMonthPickerButton:
             return true
 
         case .workPlaceListAddButton,
              .workPlaceListDetailButton,
              .workPlaceListEditButton,
+             .calendarSwipeArea,
+             .payDashboardCard:
+            return false
+        }
+    }
+
+    var showsSwipeCue: Bool {
+        switch self {
+        case .calendarSwipeArea:
+            return true
+
+        case .workPlaceListAddButton,
+             .workPlaceListDetailButton,
+             .workPlaceListEditButton,
+             .addWorkPlaceAICondition,
+             .scheduleImportDateBase,
+             .scheduleImportNameInput,
+             .scheduleImportPresetInput,
+             .calendarMonthPickerButton,
              .payDashboardCard:
             return false
         }

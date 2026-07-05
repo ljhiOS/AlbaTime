@@ -89,6 +89,20 @@ struct SpotlightOnboardingOverlay: View {
                 .foregroundStyle(Color.theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            if step.key.showsSwipeCue {
+                HStack(spacing: 10) {
+                    Image(systemName: "arrow.left")
+                    Text("좌우로 밀기")
+                        .font(.caption.bold())
+                    Image(systemName: "arrow.right")
+                }
+                .foregroundStyle(Color.theme.primary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(Color.theme.primary.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
             Text("화면 아무 곳이나 누르면 다음으로 넘어가요.")
                 .font(.caption)
                 .foregroundStyle(Color.theme.textSecondary)
