@@ -1,0 +1,69 @@
+//
+//  OnboardingKey.swift
+//  AlbaTime
+//
+//  Created by 이준희 on 7/5/26.
+//
+
+import CoreGraphics
+
+enum OnboardingKey: String, CaseIterable {
+    case workPlaceListAddButton
+    case workPlaceListDetailButton
+    case workPlaceListEditButton
+    case addWorkPlaceAICondition
+    case scheduleImportDateBase
+    case scheduleImportNameInput
+    case scheduleImportPresetInput
+    case payDashboardCard
+}
+
+extension OnboardingKey {
+    var spotlightPadding: CGFloat {
+        switch self {
+        case .workPlaceListAddButton,
+             .workPlaceListDetailButton,
+             .workPlaceListEditButton,
+             .addWorkPlaceAICondition,
+             .scheduleImportDateBase,
+             .scheduleImportNameInput,
+             .scheduleImportPresetInput,
+             .payDashboardCard:
+            return 0
+        }
+    }
+
+    var spotlightCornerRadius: CGFloat {
+        switch self {
+        case .workPlaceListDetailButton,
+             .workPlaceListEditButton:
+            return 8
+
+        case .workPlaceListAddButton,
+             .addWorkPlaceAICondition,
+             .payDashboardCard:
+            return 20
+
+        case .scheduleImportDateBase,
+             .scheduleImportNameInput,
+             .scheduleImportPresetInput:
+            return 14
+        }
+    }
+
+    var keepsBubbleBelowTarget: Bool {
+        switch self {
+        case .addWorkPlaceAICondition,
+             .scheduleImportDateBase,
+             .scheduleImportNameInput,
+             .scheduleImportPresetInput:
+            return true
+
+        case .workPlaceListAddButton,
+             .workPlaceListDetailButton,
+             .workPlaceListEditButton,
+             .payDashboardCard:
+            return false
+        }
+    }
+}

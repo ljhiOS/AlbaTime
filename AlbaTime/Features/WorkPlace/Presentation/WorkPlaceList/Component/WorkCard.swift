@@ -106,6 +106,7 @@ struct WorkCard: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.theme.borderSoft, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
+                .spotlightTarget(.workPlaceListDetailButton)
                 
                 Button {
                     onShowEdit()
@@ -116,6 +117,7 @@ struct WorkCard: View {
                         .background(Color.theme.primary).cornerRadius(8)
                 }
                 .buttonStyle(.plain)
+                .spotlightTarget(.workPlaceListEditButton)
             }
         }
         .padding(20)

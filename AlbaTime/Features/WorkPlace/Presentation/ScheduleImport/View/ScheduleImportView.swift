@@ -18,7 +18,6 @@ struct ScheduleImportView: View {
     @State private var selectedPhotoItem: PhotosPickerItem?
     
     @FocusState private var isNameFieldFocused: Bool
-    
     @Environment(\.colorScheme) private var colorScheme
     
     init(

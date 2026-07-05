@@ -73,6 +73,7 @@ struct AddWorkPlaceView: View {
                         .padding(6)
                         .background(Color.theme.primary.opacity(0.1))
                         .cornerRadius(20)
+                        .spotlightTarget(.addWorkPlaceAICondition)
                 }
             }
             ToolbarItemGroup(placement: .keyboard) {
@@ -122,6 +123,12 @@ struct AddWorkPlaceView: View {
         } message: {
             Text(ajvm.errorMessage)
         }
+        .spotlightOnboarding(steps: [
+            SpotlightOnboardingStep(
+                key: .addWorkPlaceAICondition,
+                message: "매장명과 시급을 입력하면 AI 스케줄을 사용할 수 있어요."
+            )
+        ])
     }
 }
 

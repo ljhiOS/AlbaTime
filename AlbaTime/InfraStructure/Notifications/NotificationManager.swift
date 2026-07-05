@@ -200,7 +200,7 @@ class NotificationManager {
         for offset in 0...daysAhead {
             guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
             
-            guard let schedule = workPlace.getSchedule(for: day) else { continue }
+            guard let schedule = ScheduleResolver.resolve(workPlace: workPlace, for: day) else { continue }
 
             let start = combineDateAndTime(date: day, time: schedule.startTime)
             var end = combineDateAndTime(date: day, time: schedule.endTime)

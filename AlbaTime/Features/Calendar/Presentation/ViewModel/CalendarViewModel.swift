@@ -123,7 +123,7 @@ class CalendarViewModel: ObservableObject {
             let weekdayStr = date.koreanWeekday
             
             for workPlace in workPlaces where workPlace.workType == .fixed {
-                if workPlace.hasAIOverrideInWeek(containing: date) {
+                if ScheduleResolver.hasAIOverride(in: workPlace, containing: date) {
                     let hasActualWorkOnThatDay = workPlace.workSchedules.contains {
                         calendar.isDate($0.date, inSameDayAs: date)
                     }
@@ -189,7 +189,7 @@ class CalendarViewModel: ObservableObject {
     }
     
     private func getEstimatedPay(for workPlace: WorkPlace, on date: Date) -> Int {
-        guard let schedule = workPlace.getSchedule(for: date) else { return 0 }
+        guard let schedule = ScheduleResolver.resolve(workPlace: workPlace, for: date) else { return 0 }
         
         let tempSchedule = WorkSchedule(
             date: date,
@@ -206,7 +206,7 @@ class CalendarViewModel: ObservableObject {
     }
     
     private func getWorkTimeRange(for workPlace: WorkPlace, on date: Date) -> String {
-        if let schedule = workPlace.getSchedule(for: date) {
+        if let schedule = ScheduleResolver.resolve(workPlace: workPlace, for: date) {
             return "\(schedule.startTime.time24h) - \(schedule.endTime.time24h)"
         }
         return "-"

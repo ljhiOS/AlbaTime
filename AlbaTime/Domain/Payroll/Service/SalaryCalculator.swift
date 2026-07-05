@@ -52,7 +52,7 @@ struct SalaryCalculator {
 
             var day = startOfMonth
             while day <= cutoffDay {
-                if let schedule = workPlace.getSchedule(for: day) {
+                if let schedule = ScheduleResolver.resolve(workPlace: workPlace, for: day) {
                     let start = schedule.startTime
                     var end = schedule.endTime
                     if end < start {
@@ -149,7 +149,7 @@ struct SalaryCalculator {
                     if !recordedDates.contains(calendar.startOfDay(for: currentDate)) {
                         let weekday = currentDate.koreanWeekday
                         
-                        if workPlace.hasAIOverrideInWeek(containing: currentDate) {
+                        if ScheduleResolver.hasAIOverride(in: workPlace, containing: currentDate) {
                             guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
                                 break
                             }
