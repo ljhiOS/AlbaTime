@@ -16,7 +16,7 @@ struct ScheduleImportIdleSection: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 14) {
+            VStack(spacing: 16) {
                 weekSelectorCard
                 nameInputCard
                 ScheduleImportPresetGroup(
@@ -32,20 +32,6 @@ struct ScheduleImportIdleSection: View {
         }
         .onTapGesture {
             isNameFieldFocused.wrappedValue = false
-        }
-        .overlay(alignment: .top) {
-            if ssvm.showManualHint {
-                Text("선택한 날짜를 수정한 뒤 저장하세요")
-                    .font(.footnote)
-                    .foregroundStyle(.white)
-                    .bold()
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.theme.primary)
-                    .clipShape(Capsule())
-                    .padding(.bottom, 8)
-                    .transition(.opacity)
-            }
         }
         .spotlightOnboarding(steps: onboardingSteps)
     }
