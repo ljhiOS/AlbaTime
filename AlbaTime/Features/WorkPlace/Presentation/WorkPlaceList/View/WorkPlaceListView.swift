@@ -94,7 +94,7 @@ struct WorkPlaceListView: View {
             Button("취소", role: .cancel) {}
         }
         .navigationDestination(item: $selectedWorkType) { selectedType in
-            AddWorkPlaceRoute(stateName: "알바 등록", selectedType: selectedType)
+            AddWorkPlaceRoute(stateName: "근무지 등록", selectedType: selectedType)
         }
         .navigationDestination(item: $selectedDetailState) { state in
             DetailView(state: state) { memo in

@@ -203,12 +203,59 @@ class ScheduleImportViewModel: ObservableObject {
         using scheduleSaving: any ScheduleSaving,
         targetWeekStart: Date? = nil
     ) -> Bool {
-        guard session.editingWorkPlaceID != nil else { return true }
+        // 신규 근무지는 이 화면에서 직접 저장하지 않고 AddWorkPlace 화면으로
+        // 초안을 넘기므로, 여기서 선택한 기준 주에 맞춰 날짜를 먼저 확정합니다.
+        if session.editingWorkPlaceID == nil {
+            mapDraftSchedules(to: targetWeekStart)
+            return true
+        }
 
         return saveToWorkPlace(
             using: scheduleSaving,
             targetWeekStart: targetWeekStart
         )
+    }
+
+    private func mapDraftSchedules(to targetWeekStart: Date?) {
+        guard let targetWeekStart else { return }
+
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: targetWeekStart)
+
+        session.scheduleImportDraft.schedules = session.scheduleImportDraft.schedules.map { item in
+            let weekday = calendar.component(.weekday, from: item.date)
+            let mondayBasedOffset = (weekday + 5) % 7
+            let mappedDate = calendar.date(
+                byAdding: .day,
+                value: mondayBasedOffset,
+                to: start
+            ) ?? item.date
+
+            let timeComponents = calendar.dateComponents([.hour, .minute], from: item.startTime)
+            let mappedStart = calendar.date(
+                bySettingHour: timeComponents.hour ?? 0,
+                minute: timeComponents.minute ?? 0,
+                second: 0,
+                of: mappedDate
+            ) ?? item.startTime
+
+            var mappedEnd = calendar.date(
+                bySettingHour: calendar.component(.hour, from: item.endTime),
+                minute: calendar.component(.minute, from: item.endTime),
+                second: 0,
+                of: mappedDate
+            ) ?? item.endTime
+
+            if mappedEnd < mappedStart {
+                mappedEnd = calendar.date(byAdding: .day, value: 1, to: mappedEnd) ?? mappedEnd
+            }
+
+            var mappedItem = item
+            mappedItem.date = mappedDate
+            mappedItem.startTime = mappedStart
+            mappedItem.endTime = mappedEnd
+            return mappedItem
+        }
     }
 
     func saveToWorkPlace(

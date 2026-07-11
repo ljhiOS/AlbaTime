@@ -26,7 +26,7 @@ struct AccountDetail: View {
                     .foregroundStyle(isAppAlarmOn ? Color.theme.primary : .gray)
                 
                 // 2. 텍스트
-                Text("알림설정")
+                Text("알림 설정")
                     .foregroundStyle(Color.theme.textPrimary)
                 
                 Spacer()
