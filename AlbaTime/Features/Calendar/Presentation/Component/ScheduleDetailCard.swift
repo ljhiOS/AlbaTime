@@ -72,12 +72,22 @@ struct ScheduleDetailCard: View {
                 ScrollView {
                     VStack(spacing: 12) {
                         ForEach(schedules) { schedule in
-                            Button {
-                                editingSchedule = schedule
-                            } label: {
-                                WorkPlaceComponent(schedule: schedule)
+                            if schedule.id == schedules.first?.id {
+                                Button {
+                                    editingSchedule = schedule
+                                } label: {
+                                    WorkPlaceComponent(schedule: schedule)
+                                }
+                                .buttonStyle(.plain)
+                                .spotlightTarget(.calendarScheduleEdit)
+                            } else {
+                                Button {
+                                    editingSchedule = schedule
+                                } label: {
+                                    WorkPlaceComponent(schedule: schedule)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.top, 4)

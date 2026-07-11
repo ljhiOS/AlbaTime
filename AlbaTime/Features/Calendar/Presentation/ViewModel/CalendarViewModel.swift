@@ -131,61 +131,13 @@ class CalendarViewModel: ObservableObject {
     private func updateCache() {
         let calendar = Calendar.current
         var newCache: [Date: [WorkPlace]] = [:]
-        
-        // 이번 달의 시작과 끝 날짜 구하기 (범위 필터링용)
-        let startOfMonth = currentMonth.startOfMonth()
-        guard let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)?.addingTimeInterval(-1) else { return }
-        
-        // 1. [자율 근무 & 개별 기록] 처리 (데이터 -> 날짜 매핑 방식)
-        for workPlace in workPlaces {
-            let monthRecords = workPlace.workRecords.filter {
-                $0.date >= startOfMonth && $0.date <= endOfMonth
-            }
-
-            for record in monthRecords {
-                let dateKey = calendar.startOfDay(for: record.date)
-                newCache[dateKey, default: []].append(workPlace)
-            }
-
-            // 이번 달에 해당하는 스케줄만 필터링 (속도 향상)
-            let monthSchedules = workPlace.workSchedules.filter {
-                $0.date >= startOfMonth && $0.date <= endOfMonth
-            }
-            
-            for schedule in monthSchedules {
-                let dateKey = calendar.startOfDay(for: schedule.date)
-                if !(newCache[dateKey] ?? []).contains(where: { $0.id == workPlace.id }) {
-                    newCache[dateKey, default: []].append(workPlace)
-                }
-            }
-        }
-        
-        // 2. [고정 근무] 처리 (패턴 반복)
         let daysInMonth = generateDaysInMonth().compactMap { $0 }
-        
+
         for date in daysInMonth {
             let dateKey = calendar.startOfDay(for: date)
-            let weekdayStr = date.koreanWeekday
-            
-            for workPlace in workPlaces where workPlace.workType == .fixed {
-                if ScheduleResolver.hasAIOverride(in: workPlace, containing: date) {
-                    let hasActualWorkOnThatDay = workPlace.workSchedules.contains {
-                        calendar.isDate($0.date, inSameDayAs: date)
-                    }
-                    if !hasActualWorkOnThatDay {
-                        continue
-                    }
-                }
-                // 이미 위에서 AI 스케줄로 등록된 경우(Override), 중복 추가 방지
-                if let existingWorkPlaces = newCache[dateKey], existingWorkPlaces.contains(where: { $0.id == workPlace.id }) {
-                    continue
-                }
-                
-                // 고정 스케줄 확인
-                let hasFixedSchedule = workPlace.regularSchedules.contains { $0.dayOfWeek == weekdayStr }
-                let hasSimpleFixed = workPlace.regularSchedules.isEmpty && workPlace.defaultDays.contains(weekdayStr)
-                
-                if hasFixedSchedule || hasSimpleFixed {
+
+            for workPlace in workPlaces {
+                if ScheduleResolver.resolve(workPlace: workPlace, for: date) != nil {
                     newCache[dateKey, default: []].append(workPlace)
                 }
             }

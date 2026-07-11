@@ -191,7 +191,7 @@ struct WorkPlaceListView: View {
         id: card.id,
         workPlaceDraft: .makeNew(type: .fixed),
         scheduleImportDraft: .empty(),
-        savedAIScheduleItems: [],
+        savedScheduleItems: [],
         initialDefaultRestTime: 60
     )
 

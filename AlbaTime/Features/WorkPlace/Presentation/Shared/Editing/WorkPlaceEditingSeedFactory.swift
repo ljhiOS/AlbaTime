@@ -15,8 +15,8 @@ enum WorkPlaceEditingSeedFactory {
             id: workPlace.id,
             workPlaceDraft: .from(workPlace),
             scheduleImportDraft: .from(workPlace),
-            savedAIScheduleItems: ScheduleEditDraft
-                .fromSavedAISchedules(workPlace: workPlace)
+            savedScheduleItems: ScheduleEditDraft
+                .fromSavedSchedules(workPlace: workPlace)
                 .items,
             initialDefaultRestTime: workPlace.defaultRestTime
         )

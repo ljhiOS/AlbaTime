@@ -19,8 +19,8 @@ struct WorkPlaceEditingSeed: Identifiable, Hashable {
     // AI 스케줄 초안
     let scheduleImportDraft: ScheduleImportDraft
     
-    // 저장된 AI 스케줄 목록
-    let savedAIScheduleItems: [ScheduleEditItem]
+    // 저장된 날짜별 AI/수기 스케줄 목록
+    let savedScheduleItems: [ScheduleEditItem]
     
     // 수정 시작 시점의 기본 휴게시간
     let initialDefaultRestTime: Int?
@@ -31,7 +31,7 @@ struct WorkPlaceEditingSeed: Identifiable, Hashable {
             id: UUID(),
             workPlaceDraft: .makeNew(type: type),
             scheduleImportDraft: .empty(),
-            savedAIScheduleItems: [],
+            savedScheduleItems: [],
             initialDefaultRestTime: nil
         )
     }

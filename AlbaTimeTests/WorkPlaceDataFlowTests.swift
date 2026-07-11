@@ -110,8 +110,60 @@ final class WorkPlaceDataFlowTests: XCTestCase {
         XCTAssertEqual(seed.workPlaceDraft.targetWeeklyCount, 3)
         XCTAssertEqual(seed.workPlaceDraft.expectedDailyHours, 5.5)
         XCTAssertEqual(seed.scheduleImportDraft.presetDrafts.count, 0)
-        XCTAssertEqual(seed.savedAIScheduleItems.count, 0)
+        XCTAssertEqual(seed.savedScheduleItems.count, 0)
         XCTAssertEqual(seed.initialDefaultRestTime, 45)
+    }
+
+    func testSavedSchedulePanelIncludesAIAndManualSchedules() {
+        let workPlace = WorkPlace(
+            name: "Store",
+            hourlyWage: 10_000,
+            defaultDays: "월",
+            defaultStartTime: Date.makeTime(9, 0),
+            defaultEndTime: Date.makeTime(18, 0),
+            workType: .fixed
+        )
+        workPlace.workSchedules = [
+            WorkSchedule(
+                date: Date(),
+                startTime: Date.makeTime(9, 0),
+                endTime: Date.makeTime(14, 0),
+                isFromAIImport: true
+            ),
+            WorkSchedule(
+                date: Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date(),
+                startTime: Date.makeTime(14, 0),
+                endTime: Date.makeTime(20, 0),
+                isFromAIImport: false
+            )
+        ]
+
+        let seed = WorkPlaceEditingSeedFactory.make(from: workPlace)
+        let panelViewModel = AISavedSchedulesPanelViewModel(
+            draft: ScheduleEditDraft(
+                state: .existingSavedScheduleEdit,
+                targetWeekStart: nil,
+                items: seed.savedScheduleItems
+            ),
+            defaultBreakTime: 0
+        )
+
+        XCTAssertEqual(seed.savedScheduleItems.count, 2)
+        XCTAssertTrue(seed.savedScheduleItems.contains { $0.source == .aiImport })
+        XCTAssertTrue(seed.savedScheduleItems.contains { $0.source == .manual })
+        XCTAssertEqual(panelViewModel.schedules.count, 2)
+    }
+
+    func testSavedSchedulePanelAddsManualScheduleWithManualSource() {
+        let viewModel = AISavedSchedulesPanelViewModel(
+            draft: .empty(state: .existingSavedScheduleEdit),
+            defaultBreakTime: 30
+        )
+
+        viewModel.addSchedule(on: Date())
+
+        XCTAssertEqual(viewModel.schedules.count, 1)
+        XCTAssertEqual(viewModel.schedules.first?.source, .manual)
     }
 
     func testWorkPlaceListViewStateMapperBuildsFixedScheduleSummaryInDayOrder() {

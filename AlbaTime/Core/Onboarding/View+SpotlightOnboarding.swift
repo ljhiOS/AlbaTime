@@ -23,6 +23,12 @@ private struct SpotlightOnboardingModifier: ViewModifier {
     @State private var targetFrames: [OnboardingKey: CGRect] = [:]
     @State private var currentStep: SpotlightOnboardingStep?
 
+    private var visibleSteps: [SpotlightOnboardingStep] {
+        steps.filter {
+            targetFrames[$0.key] != nil && !store.hasSeen($0.key)
+        }
+    }
+
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(SpotlightTargetPreferenceKey.self) { frames in
@@ -35,12 +41,12 @@ private struct SpotlightOnboardingModifier: ViewModifier {
             .overlay {
                 if let currentStep,
                    let targetFrame = targetFrames[currentStep.key],
-                   let index = steps.firstIndex(where: { $0.key == currentStep.key }) {
+                   let index = visibleSteps.firstIndex(where: { $0.key == currentStep.key }) {
                     SpotlightOnboardingOverlay(
                         targetGlobalFrame: targetFrame,
                         step: currentStep,
                         stepIndex: index,
-                        stepCount: steps.count,
+                        stepCount: visibleSteps.count,
                         onAdvance: advance,
                         onSkip: skip
                     )

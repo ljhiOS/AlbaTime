@@ -191,6 +191,10 @@ struct CalendarView: View {
             SpotlightOnboardingStep(
                 key: .calendarSwipeArea,
                 message: "캘린더를 좌우로 밀거나 상단 화살표를 누르면 이전 달과 다음 달로 이동할 수 있어요."
+            ),
+            SpotlightOnboardingStep(
+                key: .calendarScheduleEdit,
+                message: "근무 카드를 누르면 해당 날짜의 근무 시간을 조정하고 급여 계산에 반영할 수 있어요."
             )
         ]
     }

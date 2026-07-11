@@ -235,6 +235,60 @@ final class SalaryCalculatorTests: XCTestCase {
         XCTAssertEqual(result.workingDays, 1)
     }
 
+    func testScheduleResolverUsesDatedScheduleForBothWorkTypes() throws {
+        let date = makeDate(2026, 7, 6)
+        let fixed = WorkPlace(
+            name: "Fixed",
+            hourlyWage: 10_000,
+            defaultDays: "월",
+            defaultStartTime: makeDate(2026, 7, 6, 9, 0),
+            defaultEndTime: makeDate(2026, 7, 6, 18, 0),
+            workType: .fixed
+        )
+        let flexible = makeWorkPlace(hourlyWage: 10_000)
+
+        fixed.workSchedules = [
+            WorkSchedule(
+                date: date,
+                startTime: makeDate(2026, 7, 6, 10, 0),
+                endTime: makeDate(2026, 7, 6, 14, 0)
+            )
+        ]
+        flexible.workSchedules = [
+            WorkSchedule(
+                date: date,
+                startTime: makeDate(2026, 7, 6, 10, 0),
+                endTime: makeDate(2026, 7, 6, 14, 0)
+            )
+        ]
+
+        let fixedShift = try XCTUnwrap(ScheduleResolver.resolve(workPlace: fixed, for: date))
+        let flexibleShift = try XCTUnwrap(ScheduleResolver.resolve(workPlace: flexible, for: date))
+
+        XCTAssertEqual(fixedShift.startTime, flexibleShift.startTime)
+        XCTAssertEqual(fixedShift.endTime, flexibleShift.endTime)
+        XCTAssertEqual(fixedShift.startTime, makeDate(2026, 7, 6, 10, 0))
+    }
+
+    func testMonthlyPayAppliesHolidayAllowanceOnlyWhenSelected() {
+        let withoutHoliday = makeAllowanceWorkPlace(allowanceType: .none)
+        let withHoliday = makeAllowanceWorkPlace(allowanceType: .holiday)
+
+        let withoutResult = SalaryCalculator.calculateTotalMonthlyPay(
+            workPlaces: [withoutHoliday],
+            targetMonth: makeDate(2026, 7, 1)
+        )
+        let withResult = SalaryCalculator.calculateTotalMonthlyPay(
+            workPlaces: [withHoliday],
+            targetMonth: makeDate(2026, 7, 1)
+        )
+
+        XCTAssertEqual(withoutResult.holidayPay, 0)
+        XCTAssertEqual(withoutResult.totalPay, 200_000)
+        XCTAssertEqual(withResult.holidayPay, 40_000)
+        XCTAssertEqual(withResult.totalPay, 240_000)
+    }
+
     private func makeWorkPlace(hourlyWage: Int) -> WorkPlace {
         WorkPlace(
             name: "Test",
@@ -246,6 +300,33 @@ final class SalaryCalculatorTests: XCTestCase {
             allowanceType: .none,
             workType: .flexible
         )
+    }
+
+    private func makeAllowanceWorkPlace(allowanceType: AllowanceType) -> WorkPlace {
+        let workPlace = WorkPlace(
+            name: "Allowance",
+            hourlyWage: 10_000,
+            defaultDays: "",
+            defaultStartTime: makeDate(2026, 7, 6, 9, 0),
+            defaultEndTime: makeDate(2026, 7, 6, 19, 0),
+            allowanceType: allowanceType,
+            workType: .flexible,
+            targetWeeklyCount: 0,
+            expectedDailyHours: 0
+        )
+        workPlace.workSchedules = [
+            WorkSchedule(
+                date: makeDate(2026, 7, 6),
+                startTime: makeDate(2026, 7, 6, 9, 0),
+                endTime: makeDate(2026, 7, 6, 19, 0)
+            ),
+            WorkSchedule(
+                date: makeDate(2026, 7, 7),
+                startTime: makeDate(2026, 7, 7, 9, 0),
+                endTime: makeDate(2026, 7, 7, 19, 0)
+            )
+        ]
+        return workPlace
     }
 
     private func makeDate(

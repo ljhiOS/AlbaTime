@@ -3,7 +3,7 @@ import Foundation
 enum ScheduleEditState: Equatable {
     case newWorkPlaceInitialSchedules
     case existingWorkPlaceAIImport
-    case existingSavedAIEdit
+    case existingSavedScheduleEdit
 }
 
 struct ScheduleEditDraft {

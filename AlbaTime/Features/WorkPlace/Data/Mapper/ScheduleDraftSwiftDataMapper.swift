@@ -43,15 +43,14 @@ extension ScheduleImportDraft {
 }
 
 extension ScheduleEditDraft {
-    static func fromSavedAISchedules(
+    static func fromSavedSchedules(
         workPlace: WorkPlace,
         targetWeekStart: Date? = nil
         ) -> ScheduleEditDraft {
         ScheduleEditDraft(
-            state: .existingSavedAIEdit,
+            state: .existingSavedScheduleEdit,
             targetWeekStart: targetWeekStart,
             items: workPlace.workSchedules
-                .filter(\.isFromAIImport)
                 .sorted {
                     if $0.date != $1.date { return $0.date < $1.date }
                     return $0.startTime < $1.startTime

@@ -17,7 +17,8 @@ enum OnboardingKey: String, CaseIterable {
     case scheduleImportPresetInput
     case calendarMonthPickerButton
     case calendarSwipeArea
-    case payDashboardCard
+    case calendarScheduleEdit
+    case payDashboardBreakdown
 }
 
 extension OnboardingKey {
@@ -32,7 +33,8 @@ extension OnboardingKey {
              .scheduleImportPresetInput,
              .calendarMonthPickerButton,
              .calendarSwipeArea,
-             .payDashboardCard:
+             .calendarScheduleEdit,
+             .payDashboardBreakdown:
             return 0
         }
     }
@@ -46,8 +48,11 @@ extension OnboardingKey {
         case .workPlaceListAddButton,
              .calendarMonthPickerButton,
              .addWorkPlaceAICondition,
-             .payDashboardCard:
+             .payDashboardBreakdown:
             return 20
+
+        case .calendarScheduleEdit:
+            return 12
 
         case .scheduleImportDateBase,
              .scheduleImportNameInput,
@@ -70,7 +75,8 @@ extension OnboardingKey {
              .workPlaceListDetailButton,
              .workPlaceListEditButton,
              .calendarSwipeArea,
-             .payDashboardCard:
+             .calendarScheduleEdit,
+             .payDashboardBreakdown:
             return false
         }
     }
@@ -88,7 +94,8 @@ extension OnboardingKey {
              .scheduleImportNameInput,
              .scheduleImportPresetInput,
              .calendarMonthPickerButton,
-             .payDashboardCard:
+             .calendarScheduleEdit,
+             .payDashboardBreakdown:
             return false
         }
     }

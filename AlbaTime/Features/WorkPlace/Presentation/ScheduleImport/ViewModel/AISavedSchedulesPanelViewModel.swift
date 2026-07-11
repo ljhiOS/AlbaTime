@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-// 저장된 AI 스케줄 패널의 상태/필터링/주차 라벨 계산을 담당한다.
+// 저장된 AI/수기 스케줄 패널의 상태/필터링/주차 라벨 계산을 담당한다.
 // 월/주 선택 상태를 관리하고, 선택 결과에 맞는 스케줄 목록과 표시 문자열을 제공한다.
 @MainActor
 final class AISavedSchedulesPanelViewModel: ObservableObject {
@@ -20,15 +20,15 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     }
 
     // 뷰에서 쓰일 데이터, 뷰에서 건수 나타내거나 비어있는지 확인을 함
-    var aiSchedules: [ScheduleEditItem] {
+    var schedules: [ScheduleEditItem] {
         editDraft.items
             .filter(isVisibleSchedule)
-            .sorted(by: sortAISchedules)
+            .sorted(by: sortSchedules)
     }
 
     // 뷰에서 년도 월 나열시 쓰임
     var months: [AIListMonthKey] {
-        makeMonths(from: aiSchedules, forcedMonth: forcedMonth)
+        makeMonths(from: schedules, forcedMonth: forcedMonth)
     }
 
     var selectedMonth: AIListMonthKey? {
@@ -43,7 +43,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     // 뷰에서 주차 나열후시 쓰임
     var weeks: [AIListWeekItem] {
         makeWeeks(
-            from: aiSchedules,
+            from: schedules,
             selectedMonth: selectedMonth,
             selectedWeekStart: selectedWeekStart
         )
@@ -57,7 +57,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     // 전체 ai스케줄 중에서 현재 선택한 주만 반환하는 메서드
     var schedulesForSelectedWeek: [ScheduleEditItem] {
         makeSchedulesForSelectedWeek(
-            from: aiSchedules,
+            from: schedules,
             selectedWeekStart: selectedWeekStart
         )
     }
@@ -127,8 +127,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         }
     }
 
-    // aiSchedules에 쓰이는 메서드 날
-    private func sortAISchedules(_ one: ScheduleEditItem, _ two: ScheduleEditItem) -> Bool {
+    private func sortSchedules(_ one: ScheduleEditItem, _ two: ScheduleEditItem) -> Bool {
         // 둘이 다르면 날짜순
         if one.date != two.date { return one.date < two.date }
         // 날짜 같으면 시작 시간 순
@@ -256,7 +255,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
 
         let calendar = Calendar.current
         // 강제로 끼워넣은 월에 데이터 있는지 검사
-        let hasDataInForcedMonth = aiSchedules.contains {
+        let hasDataInForcedMonth = schedules.contains {
             let comps = calendar.dateComponents([.year, .month], from: $0.date)
             return comps.year == forced.year && comps.month == forced.month
         }
@@ -267,13 +266,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
     }
 
     private func isVisibleSchedule(_ item: ScheduleEditItem) -> Bool {
-        guard item.changeState != .deleted else { return false }
-
-        if editDraft.state == .newWorkPlaceInitialSchedules {
-            return true
-        }
-
-        return item.source == .aiImport
+        item.changeState != .deleted
     }
 
     // 수기로 추가 및 ai 인식 스케줄 수정 데이터 저장 로직
@@ -282,8 +275,6 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
         let baseDate = calendar.startOfDay(for: day)
         let start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: baseDate) ?? baseDate
         let end = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: baseDate) ?? baseDate
-        let source: ScheduleEditSource = editDraft.state == .newWorkPlaceInitialSchedules ? .manual : .aiImport
-
         let schedule = ScheduleEditItem(
             id: UUID(),
             date: baseDate,
@@ -291,7 +282,7 @@ final class AISavedSchedulesPanelViewModel: ObservableObject {
             endTime: end,
             breakTime: defaultBreakTime,
             memo: nil,
-            source: source,
+            source: .manual,
             changeState: .inserted
         )
 

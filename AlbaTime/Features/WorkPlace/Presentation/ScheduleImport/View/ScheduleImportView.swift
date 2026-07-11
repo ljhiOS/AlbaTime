@@ -185,7 +185,7 @@ private extension ScheduleImportView {
                 )
             ]
         ),
-        savedAIScheduleItems: [
+        savedScheduleItems: [
             ScheduleDraftItem(
                 id: UUID(),
                 originalScheduleID: UUID(),

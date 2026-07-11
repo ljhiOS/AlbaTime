@@ -13,6 +13,7 @@ struct PayDashboardView: View {
     private let workPlaces: [WorkPlace]
 
     @StateObject private var pvm: PayViewModel
+    @State private var showExpected = false
 
     init(
         workPlaces: [WorkPlace],
@@ -30,19 +31,14 @@ struct PayDashboardView: View {
                     
                     PayCard(
                         pvm: pvm,
-                        onToggle: nil
+                        showExpected: $showExpected
                     )
-                    .spotlightTarget(.payDashboardCard)
+                    .spotlightTarget(.payDashboardBreakdown)
                     .padding(.top)
                     
                     PayDetailCard(
-                        basicPay: pvm.salaryData.basicPay,
-                        nightPay: pvm.salaryData.nightPay,
-                        holidayPay: pvm.salaryData.holidayPay,
-                        taxAmount: pvm.salaryData.taxAmount,
-                        totalPay: pvm.salaryData.totalPay,
-                        totalHours: pvm.salaryData.accruedWorkHours,
-                        workingDays: pvm.salaryData.workingDays
+                        breakdown: showExpected ? pvm.projectedSalaryData : pvm.salaryData,
+                        isExpected: showExpected
                     )
                     
                     RealAchivePay()
@@ -70,8 +66,8 @@ struct PayDashboardView: View {
         }
         .spotlightOnboarding(steps: [
             SpotlightOnboardingStep(
-                key: .payDashboardCard,
-                message: "카드를 터치하면 이번 달 누적 급여와 예상 급여, 근무시간 표시가 함께 전환돼요."
+                key: .payDashboardBreakdown,
+                message: "카드를 터치하면 누적·예상 급여와 아래 산정 내역이 함께 전환돼요. 기본급, 수당, 세금 공제까지 확인할 수 있어요."
             )
         ])
     }

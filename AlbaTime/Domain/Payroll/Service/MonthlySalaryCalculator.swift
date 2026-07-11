@@ -88,36 +88,31 @@ struct MonthlySalaryCalculator {
         let calendar = Calendar.current
         
         guard let monthInterval = calendar.dateInterval(of: .month, for: targetMonth) else { return .empty }
-        let startOfMonth = monthInterval.start
-        let endOfMonth = monthInterval.end
         
         for workPlace in workPlaces {
             var workPlaceBreakdown = SalaryBreakdown.empty
             var weeklyHours = WeeklyHolidayAllowanceCalculator.makeBucket()
-            
-            let actualSchedules = workPlace.workSchedules.filter {
-                calendar.isDate($0.date, equalTo: targetMonth, toGranularity: .month)
-            }
-            let workRecords = workPlace.workRecords.filter {
-                calendar.isDate($0.date, equalTo: targetMonth, toGranularity: .month)
-            }
-            
-            if workPlace.workType == .fixed {
-                addFixedWorkPay(
-                    workPlace: workPlace,
-                    actualSchedules: actualSchedules,
-                    workRecords: workRecords,
-                    startOfMonth: startOfMonth,
-                    endOfMonth: endOfMonth,
+
+            let resolvedShifts = ScheduleResolver.resolve(
+                workPlace: workPlace,
+                in: monthInterval
+            )
+
+            for shift in resolvedShifts {
+                addResolvedShiftPay(
+                    shift: shift,
+                    hourlyWage: workPlace.hourlyWage,
+                    includeNightAllowance: workPlace.allowanceType.includesNight,
                     calendar: calendar,
                     breakdown: &workPlaceBreakdown,
                     weeklyHours: &weeklyHours
                 )
-            } else {
-                addFlexibleWorkPay(
+            }
+
+            if workPlace.workType == .flexible {
+                addFlexibleForecastPay(
                     workPlace: workPlace,
-                    actualSchedules: actualSchedules,
-                    workRecords: workRecords,
+                    resolvedShifts: resolvedShifts,
                     targetMonth: targetMonth,
                     calendar: calendar,
                     breakdown: &workPlaceBreakdown,
@@ -136,69 +131,11 @@ struct MonthlySalaryCalculator {
         
         return grandTotal
     }
-    
-    // 고정 근무지의 월급 계산을 처리합니다.
-    private static func addFixedWorkPay(
-        workPlace: WorkPlace,
-        actualSchedules: [WorkSchedule],
-        workRecords: [WorkRecord],
-        startOfMonth: Date,
-        endOfMonth: Date,
-        calendar: Calendar,
-        breakdown: inout SalaryBreakdown,
-        weeklyHours: inout WeeklyHolidayAllowanceCalculator.Bucket
-    ) {
-        let recordDates = Set(workRecords.map { calendar.startOfDay(for: $0.date) })
-        let recordedDates = recordDates.union(
-            actualSchedules.map { calendar.startOfDay(for: $0.date) }
-        )
 
-        for record in workRecords {
-            addWorkRecordPay(
-                record: record,
-                hourlyWage: workPlace.hourlyWage,
-                includeNightAllowance: workPlace.allowanceType.includesNight,
-                calendar: calendar,
-                breakdown: &breakdown,
-                weeklyHours: &weeklyHours
-            )
-        }
-        
-        for schedule in actualSchedules where !recordDates.contains(calendar.startOfDay(for: schedule.date)) {
-            addSchedulePay(
-                schedule: schedule,
-                hourlyWage: workPlace.hourlyWage,
-                includeNightAllowance: workPlace.allowanceType.includesNight,
-                calendar: calendar,
-                breakdown: &breakdown,
-                weeklyHours: &weeklyHours
-            )
-        }
-        
-        var currentDate = startOfMonth
-        while currentDate < endOfMonth {
-            if !recordedDates.contains(calendar.startOfDay(for: currentDate)) {
-                addPredictedFixedPayIfNeeded(
-                    workPlace: workPlace,
-                    currentDate: currentDate,
-                    calendar: calendar,
-                    breakdown: &breakdown,
-                    weeklyHours: &weeklyHours
-                )
-            }
-            
-            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
-                break
-            }
-            currentDate = nextDate
-        }
-    }
-    
-    // 비고정 근무지의 월급 계산을 처리합니다.
-    private static func addFlexibleWorkPay(
+    // 비고정 근무지에서 아직 날짜가 정해지지 않은 남은 횟수만 평균값으로 예측합니다.
+    private static func addFlexibleForecastPay(
         workPlace: WorkPlace,
-        actualSchedules: [WorkSchedule],
-        workRecords: [WorkRecord],
+        resolvedShifts: [ResolvedShift],
         targetMonth: Date,
         calendar: Calendar,
         breakdown: inout SalaryBreakdown,
@@ -212,38 +149,11 @@ struct MonthlySalaryCalculator {
         let avgHours = workPlace.expectedDailyHours ?? 0.0
         
         for week in weekRange {
-            let recordsInThisWeek = workRecords.filter {
+            let shiftsInThisWeek = resolvedShifts.filter {
                 calendar.component(.weekOfMonth, from: $0.date) == week
             }
-            let recordDates = Set(recordsInThisWeek.map { calendar.startOfDay(for: $0.date) })
-            let schedulesInThisWeek = actualSchedules.filter {
-                calendar.component(.weekOfMonth, from: $0.date) == week &&
-                !recordDates.contains(calendar.startOfDay(for: $0.date))
-            }
-
-            for record in recordsInThisWeek {
-                addWorkRecordPay(
-                    record: record,
-                    hourlyWage: workPlace.hourlyWage,
-                    includeNightAllowance: workPlace.allowanceType.includesNight,
-                    calendar: calendar,
-                    breakdown: &breakdown,
-                    weeklyHours: &weeklyHours
-                )
-            }
             
-            for schedule in schedulesInThisWeek {
-                addSchedulePay(
-                    schedule: schedule,
-                    hourlyWage: workPlace.hourlyWage,
-                    includeNightAllowance: workPlace.allowanceType.includesNight,
-                    calendar: calendar,
-                    breakdown: &breakdown,
-                    weeklyHours: &weeklyHours
-                )
-            }
-            
-            let remainingCount = max(0, targetCount - recordsInThisWeek.count - schedulesInThisWeek.count)
+            let remainingCount = max(0, targetCount - shiftsInThisWeek.count)
             guard remainingCount > 0 else { continue }
             
             let predictedBasicPay = Int(Double(remainingCount) * avgHours * Double(workPlace.hourlyWage))
@@ -252,8 +162,7 @@ struct MonthlySalaryCalculator {
             breakdown.monthlyWorkHours += predictedHours
             breakdown.workingDays += remainingCount
             
-            let weekDate = recordsInThisWeek.first?.date
-                ?? schedulesInThisWeek.first?.date
+            let weekDate = shiftsInThisWeek.first?.date
                 ?? representativeDate(forWeekOfMonth: week, in: targetMonth, calendar: calendar)
             WeeklyHolidayAllowanceCalculator.addHours(
                 predictedHours,
@@ -263,81 +172,10 @@ struct MonthlySalaryCalculator {
             )
         }
     }
-    
-    // 고정 근무에서 기록이 없는 날짜에 대해 예측 근무를 추가할지 판단합니다.
-    private static func addPredictedFixedPayIfNeeded(
-        workPlace: WorkPlace,
-        currentDate: Date,
-        calendar: Calendar,
-        breakdown: inout SalaryBreakdown,
-        weeklyHours: inout WeeklyHolidayAllowanceCalculator.Bucket
-    ) {
-        let weekday = currentDate.koreanWeekday
-        
-        if ScheduleResolver.hasAIOverride(in: workPlace, containing: currentDate) {
-            return
-        }
-        
-        if let regular = workPlace.regularSchedules.first(where: { $0.dayOfWeek == weekday }) {
-            let hours = WorkTimeCalculator.calculate(
-                start: regular.startTime,
-                end: regular.endTime,
-                restTime: regular.breakTime
-            )
-            addWorkedHoursPay(
-                hours: hours,
-                hourlyWage: workPlace.hourlyWage,
-                includeNightAllowance: workPlace.allowanceType.includesNight,
-                payDate: currentDate,
-                calendar: calendar,
-                breakdown: &breakdown,
-                weeklyHours: &weeklyHours
-            )
-        } else if workPlace.regularSchedules.isEmpty && workPlace.defaultDays.contains(weekday) {
-            let hours = WorkTimeCalculator.calculate(
-                start: workPlace.defaultStartTime,
-                end: workPlace.defaultEndTime,
-                restTime: workPlace.defaultRestTime ?? 0
-            )
-            addWorkedHoursPay(
-                hours: hours,
-                hourlyWage: workPlace.hourlyWage,
-                includeNightAllowance: workPlace.allowanceType.includesNight,
-                payDate: currentDate,
-                calendar: calendar,
-                breakdown: &breakdown,
-                weeklyHours: &weeklyHours
-            )
-        }
-    }
-    
-    // 실제 WorkSchedule 하나를 급여 계산에 반영합니다.
-    private static func addSchedulePay(
-        schedule: WorkSchedule,
-        hourlyWage: Int,
-        includeNightAllowance: Bool,
-        calendar: Calendar,
-        breakdown: inout SalaryBreakdown,
-        weeklyHours: inout WeeklyHolidayAllowanceCalculator.Bucket
-    ) {
-        let worked = WorkTimeCalculator.calculate(
-            start: schedule.startTime,
-            end: schedule.endTime,
-            restTime: schedule.breakTime
-        )
-        addWorkedHoursPay(
-            hours: worked,
-            hourlyWage: hourlyWage,
-            includeNightAllowance: includeNightAllowance,
-            payDate: schedule.date,
-            calendar: calendar,
-            breakdown: &breakdown,
-            weeklyHours: &weeklyHours
-        )
-    }
 
-    private static func addWorkRecordPay(
-        record: WorkRecord,
+    // 저장 방식과 관계없이 Resolver가 선택한 날짜별 근무를 동일하게 계산합니다.
+    private static func addResolvedShiftPay(
+        shift: ResolvedShift,
         hourlyWage: Int,
         includeNightAllowance: Bool,
         calendar: Calendar,
@@ -345,15 +183,15 @@ struct MonthlySalaryCalculator {
         weeklyHours: inout WeeklyHolidayAllowanceCalculator.Bucket
     ) {
         let worked = WorkTimeCalculator.calculate(
-            start: record.startTime,
-            end: record.endTime,
-            restTime: record.breakTime
+            start: shift.startTime,
+            end: shift.endTime,
+            restTime: shift.breakTime
         )
         addWorkedHoursPay(
             hours: worked,
             hourlyWage: hourlyWage,
             includeNightAllowance: includeNightAllowance,
-            payDate: record.date,
+            payDate: shift.date,
             calendar: calendar,
             breakdown: &breakdown,
             weeklyHours: &weeklyHours

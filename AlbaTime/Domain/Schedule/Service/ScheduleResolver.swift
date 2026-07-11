@@ -7,8 +7,16 @@
 
 import Foundation
 
+struct ResolvedShift {
+    let date: Date
+    let startTime: Date
+    let endTime: Date
+    let breakTime: Int
+    let title: String?
+}
+
 enum ScheduleResolver {
-    static func hasAIOverride(in workPlace: WorkPlace, containing date: Date) -> Bool {
+    private static func hasAIOverride(in workPlace: WorkPlace, containing date: Date) -> Bool {
         let calendar = Calendar.current
         let target = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
         
@@ -30,18 +38,19 @@ enum ScheduleResolver {
     static func resolve(
         workPlace: WorkPlace,
         for date: Date
-    ) -> (startTime: Date, endTime: Date, breakTime: Int, title: String?)? {
+    ) -> ResolvedShift? {
         let calendar = Calendar.current
 
         // 0. 캘린더에서 저장한 날짜별 실제/조정 기록이 가장 우선입니다.
         if let record = workPlace.workRecords.first(where: {
             calendar.isDate($0.date, inSameDayAs: date)
         }) {
-            return (
-                record.startTime,
-                record.endTime,
-                max(0, record.breakTime),
-                nil
+            return ResolvedShift(
+                date: calendar.startOfDay(for: date),
+                startTime: record.startTime,
+                endTime: record.endTime,
+                breakTime: max(0, record.breakTime),
+                title: nil
             )
         }
         
@@ -49,11 +58,12 @@ enum ScheduleResolver {
         if let actualRecord = workPlace.workSchedules.first(where: {
             calendar.isDate($0.date, inSameDayAs: date)
         }) {
-            return (
-                actualRecord.startTime,
-                actualRecord.endTime,
-                max(0, actualRecord.breakTime),
-                actualRecord.memo
+            return ResolvedShift(
+                date: calendar.startOfDay(for: date),
+                startTime: actualRecord.startTime,
+                endTime: actualRecord.endTime,
+                breakTime: max(0, actualRecord.breakTime),
+                title: actualRecord.memo
             )
         }
         
@@ -75,7 +85,13 @@ enum ScheduleResolver {
                     end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
                 }
                 
-                return (start, end, max(0, regular.breakTime), nil)
+                return ResolvedShift(
+                    date: calendar.startOfDay(for: date),
+                    startTime: start,
+                    endTime: end,
+                    breakTime: max(0, regular.breakTime),
+                    title: nil
+                )
             }
             
             // 간편 요일 설정
@@ -87,11 +103,39 @@ enum ScheduleResolver {
                     end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
                 }
                 
-                return (start, end, max(0, workPlace.defaultRestTime ?? 0), nil)
+                return ResolvedShift(
+                    date: calendar.startOfDay(for: date),
+                    startTime: start,
+                    endTime: end,
+                    breakTime: max(0, workPlace.defaultRestTime ?? 0),
+                    title: nil
+                )
             }
         }
         
         return nil
+    }
+
+    static func resolve(
+        workPlace: WorkPlace,
+        in interval: DateInterval
+    ) -> [ResolvedShift] {
+        let calendar = Calendar.current
+        var shifts: [ResolvedShift] = []
+        var day = calendar.startOfDay(for: interval.start)
+
+        while day < interval.end {
+            if let shift = resolve(workPlace: workPlace, for: day) {
+                shifts.append(shift)
+            }
+
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: day) else {
+                break
+            }
+            day = nextDay
+        }
+
+        return shifts
     }
     
     private static func combineDateAndTime(date: Date, time: Date) -> Date {
