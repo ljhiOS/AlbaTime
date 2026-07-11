@@ -24,6 +24,7 @@ struct AlbaTimeApp: App {
             MonthlyRecord.self,
             RegularSchedule.self,
             WorkSchedule.self,
+            WorkRecord.self,
             WorkTimePreset.self
         ])
     }

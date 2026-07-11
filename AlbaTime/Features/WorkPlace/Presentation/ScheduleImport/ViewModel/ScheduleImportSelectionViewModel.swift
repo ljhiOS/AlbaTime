@@ -13,7 +13,6 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
     @Published var manualWeekFocus: Date?
     @Published var manualMonthFocus: AIListMonthKey?
     @Published var manualFocusToken: Int = 0
-    @Published var showManualHint: Bool = false
 
     var yearCandidates: [Int] {
         let currentYear = Calendar.current.component(.year, from: Date())
@@ -97,10 +96,5 @@ final class ScheduleImportSelectionViewModel: ObservableObject {
         // 같은 주차여도 새로운 요청 신호 주기
         manualFocusToken += 1
 
-        // UX 힌트 띄우기
-        showManualHint = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.showManualHint = false
-        }
     }
 }

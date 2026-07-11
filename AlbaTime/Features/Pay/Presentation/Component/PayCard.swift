@@ -10,9 +10,8 @@ import SwiftUI
 struct PayCard: View {
     
     @ObservedObject var pvm: PayViewModel
-    var onToggle: (() -> Void)? = nil
-    
-    @State private var showExpected: Bool = false
+    @Binding var showExpected: Bool
+
     @State private var headerOffsetY: CGFloat = 0
     @State private var isAnimating: Bool = false
     
@@ -20,7 +19,7 @@ struct PayCard: View {
         VStack(alignment: .leading) {
             
             VStack(alignment: .leading) {
-                Text(showExpected ? "이번 달 예상 급여" : "이번 달 누적 급여")
+                Text(showExpected ? "이번 달 총 예상 급여" : "이번 달 누적 급여")
                     .font(.subheadline)
                     .foregroundStyle(.white)
                     .padding(.top)
@@ -38,19 +37,22 @@ struct PayCard: View {
                 .background(Color.white)
                 .padding(.horizontal)
             
-            HStack(alignment: .top) {
+            HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("총 근무 시간")
+                    Text(showExpected ? "이번 달 총 근무시간" : "이번 달 누적 근무시간")
                         .font(.subheadline)
                         .foregroundStyle(.white)
                     
-                    Text(String(format: "%.1f시간", pvm.salaryData.totalHours))
+                    Text(String(
+                        format: "%.1f시간",
+                        showExpected ? pvm.projectedSalaryData.monthlyWorkHours : pvm.salaryData.accruedWorkHours
+                        )
+                    )
                         .foregroundStyle(.white)
                         .font(.system(size: 20))
                         .bold()
                 }
-                
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("평균 시급")
@@ -62,8 +64,7 @@ struct PayCard: View {
                         .font(.system(size: 20))
                         .bold(true)
                 }
-                
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             }.padding()
         }
         .background(Color.theme.primary)
@@ -86,7 +87,6 @@ struct PayCard: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
             showExpected.toggle()
-            onToggle?()
 
             withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                 headerOffsetY = 0
@@ -99,30 +99,40 @@ struct PayCard: View {
     }
 }
 
-#Preview {
+private struct PayCardPreview: View {
     let pvm = PayViewModel()
-    pvm.salaryData = SalaryBreakdown(
-        basicPay: 1050000,
-        nightPay: 93220,
-        holidayPay: 120000,
-        taxAmount: 120500,
-        totalPay: 1142720,
-        totalHours: 108.5,
-        workingDays: 12
-    )
-    pvm.projectedSalaryData = SalaryBreakdown(
-        basicPay: 1240000,
-        nightPay: 110000,
-        holidayPay: 160000,
-        taxAmount: 138800,
-        totalPay: 1371200,
-        totalHours: 128.0,
-        workingDays: 14
-    )
-    pvm.averageWage = 10530
+    @State private var showExpected = false
 
-    return PayCard(pvm: pvm)
-        .padding()
+    init() {
+        pvm.salaryData = SalaryBreakdown(
+            basicPay: 1_050_000,
+            nightPay: 93_220,
+            holidayPay: 120_000,
+            taxAmount: 120_500,
+            totalPay: 1_142_720,
+            monthlyWorkHours: 200.0,
+            accruedWorkHours: 108.5,
+            workingDays: 12
+        )
+        pvm.projectedSalaryData = SalaryBreakdown(
+            basicPay: 1_240_000,
+            nightPay: 110_000,
+            holidayPay: 160_000,
+            taxAmount: 138_800,
+            totalPay: 1_371_200,
+            monthlyWorkHours: 200.0,
+            accruedWorkHours: 128.0,
+            workingDays: 14
+        )
+        pvm.averageWage = 10_530
+    }
+
+    var body: some View {
+        PayCard(pvm: pvm, showExpected: $showExpected)
+            .padding()
+    }
 }
 
-
+#Preview {
+    PayCardPreview()
+}

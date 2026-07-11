@@ -22,7 +22,7 @@ enum SaveScheduleError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingWorkPlace:
-            return "저장할 근무지 정보가 없습니다."
+            return "저장할 근무지 정보가 없어요."
         }
     }
 }

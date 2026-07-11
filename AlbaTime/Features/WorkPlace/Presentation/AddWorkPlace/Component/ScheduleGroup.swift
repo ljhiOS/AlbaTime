@@ -125,7 +125,7 @@ struct ScheduleGroup: View {
                     ]
                 ),
                 scheduleImportDraft: .empty(),
-                savedAIScheduleItems: [],
+                savedScheduleItems: [],
                 initialDefaultRestTime: 60
             )
 

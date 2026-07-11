@@ -16,10 +16,18 @@ struct CalendarDayState {
 // View가 WorkPlace/급여 계산 로직을 알지 않도록 선택일 근무 표시값만 담습니다.
 struct CalendarScheduleState: Identifiable {
     let id: UUID
+    let workPlaceID: UUID
     let workPlaceName: String
-    let timeRange: String
+    let date: Date
+    let startTime: Date
+    let endTime: Date
+    let breakTime: Int
     let estimatedPay: Int
     let hourlyWage: Int
+
+    var timeRange: String {
+        "\(startTime.time24h) - \(endTime.time24h)"
+    }
 }
 
 @MainActor
@@ -34,9 +42,14 @@ class CalendarViewModel: ObservableObject {
     private var workPlaces: [WorkPlace] = []
     private var scheduleCache: [Date : [WorkPlace]] = [:]
     private let loadCalendarWorkPlaces: any CalendarWorkPlacesLoading
+    private let workRecordSaving: any CalendarWorkRecordSaving
     
-    init(loadCalendarWorkPlaces: any CalendarWorkPlacesLoading) {
+    init(
+        loadCalendarWorkPlaces: any CalendarWorkPlacesLoading,
+        workRecordSaving: any CalendarWorkRecordSaving
+    ) {
         self.loadCalendarWorkPlaces = loadCalendarWorkPlaces
+        self.workRecordSaving = workRecordSaving
     }
     
     // 달력 날짜 생성
@@ -94,53 +107,37 @@ class CalendarViewModel: ObservableObject {
         }
     }
 
+    func saveWorkRecord(
+        for schedule: CalendarScheduleState,
+        startTime: Date,
+        endTime: Date
+    ) {
+        do {
+            try workRecordSaving.execute(
+                CalendarWorkRecordCommand(
+                    workPlaceID: schedule.workPlaceID,
+                    date: schedule.date,
+                    startTime: startTime,
+                    endTime: endTime,
+                    breakTime: schedule.breakTime
+                )
+            )
+            load()
+        } catch {
+            print("근무 시간 저장 실패: \(error)")
+        }
+    }
+
     private func updateCache() {
         let calendar = Calendar.current
         var newCache: [Date: [WorkPlace]] = [:]
-        
-        // 이번 달의 시작과 끝 날짜 구하기 (범위 필터링용)
-        let startOfMonth = currentMonth.startOfMonth()
-        guard let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)?.addingTimeInterval(-1) else { return }
-        
-        // 1. [자율 근무 & 개별 기록] 처리 (데이터 -> 날짜 매핑 방식)
-        for workPlace in workPlaces {
-            // 이번 달에 해당하는 스케줄만 필터링 (속도 향상)
-            let monthSchedules = workPlace.workSchedules.filter {
-                $0.date >= startOfMonth && $0.date <= endOfMonth
-            }
-            
-            for schedule in monthSchedules {
-                let dateKey = calendar.startOfDay(for: schedule.date)
-                newCache[dateKey, default: []].append(workPlace)
-            }
-        }
-        
-        // 2. [고정 근무] 처리 (패턴 반복)
         let daysInMonth = generateDaysInMonth().compactMap { $0 }
-        
+
         for date in daysInMonth {
             let dateKey = calendar.startOfDay(for: date)
-            let weekdayStr = date.koreanWeekday
-            
-            for workPlace in workPlaces where workPlace.workType == .fixed {
-                if workPlace.hasAIOverrideInWeek(containing: date) {
-                    let hasActualWorkOnThatDay = workPlace.workSchedules.contains {
-                        calendar.isDate($0.date, inSameDayAs: date)
-                    }
-                    if !hasActualWorkOnThatDay {
-                        continue
-                    }
-                }
-                // 이미 위에서 AI 스케줄로 등록된 경우(Override), 중복 추가 방지
-                if let existingWorkPlaces = newCache[dateKey], existingWorkPlaces.contains(where: { $0.id == workPlace.id }) {
-                    continue
-                }
-                
-                // 고정 스케줄 확인
-                let hasFixedSchedule = workPlace.regularSchedules.contains { $0.dayOfWeek == weekdayStr }
-                let hasSimpleFixed = workPlace.regularSchedules.isEmpty && workPlace.defaultDays.contains(weekdayStr)
-                
-                if hasFixedSchedule || hasSimpleFixed {
+
+            for workPlace in workPlaces {
+                if ScheduleResolver.resolve(workPlace: workPlace, for: date) != nil {
                     newCache[dateKey, default: []].append(workPlace)
                 }
             }
@@ -167,12 +164,25 @@ class CalendarViewModel: ObservableObject {
     private func updateSelectedDateSchedules() {
         let scheduled = getScheduledWorkPlaces(for: selectedDate)
         
-        selectedDateSchedules = scheduled.map { workPlace in
-            CalendarScheduleState(
+        selectedDateSchedules = scheduled.compactMap { workPlace in
+            guard let resolved = ScheduleResolver.resolve(workPlace: workPlace, for: selectedDate) else {
+                return nil
+            }
+
+            return CalendarScheduleState(
                 id: workPlace.id,
+                workPlaceID: workPlace.id,
                 workPlaceName: workPlace.name,
-                timeRange: getWorkTimeRange(for: workPlace, on: selectedDate),
-                estimatedPay: getEstimatedPay(for: workPlace, on: selectedDate),
+                date: selectedDate,
+                startTime: resolved.startTime,
+                endTime: resolved.endTime,
+                breakTime: resolved.breakTime,
+                estimatedPay: getEstimatedPay(
+                    workPlace: workPlace,
+                    startTime: resolved.startTime,
+                    endTime: resolved.endTime,
+                    breakTime: resolved.breakTime
+                ),
                 hourlyWage: workPlace.hourlyWage
             )
         }
@@ -188,14 +198,17 @@ class CalendarViewModel: ObservableObject {
         return scheduleCache[startOfDay] ?? []
     }
     
-    private func getEstimatedPay(for workPlace: WorkPlace, on date: Date) -> Int {
-        guard let schedule = workPlace.getSchedule(for: date) else { return 0 }
-        
+    private func getEstimatedPay(
+        workPlace: WorkPlace,
+        startTime: Date,
+        endTime: Date,
+        breakTime: Int
+    ) -> Int {
         let tempSchedule = WorkSchedule(
-            date: date,
-            startTime: schedule.startTime,
-            endTime: schedule.endTime,
-            breakTime: workPlace.defaultRestTime ?? 0,
+            date: selectedDate,
+            startTime: startTime,
+            endTime: endTime,
+            breakTime: breakTime,
             workPlace: nil
         )
         return SalaryCalculator.calculateDailyPay(
@@ -205,10 +218,4 @@ class CalendarViewModel: ObservableObject {
         )
     }
     
-    private func getWorkTimeRange(for workPlace: WorkPlace, on date: Date) -> String {
-        if let schedule = workPlace.getSchedule(for: date) {
-            return "\(schedule.startTime.time24h) - \(schedule.endTime.time24h)"
-        }
-        return "-"
-    }
 }

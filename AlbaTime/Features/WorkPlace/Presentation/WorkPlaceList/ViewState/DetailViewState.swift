@@ -20,6 +20,7 @@ struct WorkPlaceDetailViewState: Identifiable, Hashable {
     let defaultRestTime: Int?
     var memo: String
     let totalDays: Int
-    let totalHours: Double
+    let accruedWorkHours: Double
+    let monthlyWorkHours: Double
     let totalWage: Int
 }

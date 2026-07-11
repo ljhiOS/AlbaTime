@@ -18,7 +18,6 @@ struct ScheduleImportView: View {
     @State private var selectedPhotoItem: PhotosPickerItem?
     
     @FocusState private var isNameFieldFocused: Bool
-    
     @Environment(\.colorScheme) private var colorScheme
     
     init(
@@ -57,7 +56,7 @@ struct ScheduleImportView: View {
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
                 await sivm.processSelectedPhoto(item: newItem, targetName: myName)
-
+                selectedPhotoItem = nil
             }
         }
         // 근무 형태에 따라 에러 처리 버튼 동작을 분기한다.
@@ -186,7 +185,7 @@ private extension ScheduleImportView {
                 )
             ]
         ),
-        savedAIScheduleItems: [
+        savedScheduleItems: [
             ScheduleDraftItem(
                 id: UUID(),
                 originalScheduleID: UUID(),

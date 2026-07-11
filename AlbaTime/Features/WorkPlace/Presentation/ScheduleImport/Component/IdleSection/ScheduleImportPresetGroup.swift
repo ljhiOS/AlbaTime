@@ -74,7 +74,6 @@ struct ScheduleImportPresetGroup: View {
                         Text("새로운 시간 타입 추가하기")
                     }
                     .font(.subheadline)
-                    .foregroundStyle(Color.theme.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(10)
                     .background(Color.theme.surface)
@@ -119,4 +118,3 @@ struct ScheduleImportPresetGroup: View {
     )
     .padding()
 }
-

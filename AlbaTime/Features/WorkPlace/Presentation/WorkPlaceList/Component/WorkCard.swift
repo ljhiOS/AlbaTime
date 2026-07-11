@@ -84,7 +84,6 @@ struct WorkCard: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "clock")
                     .foregroundColor(.gray)
-                    .padding(.top, 2)
                 
                 // 요일 순으로 정렬된 스케줄 텍스트
                 Text(state.scheduleSummary)
@@ -106,6 +105,7 @@ struct WorkCard: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.theme.borderSoft, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
+                .spotlightTarget(.workPlaceListDetailButton)
                 
                 Button {
                     onShowEdit()
@@ -116,6 +116,7 @@ struct WorkCard: View {
                         .background(Color.theme.primary).cornerRadius(8)
                 }
                 .buttonStyle(.plain)
+                .spotlightTarget(.workPlaceListEditButton)
             }
         }
         .padding(20)

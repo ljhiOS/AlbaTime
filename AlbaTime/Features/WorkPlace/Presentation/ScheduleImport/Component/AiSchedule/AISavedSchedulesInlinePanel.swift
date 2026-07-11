@@ -1,6 +1,6 @@
 import SwiftUI
 
-// 저장된 AI 스케줄 패널의 UI 조합만 담당한다.
+// 저장된 AI/수기 스케줄 패널의 UI 조합만 담당한다.
 // 상단 타이틀/월주 선택/주차 카드/저장 버튼을 렌더링하고,
 // 상태/계산/저장 로직은 AISavedSchedulesPanelViewModel로 위임한다.
 struct AISavedSchedulesInlinePanel: View {
@@ -35,10 +35,10 @@ struct AISavedSchedulesInlinePanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Label("저장된 AI 스케줄", systemImage: "tray.full")
+                Label("저장된 스케줄", systemImage: "tray.full")
                     .font(.headline)
                 Spacer()
-                Text("\(aspvm.aiSchedules.count)건")
+                Text("\(aspvm.schedules.count)건")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
@@ -47,7 +47,7 @@ struct AISavedSchedulesInlinePanel: View {
                     .clipShape(Capsule())
             }
 
-            if aspvm.aiSchedules.isEmpty {
+            if aspvm.schedules.isEmpty {
                 Text("근무지에 저장된 스케줄이 없습니다.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -138,7 +138,7 @@ struct AISavedSchedulesInlinePanel: View {
     }
 }
 
-#Preview("저장된 AI 스케줄") {
+#Preview("저장된 스케줄") {
     let calendar = Calendar.current
     let baseDate = calendar.startOfDay(for: Date())
     let start1 = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: baseDate) ?? baseDate
@@ -147,7 +147,7 @@ struct AISavedSchedulesInlinePanel: View {
     let start2 = calendar.date(bySettingHour: 14, minute: 0, second: 0, of: nextDay) ?? nextDay
     let end2 = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: nextDay) ?? nextDay
     let draft = ScheduleEditDraft(
-        state: .existingSavedAIEdit,
+        state: .existingSavedScheduleEdit,
         targetWeekStart: baseDate,
         items: [
             ScheduleEditItem(

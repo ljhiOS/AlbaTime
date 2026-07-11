@@ -200,14 +200,10 @@ class NotificationManager {
         for offset in 0...daysAhead {
             guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
             
-            guard let schedule = workPlace.getSchedule(for: day) else { continue }
+            guard let schedule = ScheduleResolver.resolve(workPlace: workPlace, for: day) else { continue }
 
-            let start = combineDateAndTime(date: day, time: schedule.startTime)
-            var end = combineDateAndTime(date: day, time: schedule.endTime)
-
-            if end < start {
-                end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
-            }
+            let start = schedule.startTime
+            let end = schedule.endTime
 
             guard start > now || end > now else { continue }
             results.append(ShiftNotificationTime(start: start, end: end))
@@ -216,18 +212,6 @@ class NotificationManager {
         return results.sorted { $0.start < $1.start }
     }
 
-    private func combineDateAndTime(date: Date, time: Date) -> Date {
-        let calendar = Calendar.current
-        let timeComp = calendar.dateComponents([.hour, .minute], from: time)
-        return calendar.date(
-            bySettingHour: timeComp.hour ?? 0,
-            minute: timeComp.minute ?? 0,
-            second: 0,
-            of: date
-        ) ?? date
-    }
-
-    
     // 모든 알람 허용 X
     func removeAllNotifications() {
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()

@@ -14,7 +14,8 @@ struct SalaryBreakdown {
     var holidayPay: Int     // 주휴수당
     var taxAmount: Int      // 세금
     var totalPay: Int       // 실수령액 (세후)
-    var totalHours: Double  // 총 근무시간
+    var monthlyWorkHours: Double // 한달 총 근무시간
+    var accruedWorkHours: Double // 누적 근무 시간
     var workingDays: Int    // 근무 일수
     
     // 빈 껍데기 생성용 (초기값)
@@ -25,7 +26,8 @@ struct SalaryBreakdown {
             holidayPay: 0,
             taxAmount: 0,
             totalPay: 0,
-            totalHours: 0,
+            monthlyWorkHours: 0,
+            accruedWorkHours: 0,
             workingDays: 0
         )
     }
@@ -37,7 +39,8 @@ struct SalaryBreakdown {
         self.holidayPay += other.holidayPay
         self.taxAmount += other.taxAmount
         self.totalPay += other.totalPay
-        self.totalHours += other.totalHours
+        self.monthlyWorkHours += other.monthlyWorkHours
+        self.accruedWorkHours += other.accruedWorkHours
         self.workingDays += other.workingDays
     }
 }

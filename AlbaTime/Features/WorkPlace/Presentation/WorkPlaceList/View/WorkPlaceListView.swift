@@ -42,14 +42,15 @@ struct WorkPlaceListView: View {
 
             if pinnedWorkPlaces.isEmpty && normalWorkPlaces.isEmpty {
                 ContentUnavailableView(
-                    "등록된 알바가 없어요...",
+                    "등록된 알바가 없어요",
                     systemImage: "briefcase.fill",
-                    description: Text("하단 버튼을 눌러\n새로운 알바를 추가해주세요!")
+                    description: Text("하단 버튼을 눌러\n새로운 알바를 추가해주세요")
                 )
 
                 PlusButton {
                     showTypeSelection = true
                 }
+                .spotlightTarget(.workPlaceListAddButton)
                 .listRowSeparator(.hidden)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)
@@ -72,6 +73,7 @@ struct WorkPlaceListView: View {
                     PlusButton {
                         showTypeSelection = true
                     }
+                    .spotlightTarget(.workPlaceListAddButton)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 16))
                     .listRowBackground(Color.clear)
@@ -86,7 +88,7 @@ struct WorkPlaceListView: View {
             Button("요일 고정 알바") {
                 selectedWorkType = .fixed
             }
-            Button("자율/횟수 중심 알바") {
+            Button("요일 비고정 알바") {
                 selectedWorkType = .flexible
             }
             Button("취소", role: .cancel) {}
@@ -106,6 +108,29 @@ struct WorkPlaceListView: View {
             selectedWorkType = nil
             onAppear()
         }
+        .spotlightOnboarding(steps: onboardingSteps)
+    }
+
+    private var onboardingSteps: [SpotlightOnboardingStep] {
+        if pinnedWorkPlaces.isEmpty && normalWorkPlaces.isEmpty {
+            return [
+                SpotlightOnboardingStep(
+                    key: .workPlaceListAddButton,
+                    message: "새 알바 추가하기 버튼을 눌러 근무지를 등록할 수 있어요."
+                )
+            ]
+        }
+
+        return [
+            SpotlightOnboardingStep(
+                key: .workPlaceListDetailButton,
+                message: "상세보기에서 근무 시간, 메모, 예상 급여를 확인할 수 있어요."
+            ),
+            SpotlightOnboardingStep(
+                key: .workPlaceListEditButton,
+                message: "근무 수정에서 해당 근무지의 정보를 다시 바꿀 수 있어요."
+            )
+        ]
     }
 
     private func makeCard(_ item: WorkPlaceListItemViewState) -> some View {
@@ -158,14 +183,15 @@ struct WorkPlaceListView: View {
         defaultRestTime: 60,
         memo: "사장님이 화, 목 오후 2시에 오십니다.",
         totalDays: 12,
-        totalHours: 48,
+        accruedWorkHours: 32,
+        monthlyWorkHours: 48,
         totalWage: 540000
     )
     let seed = WorkPlaceEditingSeed(
         id: card.id,
         workPlaceDraft: .makeNew(type: .fixed),
         scheduleImportDraft: .empty(),
-        savedAIScheduleItems: [],
+        savedScheduleItems: [],
         initialDefaultRestTime: 60
     )
 

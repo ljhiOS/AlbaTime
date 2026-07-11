@@ -44,8 +44,8 @@ class ScheduleImportViewModel: ObservableObject {
         self.analyzeScheduleImage = analyzeScheduleImage
     }
 
-    var hasSavedAISchedules: Bool {
-        !session.savedAIScheduleItems.isEmpty
+    var hasSavedSchedules: Bool {
+        !session.savedScheduleItems.isEmpty
     }
 
     var panelDefaultBreakTime: Int {
@@ -61,7 +61,7 @@ class ScheduleImportViewModel: ObservableObject {
     }
 
     func shouldShowSchedulePanel(manualFocusToken: Int) -> Bool {
-        hasSavedAISchedules || manualFocusToken > 0
+        hasSavedSchedules || manualFocusToken > 0
     }
 
     func enterManualInputMode() {
@@ -70,11 +70,11 @@ class ScheduleImportViewModel: ObservableObject {
     }
 
     func makeSchedulePanelDraft(targetWeekStart: Date? = nil) -> ScheduleEditDraft {
-        if hasSavedAISchedules {
+        if hasSavedSchedules {
             return ScheduleEditDraft(
-                state: .existingSavedAIEdit,
+                state: .existingSavedScheduleEdit,
                 targetWeekStart: targetWeekStart,
-                items: session.savedAIScheduleItems
+                items: session.savedScheduleItems
             )
         }
 

@@ -7,6 +7,6 @@
 
 enum WorkType: String, Codable, CaseIterable, Identifiable {
     case fixed = "요일 고정"
-    case flexible = "횟수/시간 중심"
+    case flexible = "요일 비고정"
     var id: Self { self }
 }

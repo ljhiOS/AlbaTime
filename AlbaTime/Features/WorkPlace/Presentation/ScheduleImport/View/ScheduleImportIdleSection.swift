@@ -16,13 +16,14 @@ struct ScheduleImportIdleSection: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 14) {
+            VStack(spacing: 16) {
                 weekSelectorCard
                 nameInputCard
                 ScheduleImportPresetGroup(
                     sivm: sivm,
                     preset: presetDrafts
                 )
+                .spotlightTarget(.scheduleImportPresetInput)
                 savedScheduleSection
             }
             .padding(.horizontal, 16)
@@ -32,20 +33,24 @@ struct ScheduleImportIdleSection: View {
         .onTapGesture {
             isNameFieldFocused.wrappedValue = false
         }
-        .overlay(alignment: .top) {
-            if ssvm.showManualHint {
-                Text("선택한 날짜를 수정한 뒤 저장하세요")
-                    .font(.footnote)
-                    .foregroundStyle(.white)
-                    .bold()
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.theme.primary)
-                    .clipShape(Capsule())
-                    .padding(.bottom, 8)
-                    .transition(.opacity)
-            }
-        }
+        .spotlightOnboarding(steps: onboardingSteps)
+    }
+
+    private var onboardingSteps: [SpotlightOnboardingStep] {
+        [
+            SpotlightOnboardingStep(
+                key: .scheduleImportDateBase,
+                message: "AI가 인식한 스케줄은 선택한 주차 기준으로 저장돼요."
+            ),
+            SpotlightOnboardingStep(
+                key: .scheduleImportNameInput,
+                message: "스케줄표에 적힌 이름을 입력하면 내 근무만 더 정확히 찾을 수 있어요."
+            ),
+            SpotlightOnboardingStep(
+                key: .scheduleImportPresetInput,
+                message: "오픈, 마감, 미들처럼 시간이 아닌 이름으로 적힌 경우 여기에 등록하면 AI가 인식할 수 있어요."
+            )
+        ]
     }
 
     private var weekSelectorCard: some View {
@@ -53,6 +58,7 @@ struct ScheduleImportIdleSection: View {
             ssvm: ssvm,
             onTapManualInput: onTapManualInput
         )
+        .spotlightTarget(.scheduleImportDateBase)
     }
 
     @ViewBuilder
@@ -91,5 +97,6 @@ struct ScheduleImportIdleSection: View {
                 .stroke(Color.theme.border, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14))
+        .spotlightTarget(.scheduleImportNameInput)
     }
 }

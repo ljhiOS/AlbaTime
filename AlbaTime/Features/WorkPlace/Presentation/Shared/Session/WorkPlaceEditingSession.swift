@@ -10,7 +10,7 @@ import Foundation
 @MainActor
 final class WorkPlaceEditingSession: ObservableObject {
     let editingWorkPlaceID: UUID?
-    let savedAIScheduleItems: [ScheduleEditItem]
+    let savedScheduleItems: [ScheduleEditItem]
     let initialDefaultRestTime: Int?
 
     @Published var workPlaceDraft: WorkPlaceDraft
@@ -22,7 +22,7 @@ final class WorkPlaceEditingSession: ObservableObject {
 
     init(seed: WorkPlaceEditingSeed, editingWorkPlaceID: UUID? = nil) {
         self.editingWorkPlaceID = editingWorkPlaceID
-        self.savedAIScheduleItems = seed.savedAIScheduleItems
+        self.savedScheduleItems = seed.savedScheduleItems
         self.initialDefaultRestTime = seed.initialDefaultRestTime
         self.workPlaceDraft = seed.workPlaceDraft
         self.scheduleImportDraft = seed.scheduleImportDraft

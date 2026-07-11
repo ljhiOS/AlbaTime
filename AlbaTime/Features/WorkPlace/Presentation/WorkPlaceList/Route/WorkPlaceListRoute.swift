@@ -38,6 +38,8 @@ struct WorkPlaceListRoute: View {
     let container = try! ModelContainer(
         for: WorkPlace.self,
         RegularSchedule.self,
+        WorkSchedule.self,
+        WorkRecord.self,
         WorkTimePreset.self,
         configurations: config
     )
@@ -51,6 +53,8 @@ struct WorkPlaceListRoute: View {
     let container = try! ModelContainer(
         for: WorkPlace.self,
         RegularSchedule.self,
+        WorkSchedule.self,
+        WorkRecord.self,
         WorkTimePreset.self,
         configurations: config
     )

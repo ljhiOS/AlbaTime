@@ -32,73 +32,75 @@ struct CalendarView: View {
                 Spacer()
             }
             
-            // 월 이동 버튼
-            ZStack {
-                HStack {
-                    Button(action: { cvm.changeMonth(by: -1) }) {
-                        Image(systemName: "chevron.left").foregroundColor(Color.theme.textPrimary)
+            VStack(spacing: 0) {
+                // 월 이동 버튼
+                ZStack {
+                    HStack {
+                        Button(action: { cvm.changeMonth(by: -1) }) {
+                            Image(systemName: "chevron.left").foregroundColor(Color.theme.textPrimary)
+                        }
+                        Spacer()
+                        Button(action: { cvm.changeMonth(by: 1) }) {
+                            Image(systemName: "chevron.right").foregroundColor(Color.theme.textPrimary)
+                        }
                     }
-                    Spacer()
-                    Button(action: { cvm.changeMonth(by: 1) }) {
-                        Image(systemName: "chevron.right").foregroundColor(Color.theme.textPrimary)
-                    }
-                }
 
-                Button {
-                    let calendar = Calendar.current
-                    pickedYear = calendar.component(.year, from: cvm.currentMonth)
-                    pickedMonth = calendar.component(.month, from: cvm.currentMonth)
-                    showMonthPicker = true
-                } label: {
-                    HStack(spacing: 4) {
-                        // 좌우 균형용 더미 아이콘 (텍스트를 화면 정중앙에 고정)
-                        Image(systemName: "chevron.down")
-                            .font(.caption)
-                            .opacity(0)
-                        Text(cvm.currentMonth.format("yyyy년 M월"))
-                            .font(.headline)
-                            .fontWeight(.bold)
+                    Button {
+                        let calendar = Calendar.current
+                        pickedYear = calendar.component(.year, from: cvm.currentMonth)
+                        pickedMonth = calendar.component(.month, from: cvm.currentMonth)
+                        showMonthPicker = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(cvm.currentMonth.format("yyyy년 M월"))
+                                .font(.headline)
+                                .fontWeight(.bold)
                         Image(systemName: "chevron.down")
                             .font(.caption)
                             .foregroundStyle(Color.theme.textSecondary)
                     }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                 }
                 .buttonStyle(.plain)
-            }
-            .padding()
-            
-            // 요일 표시
-            HStack {
-                ForEach(weekDays, id: \.self) { day in
-                    Text(day)
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: .infinity)
+                .spotlightTarget(.calendarMonthPickerButton)
                 }
-            }
-            .padding(.bottom, 10)
-            .padding(.horizontal)
-            
-            // 달력 그리드
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 20) {
-                let days = cvm.generateDaysInMonth()
-                
-                ForEach(0..<days.count, id: \.self) { index in
-                    if let day = days[index] {
-                        DayCell(
-                            date: day,
-                            isSelected: cvm.selectedDate.isSameDay(as: day),
-                            hasWork: cvm.hasWork(on: day)
-                        )
-                        .onTapGesture {
-                            cvm.selectDate(day)
-                        }
-                    } else {
-                        Text("")
+                .padding()
+
+                // 요일 표시
+                HStack {
+                    ForEach(weekDays, id: \.self) { day in
+                        Text(day)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity)
                     }
                 }
+                .padding(.bottom, 10)
+                .padding(.horizontal)
+                
+                // 달력 그리드
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 20) {
+                    let days = cvm.generateDaysInMonth()
+                    
+                    ForEach(0..<days.count, id: \.self) { index in
+                        if let day = days[index] {
+                            DayCell(
+                                date: day,
+                                isSelected: cvm.selectedDate.isSameDay(as: day),
+                                hasWork: cvm.hasWork(on: day)
+                            )
+                            .onTapGesture {
+                                cvm.selectDate(day)
+                            }
+                        } else {
+                            Text("")
+                        }
+                    }
+                }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
+            .spotlightTarget(.calendarSwipeArea)
             
             Spacer()
         
@@ -106,7 +108,14 @@ struct CalendarView: View {
             ScheduleDetailCard(
                 selectedDate: cvm.selectedDate,
                 schedules: cvm.selectedDateSchedules,
-                totalPay: cvm.selectedDateTotalPay
+                totalPay: cvm.selectedDateTotalPay,
+                onSaveTime: { schedule, startTime, endTime in
+                    cvm.saveWorkRecord(
+                        for: schedule,
+                        startTime: startTime,
+                        endTime: endTime
+                    )
+                }
             )
         }
         .background(Color.theme.surface)
@@ -123,12 +132,13 @@ struct CalendarView: View {
                 }
         )
         .onAppear { cvm.load() }
+        .spotlightOnboarding(steps: onboardingSteps)
         .sheet(isPresented: $showMonthPicker) {
             NavigationStack {
                 VStack(spacing: 18) {
                     HStack(spacing: 12) {
                         Picker("년도", selection: $pickedYear) {
-                            ForEach((2020...2035), id: \.self) { year in
+                            ForEach((2020...2050), id: \.self) { year in
                                 Text(verbatim: "\(year)년").tag(year)
                             }
                         }
@@ -143,29 +153,57 @@ struct CalendarView: View {
                     }
                     .frame(height: 160)
                     
-                    Button("적용") {
-                        cvm.applyPickedYearMonth(year: pickedYear, month: pickedMonth)
-                        showMonthPicker = false
-                    }
-                    .buttonStyle(.borderedProminent)
                 }
                 .padding()
                 .navigationTitle("연도/월 선택")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("취소") { showMonthPicker = false }
+                        Button{
+                            showMonthPicker = false
+                        } label: {
+                            Text("취소")
+                                .foregroundStyle(Color.theme.textPrimary)
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            cvm.applyPickedYearMonth(year: pickedYear, month: pickedMonth)
+                            showMonthPicker = false
+                        } label: {
+                            Text("적용")
+                                .foregroundStyle(Color.theme.textPrimary)
+                        }
                     }
                 }
             }
             .presentationDetents([.height(280)])
         }
     }
+
+    private var onboardingSteps: [SpotlightOnboardingStep] {
+        [
+            SpotlightOnboardingStep(
+                key: .calendarMonthPickerButton,
+                message: "년/월을 누르면 원하는 달로 바로 이동할 수 있어요."
+            ),
+            SpotlightOnboardingStep(
+                key: .calendarSwipeArea,
+                message: "캘린더를 좌우로 밀거나 상단 화살표를 누르면 이전 달과 다음 달로 이동할 수 있어요."
+            ),
+            SpotlightOnboardingStep(
+                key: .calendarScheduleEdit,
+                message: "근무 카드를 누르면 해당 날짜의 근무 시간을 조정하고 급여 계산에 반영할 수 있어요."
+            )
+        ]
+    }
 }
 #Preview() {
     return CalendarView(
         viewModel: CalendarViewModel(
-            loadCalendarWorkPlaces: PreviewCalendarWorkPlacesLoading()
+            loadCalendarWorkPlaces: PreviewCalendarWorkPlacesLoading(),
+            workRecordSaving: PreviewCalendarWorkRecordSaving()
         )
     )
 }
@@ -175,4 +213,9 @@ private struct PreviewCalendarWorkPlacesLoading: CalendarWorkPlacesLoading {
     func execute() throws -> [WorkPlace] {
         []
     }
+}
+
+@MainActor
+private struct PreviewCalendarWorkRecordSaving: CalendarWorkRecordSaving {
+    func execute(_ command: CalendarWorkRecordCommand) throws { }
 }

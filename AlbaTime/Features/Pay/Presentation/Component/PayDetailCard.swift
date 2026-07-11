@@ -8,107 +8,71 @@
 import SwiftUI
 
 struct PayDetailCard: View {
-    // 외부에서 데이터를 받도록 변수 추가
-    var basicPay: Int
-    var nightPay: Int
-    var holidayPay: Int
-    var taxAmount: Int
-    var totalPay: Int
-    var totalHours: Double
-    var workingDays: Int
+    let breakdown: SalaryBreakdown
+    let isExpected: Bool
+
+    private var totalHours: Double {
+        isExpected ? breakdown.monthlyWorkHours : breakdown.accruedWorkHours
+    }
+
+    private var grossPay: Int {
+        breakdown.basicPay + breakdown.nightPay + breakdown.holidayPay
+    }
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             HStack {
-                Text("급여 상세")
+                Text(isExpected ? "예상 급여 산정 내역" : "누적 급여 산정 내역")
                     .font(.headline)
                     .foregroundColor(.primary)
                 Spacer()
             }
-            .padding(.bottom, 10)
-            
-            HStack(alignment: .top) {
-                Text("이번 달 누적 근무 일수")
-                    .font(.body)
-                    
+
+            HStack {
+                Text("근무 \(breakdown.workingDays)일 · \(String(format: "%.1f", totalHours))시간")
+                    .font(.footnote)
+                    .foregroundStyle(Color.theme.textSecondary)
                 Spacer()
-                Text("\(workingDays)일")
-                    .font(.body)
-                    .bold()
             }
-            
-            // 기본 급여
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("기본 급여")
-                        .font(.body)
-                    Text("\(String(format: "%.1f", totalHours))시간")
-                        .font(.footnote)
-                        .foregroundColor(.gray)
-                }
-                Spacer()
-                Text("₩\(basicPay.formatted())")
-                    .font(.body)
-            }
-            
-            // 야간 수당
-            if nightPay > 0 {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("야간 수당")
-                            .font(.body)
-                        Text("야간 시간 x 1.5")
-                            .font(.footnote)
-                            .foregroundColor(.gray)
-                    }
-                    Spacer()
-                    Text("₩\(nightPay.formatted())")
-                        .font(.body)
-                }
-            }
-            
-            // 주휴 수당
-            if holidayPay > 0 {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("주휴 수당")
-                            .font(.body)
-                        Text("조건 충족")
-                            .font(.footnote)
-                            .foregroundColor(.gray)
-                    }
-                    Spacer()
-                    Text("₩\(holidayPay.formatted())")
-                        .font(.body)
-                }
-            }
-            
-            if taxAmount > 0 {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("세금 공제")
-                            .font(.body)
-                            .foregroundColor(.red)
-                        Text("누적 공제액")
-                            .font(.footnote)
-                            .foregroundColor(.gray)
-                    }
-                    Spacer()
-                    Text("- ₩\(taxAmount.formatted())")
-                        .font(.body)
-                        .foregroundColor(.red)
-                }
-            }
+
+            payRow(
+                title: "기본급",
+                subtitle: "근무시간 기준",
+                amount: breakdown.basicPay
+            )
+            payRow(
+                title: "야간수당",
+                subtitle: "22:00 ~ 06:00 가산",
+                amount: breakdown.nightPay
+            )
+            payRow(
+                title: "주휴수당",
+                subtitle: "주휴 조건 충족분",
+                amount: breakdown.holidayPay
+            )
+
+            Divider()
+
+            payRow(
+                title: "지급 합계",
+                subtitle: "기본급 + 수당",
+                amount: grossPay,
+                emphasized: true
+            )
+            payRow(
+                title: "세금 공제",
+                subtitle: "적용 세금 기준",
+                amount: breakdown.taxAmount,
+                isDeduction: true
+            )
             
             Divider()
-                .padding(.vertical, 5)
             
-            // 총 합계
             HStack {
-                Text("총 합계")
+                Text(isExpected ? "예상 실수령액" : "누적 실수령액")
                     .fontWeight(.semibold)
                 Spacer()
-                Text("₩\(totalPay.formatted())")
+                Text("₩\(breakdown.totalPay.formatted())")
                     .font(.title3)
                     .fontWeight(.bold)
                     .foregroundColor(Color.theme.primary)
@@ -118,18 +82,45 @@ struct PayDetailCard: View {
         .background(Color.theme.field)
         .cornerRadius(20)
     }
+
+    private func payRow(
+        title: String,
+        subtitle: String,
+        amount: Int,
+        emphasized: Bool = false,
+        isDeduction: Bool = false
+    ) -> some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(emphasized ? .body.weight(.semibold) : .body)
+                    .foregroundStyle(isDeduction ? .red : Color.theme.textPrimary)
+                Text(subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(Color.theme.textSecondary)
+            }
+            Spacer()
+            Text("\(isDeduction ? "- " : "")₩\(amount.formatted())")
+                .font(emphasized ? .body.weight(.semibold) : .body)
+                .foregroundStyle(isDeduction ? .red : Color.theme.textPrimary)
+        }
+    }
 }
 
 #Preview {
     ZStack {
         PayDetailCard(
-            basicPay: 960000,   
-            nightPay: 50000,
-            holidayPay: 35000,
-            taxAmount: 90000,
-            totalPay: 1045000,
-            totalHours: 98.5,
-            workingDays: 3
+            breakdown: SalaryBreakdown(
+                basicPay: 960_000,
+                nightPay: 50_000,
+                holidayPay: 35_000,
+                taxAmount: 90_000,
+                totalPay: 955_000,
+                monthlyWorkHours: 98.5,
+                accruedWorkHours: 98.5,
+                workingDays: 3
+            ),
+            isExpected: false
         )
     }
 }
