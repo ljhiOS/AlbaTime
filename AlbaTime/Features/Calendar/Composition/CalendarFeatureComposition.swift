@@ -14,4 +14,10 @@ enum CalendarFeatureComposition {
             reader: SwiftDataCalendarWorkPlaceReader(context: context)
         )
     }
+
+    static func makeWorkRecordSaving(context: ModelContext) -> SaveCalendarWorkRecord {
+        SaveCalendarWorkRecord(
+            writer: SwiftDataCalendarWorkRecordWriter(context: context)
+        )
+    }
 }

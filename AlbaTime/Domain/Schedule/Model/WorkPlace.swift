@@ -45,6 +45,10 @@ class Workplace {
     // Relationships
     @Relationship(deleteRule: .cascade, inverse: \WorkSchedule.workPlace)
     var workSchedules: [WorkSchedule] = []
+
+    // 캘린더에서 입력한 날짜별 실제/조정 근무 기록
+    @Relationship(deleteRule: .cascade, inverse: \WorkRecord.workPlace)
+    var workRecords: [WorkRecord] = []
     
     @Relationship(deleteRule: .cascade, inverse: \WorkTimePreset.workPlace)
     var timePresets: [WorkTimePreset] = []

@@ -30,14 +30,31 @@ enum ScheduleResolver {
     static func resolve(
         workPlace: WorkPlace,
         for date: Date
-    ) -> (startTime: Date, endTime: Date, title: String?)? {
+    ) -> (startTime: Date, endTime: Date, breakTime: Int, title: String?)? {
         let calendar = Calendar.current
+
+        // 0. 캘린더에서 저장한 날짜별 실제/조정 기록이 가장 우선입니다.
+        if let record = workPlace.workRecords.first(where: {
+            calendar.isDate($0.date, inSameDayAs: date)
+        }) {
+            return (
+                record.startTime,
+                record.endTime,
+                max(0, record.breakTime),
+                nil
+            )
+        }
         
         // 1. 개별 기록(AI/수기) 확인 -> 자율/고정 모두 최우선 적용
         if let actualRecord = workPlace.workSchedules.first(where: {
             calendar.isDate($0.date, inSameDayAs: date)
         }) {
-            return (actualRecord.startTime, actualRecord.endTime, actualRecord.memo)
+            return (
+                actualRecord.startTime,
+                actualRecord.endTime,
+                max(0, actualRecord.breakTime),
+                actualRecord.memo
+            )
         }
         
         if workPlace.workType == .fixed && hasAIOverride(in: workPlace, containing: date) {
@@ -58,7 +75,7 @@ enum ScheduleResolver {
                     end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
                 }
                 
-                return (start, end, nil)
+                return (start, end, max(0, regular.breakTime), nil)
             }
             
             // 간편 요일 설정
@@ -70,7 +87,7 @@ enum ScheduleResolver {
                     end = calendar.date(byAdding: .day, value: 1, to: end) ?? end
                 }
                 
-                return (start, end, nil)
+                return (start, end, max(0, workPlace.defaultRestTime ?? 0), nil)
             }
         }
         

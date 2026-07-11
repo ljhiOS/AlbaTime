@@ -25,6 +25,7 @@ struct PayDashboardRoute: View {
         for: WorkPlace.self,
         RegularSchedule.self,
         WorkSchedule.self,
+        WorkRecord.self,
         WorkTimePreset.self,
         configurations: config
     )

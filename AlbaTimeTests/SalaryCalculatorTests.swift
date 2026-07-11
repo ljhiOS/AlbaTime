@@ -173,6 +173,68 @@ final class SalaryCalculatorTests: XCTestCase {
         XCTAssertEqual(result.workingDays, 4)
     }
 
+    func testTotalMonthlyPayUsesWorkRecordInsteadOfPlannedFlexibleSchedule() {
+        let workPlace = makeWorkPlace(hourlyWage: 10_000)
+        workPlace.targetWeeklyCount = 1
+        workPlace.expectedDailyHours = 0
+        workPlace.workSchedules = [
+            WorkSchedule(
+                date: makeDate(2026, 7, 6),
+                startTime: makeDate(2026, 7, 6, 9, 0),
+                endTime: makeDate(2026, 7, 6, 18, 0),
+                breakTime: 60
+            )
+        ]
+        workPlace.workRecords = [
+            WorkRecord(
+                date: makeDate(2026, 7, 6),
+                startTime: makeDate(2026, 7, 6, 10, 0),
+                endTime: makeDate(2026, 7, 6, 15, 0),
+                breakTime: 0
+            )
+        ]
+
+        let result = SalaryCalculator.calculateTotalMonthlyPay(
+            workPlaces: [workPlace],
+            targetMonth: makeDate(2026, 7, 1)
+        )
+
+        XCTAssertEqual(result.basicPay, 50_000)
+        XCTAssertEqual(result.totalPay, 50_000)
+        XCTAssertEqual(result.monthlyWorkHours, 5)
+        XCTAssertEqual(result.workingDays, 5)
+    }
+
+    func testAccruedMonthlyPayUsesWorkRecordBreakTime() {
+        let workPlace = makeWorkPlace(hourlyWage: 10_000)
+        workPlace.workSchedules = [
+            WorkSchedule(
+                date: makeDate(2026, 7, 4),
+                startTime: makeDate(2026, 7, 4, 9, 0),
+                endTime: makeDate(2026, 7, 4, 18, 0),
+                breakTime: 60
+            )
+        ]
+        workPlace.workRecords = [
+            WorkRecord(
+                date: makeDate(2026, 7, 4),
+                startTime: makeDate(2026, 7, 4, 10, 0),
+                endTime: makeDate(2026, 7, 4, 18, 0),
+                breakTime: 120
+            )
+        ]
+
+        let result = SalaryCalculator.calculateAccruedMonthlyPay(
+            workPlaces: [workPlace],
+            targetMonth: makeDate(2026, 7, 1),
+            asOf: makeDate(2026, 7, 4, 19, 0)
+        )
+
+        XCTAssertEqual(result.basicPay, 60_000)
+        XCTAssertEqual(result.accruedWorkHours, 6)
+        XCTAssertEqual(result.workingDays, 1)
+    }
+
     private func makeWorkPlace(hourlyWage: Int) -> WorkPlace {
         WorkPlace(
             name: "Test",

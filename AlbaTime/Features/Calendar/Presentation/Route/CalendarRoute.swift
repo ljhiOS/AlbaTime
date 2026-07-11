@@ -16,6 +16,9 @@ struct CalendarRoute: View {
             viewModel: CalendarViewModel(
                 loadCalendarWorkPlaces: CalendarFeatureComposition.makeLoadCalendarWorkPlaces(
                     context: modelContext
+                ),
+                workRecordSaving: CalendarFeatureComposition.makeWorkRecordSaving(
+                    context: modelContext
                 )
             )
         )
@@ -29,6 +32,7 @@ struct CalendarRoute: View {
         MonthlyRecord.self,
         RegularSchedule.self,
         WorkSchedule.self,
+        WorkRecord.self,
         WorkTimePreset.self,
         configurations: config
     )

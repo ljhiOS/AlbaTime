@@ -11,6 +11,9 @@ struct ScheduleDetailCard: View {
     let selectedDate: Date
     let schedules: [CalendarScheduleState]
     let totalPay: Int
+    let onSaveTime: (CalendarScheduleState, Date, Date) -> Void
+
+    @State private var editingSchedule: CalendarScheduleState?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -69,38 +72,12 @@ struct ScheduleDetailCard: View {
                 ScrollView {
                     VStack(spacing: 12) {
                         ForEach(schedules) { schedule in
-                            HStack(alignment: .center) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(schedule.workPlaceName)
-                                        .font(.headline)
-                                    
-                                    HStack(spacing: 6) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "clock")
-                                            // 선택 날짜 기준 근무 시간대
-                                            Text(schedule.timeRange)
-                                        }
-                                    }
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                }
-                                
-                                Spacer()
-                                
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    // 뷰모델의 getEstimatedPay 사용
-                                    Text("₩\(schedule.estimatedPay.formatted())")
-                                        .fontWeight(.semibold)
-                                    
-                                    Text("시급 \(schedule.hourlyWage.formatted())원")
-                                        .font(.caption2)
-                                        .foregroundColor(Color.theme.textSecondary)
-                                }
+                            Button {
+                                editingSchedule = schedule
+                            } label: {
+                                WorkPlaceComponent(schedule: schedule)
                             }
-                            .padding()
-                            .background(Color.theme.surface)
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(0.03), radius: 2, x: 0, y: 1)
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.top, 4)
@@ -112,6 +89,59 @@ struct ScheduleDetailCard: View {
         .background(Color.theme.field)
         .cornerRadius(12, antialiased: true)
         .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: -2)
+        .sheet(item: $editingSchedule) { schedule in
+            WorkTimeEditorSheet(schedule: schedule, onSave: onSaveTime)
+        }
+    }
+}
+
+private struct WorkTimeEditorSheet: View {
+    let schedule: CalendarScheduleState
+    let onSave: (CalendarScheduleState, Date, Date) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var startTime: Date
+    @State private var endTime: Date
+
+    init(
+        schedule: CalendarScheduleState,
+        onSave: @escaping (CalendarScheduleState, Date, Date) -> Void
+    ) {
+        self.schedule = schedule
+        self.onSave = onSave
+        _startTime = State(initialValue: schedule.startTime)
+        _endTime = State(initialValue: schedule.endTime)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                DatePicker("시작 시간", selection: $startTime, displayedComponents: .hourAndMinute)
+                DatePicker("종료 시간", selection: $endTime, displayedComponents: .hourAndMinute)
+            }
+            .navigationTitle("근무 시간 조정")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("취소")
+                            .foregroundStyle(Color.theme.textPrimary)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        onSave(schedule, startTime, endTime)
+                        dismiss()
+                    } label: {
+                        Text("저장")
+                            .foregroundStyle(Color.theme.textPrimary)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.height(240)])
     }
 }
 
@@ -122,15 +152,23 @@ struct ScheduleDetailCard: View {
     let schedules = [
         CalendarScheduleState(
             id: UUID(),
+            workPlaceID: UUID(),
             workPlaceName: "GS25 강남점",
-            timeRange: "09:00 - 14:00",
+            date: today,
+            startTime: today,
+            endTime: today.addingTimeInterval(5 * 60 * 60),
+            breakTime: 0,
             estimatedPay: 44370,
             hourlyWage: 9860
         ),
         CalendarScheduleState(
             id: UUID(),
+            workPlaceID: UUID(),
             workPlaceName: "스타벅스",
-            timeRange: "18:00 - 22:00",
+            date: today,
+            startTime: today.addingTimeInterval(9 * 60 * 60),
+            endTime: today.addingTimeInterval(13 * 60 * 60),
+            breakTime: 0,
             estimatedPay: 44000,
             hourlyWage: 11000
         )
@@ -142,7 +180,8 @@ struct ScheduleDetailCard: View {
         ScheduleDetailCard(
             selectedDate: today,
             schedules: schedules,
-            totalPay: schedules.map(\.estimatedPay).reduce(0, +)
+            totalPay: schedules.map(\.estimatedPay).reduce(0, +),
+            onSaveTime: { _, _, _ in }
         )
     }
 }
@@ -153,7 +192,8 @@ struct ScheduleDetailCard: View {
         ScheduleDetailCard(
             selectedDate: Date(),
             schedules: [],
-            totalPay: 0
+            totalPay: 0,
+            onSaveTime: { _, _, _ in }
         )
     }
 }

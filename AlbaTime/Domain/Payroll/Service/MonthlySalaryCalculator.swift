@@ -44,8 +44,11 @@ struct MonthlySalaryCalculator {
                         continue
                     }
                     
-                    let restMinutes = resolvedRestMinutes(workPlace: workPlace, day: day)
-                    let worked = WorkTimeCalculator.calculate(start: start, end: end, restTime: restMinutes)
+                    let worked = WorkTimeCalculator.calculate(
+                        start: start,
+                        end: end,
+                        restTime: schedule.breakTime
+                    )
                     workPlaceBreakdown.add(
                         PayAmountCalculator.payFromHours(
                             hours: worked,
@@ -95,11 +98,15 @@ struct MonthlySalaryCalculator {
             let actualSchedules = workPlace.workSchedules.filter {
                 calendar.isDate($0.date, equalTo: targetMonth, toGranularity: .month)
             }
+            let workRecords = workPlace.workRecords.filter {
+                calendar.isDate($0.date, equalTo: targetMonth, toGranularity: .month)
+            }
             
             if workPlace.workType == .fixed {
                 addFixedWorkPay(
                     workPlace: workPlace,
                     actualSchedules: actualSchedules,
+                    workRecords: workRecords,
                     startOfMonth: startOfMonth,
                     endOfMonth: endOfMonth,
                     calendar: calendar,
@@ -110,6 +117,7 @@ struct MonthlySalaryCalculator {
                 addFlexibleWorkPay(
                     workPlace: workPlace,
                     actualSchedules: actualSchedules,
+                    workRecords: workRecords,
                     targetMonth: targetMonth,
                     calendar: calendar,
                     breakdown: &workPlaceBreakdown,
@@ -133,15 +141,30 @@ struct MonthlySalaryCalculator {
     private static func addFixedWorkPay(
         workPlace: WorkPlace,
         actualSchedules: [WorkSchedule],
+        workRecords: [WorkRecord],
         startOfMonth: Date,
         endOfMonth: Date,
         calendar: Calendar,
         breakdown: inout SalaryBreakdown,
         weeklyHours: inout WeeklyHolidayAllowanceCalculator.Bucket
     ) {
-        let recordedDates = Set(actualSchedules.map { calendar.startOfDay(for: $0.date) })
+        let recordDates = Set(workRecords.map { calendar.startOfDay(for: $0.date) })
+        let recordedDates = recordDates.union(
+            actualSchedules.map { calendar.startOfDay(for: $0.date) }
+        )
+
+        for record in workRecords {
+            addWorkRecordPay(
+                record: record,
+                hourlyWage: workPlace.hourlyWage,
+                includeNightAllowance: workPlace.allowanceType.includesNight,
+                calendar: calendar,
+                breakdown: &breakdown,
+                weeklyHours: &weeklyHours
+            )
+        }
         
-        for schedule in actualSchedules {
+        for schedule in actualSchedules where !recordDates.contains(calendar.startOfDay(for: schedule.date)) {
             addSchedulePay(
                 schedule: schedule,
                 hourlyWage: workPlace.hourlyWage,
@@ -175,6 +198,7 @@ struct MonthlySalaryCalculator {
     private static func addFlexibleWorkPay(
         workPlace: WorkPlace,
         actualSchedules: [WorkSchedule],
+        workRecords: [WorkRecord],
         targetMonth: Date,
         calendar: Calendar,
         breakdown: inout SalaryBreakdown,
@@ -188,8 +212,24 @@ struct MonthlySalaryCalculator {
         let avgHours = workPlace.expectedDailyHours ?? 0.0
         
         for week in weekRange {
-            let schedulesInThisWeek = actualSchedules.filter {
+            let recordsInThisWeek = workRecords.filter {
                 calendar.component(.weekOfMonth, from: $0.date) == week
+            }
+            let recordDates = Set(recordsInThisWeek.map { calendar.startOfDay(for: $0.date) })
+            let schedulesInThisWeek = actualSchedules.filter {
+                calendar.component(.weekOfMonth, from: $0.date) == week &&
+                !recordDates.contains(calendar.startOfDay(for: $0.date))
+            }
+
+            for record in recordsInThisWeek {
+                addWorkRecordPay(
+                    record: record,
+                    hourlyWage: workPlace.hourlyWage,
+                    includeNightAllowance: workPlace.allowanceType.includesNight,
+                    calendar: calendar,
+                    breakdown: &breakdown,
+                    weeklyHours: &weeklyHours
+                )
             }
             
             for schedule in schedulesInThisWeek {
@@ -203,7 +243,7 @@ struct MonthlySalaryCalculator {
                 )
             }
             
-            let remainingCount = max(0, targetCount - schedulesInThisWeek.count)
+            let remainingCount = max(0, targetCount - recordsInThisWeek.count - schedulesInThisWeek.count)
             guard remainingCount > 0 else { continue }
             
             let predictedBasicPay = Int(Double(remainingCount) * avgHours * Double(workPlace.hourlyWage))
@@ -212,7 +252,8 @@ struct MonthlySalaryCalculator {
             breakdown.monthlyWorkHours += predictedHours
             breakdown.workingDays += remainingCount
             
-            let weekDate = schedulesInThisWeek.first?.date
+            let weekDate = recordsInThisWeek.first?.date
+                ?? schedulesInThisWeek.first?.date
                 ?? representativeDate(forWeekOfMonth: week, in: targetMonth, calendar: calendar)
             WeeklyHolidayAllowanceCalculator.addHours(
                 predictedHours,
@@ -294,6 +335,30 @@ struct MonthlySalaryCalculator {
             weeklyHours: &weeklyHours
         )
     }
+
+    private static func addWorkRecordPay(
+        record: WorkRecord,
+        hourlyWage: Int,
+        includeNightAllowance: Bool,
+        calendar: Calendar,
+        breakdown: inout SalaryBreakdown,
+        weeklyHours: inout WeeklyHolidayAllowanceCalculator.Bucket
+    ) {
+        let worked = WorkTimeCalculator.calculate(
+            start: record.startTime,
+            end: record.endTime,
+            restTime: record.breakTime
+        )
+        addWorkedHoursPay(
+            hours: worked,
+            hourlyWage: hourlyWage,
+            includeNightAllowance: includeNightAllowance,
+            payDate: record.date,
+            calendar: calendar,
+            breakdown: &breakdown,
+            weeklyHours: &weeklyHours
+        )
+    }
     
     // 이미 계산된 근무시간을 SalaryBreakdown에 더하고, 주휴수당 계산용 주간 근무시간에도 누적합니다.
     private static func addWorkedHoursPay(
@@ -359,18 +424,4 @@ struct MonthlySalaryCalculator {
         return month
     }
     
-    // 해당 날짜의 휴게시간을 결정합니다.
-    private static func resolvedRestMinutes(workPlace: WorkPlace, day: Date) -> Int {
-        let calendar = Calendar.current
-        
-        if let actual = workPlace.workSchedules.first(where: { calendar.isDate($0.date, inSameDayAs: day) }) {
-            return max(0, actual.breakTime)
-        }
-        
-        if let regular = workPlace.regularSchedules.first(where: { $0.dayOfWeek == day.koreanWeekday }) {
-            return max(0, regular.breakTime)
-        }
-        
-        return max(0, workPlace.defaultRestTime ?? 0)
-    }
 }

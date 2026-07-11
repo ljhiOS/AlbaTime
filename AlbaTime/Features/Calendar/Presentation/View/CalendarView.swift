@@ -108,7 +108,14 @@ struct CalendarView: View {
             ScheduleDetailCard(
                 selectedDate: cvm.selectedDate,
                 schedules: cvm.selectedDateSchedules,
-                totalPay: cvm.selectedDateTotalPay
+                totalPay: cvm.selectedDateTotalPay,
+                onSaveTime: { schedule, startTime, endTime in
+                    cvm.saveWorkRecord(
+                        for: schedule,
+                        startTime: startTime,
+                        endTime: endTime
+                    )
+                }
             )
         }
         .background(Color.theme.surface)
@@ -131,7 +138,7 @@ struct CalendarView: View {
                 VStack(spacing: 18) {
                     HStack(spacing: 12) {
                         Picker("년도", selection: $pickedYear) {
-                            ForEach((2020...2035), id: \.self) { year in
+                            ForEach((2020...2050), id: \.self) { year in
                                 Text(verbatim: "\(year)년").tag(year)
                             }
                         }
@@ -152,12 +159,21 @@ struct CalendarView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("취소") { showMonthPicker = false }
+                        Button{
+                            showMonthPicker = false
+                        } label: {
+                            Text("취소")
+                                .foregroundStyle(Color.theme.textPrimary)
+                        }
                     }
+                    
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("적용") {
+                        Button {
                             cvm.applyPickedYearMonth(year: pickedYear, month: pickedMonth)
                             showMonthPicker = false
+                        } label: {
+                            Text("적용")
+                                .foregroundStyle(Color.theme.textPrimary)
                         }
                     }
                 }
@@ -182,7 +198,8 @@ struct CalendarView: View {
 #Preview() {
     return CalendarView(
         viewModel: CalendarViewModel(
-            loadCalendarWorkPlaces: PreviewCalendarWorkPlacesLoading()
+            loadCalendarWorkPlaces: PreviewCalendarWorkPlacesLoading(),
+            workRecordSaving: PreviewCalendarWorkRecordSaving()
         )
     )
 }
@@ -192,4 +209,9 @@ private struct PreviewCalendarWorkPlacesLoading: CalendarWorkPlacesLoading {
     func execute() throws -> [WorkPlace] {
         []
     }
+}
+
+@MainActor
+private struct PreviewCalendarWorkRecordSaving: CalendarWorkRecordSaving {
+    func execute(_ command: CalendarWorkRecordCommand) throws { }
 }
