@@ -10,6 +10,8 @@ import SwiftUI
 struct PayDetailCard: View {
     let breakdown: SalaryBreakdown
     let isExpected: Bool
+    let showsNightAllowance: Bool
+    let showsHolidayAllowance: Bool
 
     private var totalHours: Double {
         isExpected ? breakdown.monthlyWorkHours : breakdown.accruedWorkHours
@@ -40,16 +42,20 @@ struct PayDetailCard: View {
                 subtitle: "근무시간 기준",
                 amount: breakdown.basicPay
             )
-            payRow(
-                title: "야간수당",
-                subtitle: "22:00 ~ 06:00 가산",
-                amount: breakdown.nightPay
-            )
-            payRow(
-                title: "주휴수당",
-                subtitle: "주휴 조건 충족분",
-                amount: breakdown.holidayPay
-            )
+            if showsNightAllowance {
+                payRow(
+                    title: "야간수당",
+                    subtitle: "22:00 ~ 06:00 가산",
+                    amount: breakdown.nightPay
+                )
+            }
+            if showsHolidayAllowance {
+                payRow(
+                    title: "주휴수당",
+                    subtitle: "주휴 조건 충족분",
+                    amount: breakdown.holidayPay
+                )
+            }
 
             Divider()
 
@@ -120,7 +126,9 @@ struct PayDetailCard: View {
                 accruedWorkHours: 98.5,
                 workingDays: 3
             ),
-            isExpected: false
+            isExpected: false,
+            showsNightAllowance: true,
+            showsHolidayAllowance: true
         )
     }
 }

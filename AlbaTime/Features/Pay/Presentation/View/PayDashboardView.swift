@@ -22,6 +22,14 @@ struct PayDashboardView: View {
         self.workPlaces = workPlaces
         _pvm = StateObject(wrappedValue: viewModel)
     }
+
+    private var showsNightAllowance: Bool {
+        workPlaces.contains { $0.allowanceType.includesNight }
+    }
+
+    private var showsHolidayAllowance: Bool {
+        workPlaces.contains { $0.allowanceType.includesHoliday }
+    }
     
     var body: some View {
         VStack {
@@ -38,7 +46,9 @@ struct PayDashboardView: View {
                     
                     PayDetailCard(
                         breakdown: showExpected ? pvm.projectedSalaryData : pvm.salaryData,
-                        isExpected: showExpected
+                        isExpected: showExpected,
+                        showsNightAllowance: showsNightAllowance,
+                        showsHolidayAllowance: showsHolidayAllowance
                     )
                     
                     RealAchivePay()
