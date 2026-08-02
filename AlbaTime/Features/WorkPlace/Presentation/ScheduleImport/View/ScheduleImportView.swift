@@ -16,20 +16,24 @@ struct ScheduleImportView: View {
     @StateObject private var sivm: ScheduleImportViewModel
     @StateObject private var ssvm = ScheduleImportSelectionViewModel()
     @State private var selectedPhotoItem: PhotosPickerItem?
-    
+
     @FocusState private var isNameFieldFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
-    
+    private let analyticsTracker: any AnalyticsTracking
+
     init(
         session: WorkPlaceEditingSession,
         scheduleSaving: any ScheduleSaving,
-        analyzeScheduleImage: any ScheduleImageAnalyzing
+        analyzeScheduleImage: any ScheduleImageAnalyzing,
+        analyticsTracker: any AnalyticsTracking = NoopAnalyticsTracker()
     ) {
         self.scheduleSaving = scheduleSaving
+        self.analyticsTracker = analyticsTracker
         _sivm = StateObject(
             wrappedValue: ScheduleImportViewModel(
                 session: session,
-                analyzeScheduleImage: analyzeScheduleImage
+                analyzeScheduleImage: analyzeScheduleImage,
+                analyticsTracker: analyticsTracker
             )
         )
     }
@@ -103,15 +107,17 @@ private extension ScheduleImportView {
                 ssvm: ssvm)
         case .loading:
             ScheduleImportLoadingView(targetName: myName)
-        
+
         case .result:
             ScheduleImportResultList(sivm: sivm)
         }
     }
-    
+
     private func triggerManualWeekFocus() {
         ssvm.requestManualFocus()
         sivm.enterManualInputMode()
+
+        analyticsTracker.track(.manualScheduleClick)
     }
 
     @ViewBuilder
@@ -139,7 +145,11 @@ private extension ScheduleImportView {
 #Preview("AI 스케줄 - 빈 상태") {
     let saving = PreviewWorkPlaceSaving()
     let scheduleSaving = PreviewScheduleSaving()
-    let ajvm = AddWorkPlaceViewModel(type: .fixed, workPlaceSaving: saving)
+    let ajvm = AddWorkPlaceViewModel(
+        type: .fixed,
+        workPlaceSaving: saving,
+        analyticsTracker: NoopAnalyticsTracker()
+    )
 
     NavigationStack {
         ScheduleImportView(
@@ -214,7 +224,8 @@ private extension ScheduleImportView {
 
     let ajvm = AddWorkPlaceViewModel(
         editingSeed: seed,
-        workPlaceSaving: PreviewWorkPlaceSaving()
+        workPlaceSaving: PreviewWorkPlaceSaving(),
+        analyticsTracker: NoopAnalyticsTracker()
     )
 
     NavigationStack {

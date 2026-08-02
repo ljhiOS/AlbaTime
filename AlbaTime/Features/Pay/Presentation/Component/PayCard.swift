@@ -8,22 +8,24 @@
 import SwiftUI
 
 struct PayCard: View {
-    
+
     @ObservedObject var pvm: PayViewModel
     @Binding var showExpected: Bool
 
     @State private var headerOffsetY: CGFloat = 0
     @State private var isAnimating: Bool = false
-    
+
+    @Environment(\.analyticsTracker) private var analyticsTracker
+
     var body: some View {
         VStack(alignment: .leading) {
-            
+
             VStack(alignment: .leading) {
                 Text(showExpected ? "이번 달 총 예상 급여" : "이번 달 누적 급여")
                     .font(.subheadline)
                     .foregroundStyle(.white)
                     .padding(.top)
-            
+
                 Text("\((showExpected ? pvm.projectedSalaryData.totalPay : pvm.salaryData.totalPay).formatted())원")
                     .foregroundStyle(.yellow)
                     .font(.title)
@@ -31,18 +33,18 @@ struct PayCard: View {
             }
             .padding(.horizontal)
             .offset(y: headerOffsetY)
-            
+
             Divider()
                 .frame(height: 1)
                 .background(Color.white)
                 .padding(.horizontal)
-            
+
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(showExpected ? "이번 달 총 근무시간" : "이번 달 누적 근무시간")
                         .font(.subheadline)
                         .foregroundStyle(.white)
-                    
+
                     Text(String(
                         format: "%.1f시간",
                         showExpected ? pvm.projectedSalaryData.monthlyWorkHours : pvm.salaryData.accruedWorkHours
@@ -53,12 +55,12 @@ struct PayCard: View {
                         .bold()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text("평균 시급")
                         .font(.subheadline)
                         .foregroundStyle(.white)
-                    
+
                     Text("\(pvm.averageWage.formatted())원")
                         .foregroundStyle(.white)
                         .font(.system(size: 20))
@@ -91,10 +93,12 @@ struct PayCard: View {
             withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                 headerOffsetY = 0
             }
-            
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 isAnimating = false
             }
+
+            analyticsTracker.track(.salaryModeChanged)
         }
     }
 }

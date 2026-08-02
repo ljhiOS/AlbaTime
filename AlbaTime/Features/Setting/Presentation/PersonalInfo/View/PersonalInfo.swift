@@ -25,7 +25,7 @@ struct PersonalInfo: View {
                         .fontWeight(.bold)
                         .multilineTextAlignment(.center)
                     
-                    Text("최종 수정일: 2026년 1월 11일")
+                    Text("최종 수정일: 2026년 8월 2일")
                         .font(.caption)
                         .foregroundStyle(Color.theme.textSecondary)
                 }
@@ -38,24 +38,36 @@ struct PersonalInfo: View {
                     // 서문
                     PolicySectionView(
                         title: "개요",
-                        content: "'알바타임'(이하 '본 앱')은 사용자의 개인정보를 소중히 여기며, 『개인정보 보호법』 등 관련 법령을 준수합니다. 본 앱은 별도의 서버를 운영하지 않으며, 사용자의 기기에 저장된 데이터를 외부로 전송하거나 수집하지 않습니다."
+                        content: "'알바타임'(이하 '본 앱')은 사용자의 개인정보를 소중히 여기며, 『개인정보 보호법』 등 관련 법령을 준수합니다. 본 앱은 별도의 자체 서버를 운영하지 않지만, 서비스 이용 통계 및 기능 개선을 위해 Google LLC의 Firebase Analytics를 사용합니다. Firebase Analytics 수집은 사용자의 명시적 동의 후에만 활성화됩니다. 앱에서 입력한 근무지 정보, 급여 내역, 근무 기록 등은 본 앱의 로컬 저장소에 저장되며 Firebase Analytics로 전송되지 않습니다."
                     )
                     
                     // 1. 수집 항목
                     PolicySectionView(
                         title: "1. 수집하는 개인정보 항목",
-                        content: "본 앱은 회원가입 절차가 없으며, 사용자의 어떠한 개인정보(이름, 연락처, 기기 정보 등)도 수집하거나 서버로 전송하지 않습니다."
+                        content: "본 앱은 회원가입 절차가 없으며 이름, 연락처 등 회원 식별 정보를 직접 수집하지 않습니다.\n\nFirebase Analytics를 통해 다음 정보가 자동으로 처리될 수 있습니다.\n\n• 앱 사용 이벤트 및 이용 기록\n• 앱 인스턴스 식별자 또는 기기 관련 식별자\n• 세션 정보, 앱 버전, 운영체제 정보 및 기기 정보\n• 대략적인 지역 정보\n\n현재 본 앱이 Firebase Analytics에 직접 기록하는 이벤트에는 이름, 연락처, 급여, 근무지, 메모 등 사용자가 입력한 내용이 포함되지 않습니다."
                     )
                     
                     // 2. 저장 및 관리
                     PolicySectionView(
                         title: "2. 데이터의 저장 및 관리",
-                        content: "본 앱을 통해 입력한 모든 데이터(근무지 정보, 급여 내역, 근무 기록 등)는 사용자의 스마트폰 내부 저장소(SwiftData/CoreData)에만 암호화되어 저장됩니다.\n\n앱을 삭제할 경우 해당 데이터는 기기에서 즉시 영구적으로 삭제되며 복구할 수 없습니다."
+                        content: "본 앱을 통해 입력한 모든 데이터(근무지 정보, 급여 내역, 근무 기록 등)는 사용자의 스마트폰 내부 저장소(SwiftData/CoreData)에 저장됩니다.\n\n앱을 삭제할 경우 기기 내부에 저장된 본 앱의 데이터는 삭제되며 복구할 수 없습니다. Firebase Analytics로 이미 전송된 데이터는 앱 삭제만으로 즉시 삭제되지 않으며 Google Analytics의 보관 및 삭제 정책에 따라 처리됩니다."
+                    )
+
+                    PolicySectionView(
+                        title: "3. Firebase Analytics 수집 동의 및 철회",
+                        content: "Firebase Analytics는 최초 실행 시 사용자의 동의를 받은 후에만 수집을 시작합니다. 동의하지 않아도 본 앱의 기본 기능을 사용할 수 있습니다. 동의 여부는 본 개인정보처리방침 화면의 ‘Firebase Analytics 수집 허용’ 설정에서 언제든지 변경할 수 있습니다.\n\n동의를 철회하면 이후 발생하는 Firebase Analytics 이벤트의 수집이 중단됩니다. 이미 전송된 데이터는 Google Analytics의 보관 및 삭제 정책에 따라 처리됩니다."
+                    )
+
+                    AnalyticsConsentSettingsSectionView()
+
+                    PolicySectionView(
+                        title: "4. Firebase Analytics 처리 위탁 및 국외 이전",
+                        content: "수탁자: Google LLC\n수탁업무: Firebase Analytics/Google Analytics를 이용한 앱 사용 통계 및 서비스 개선\n\n국외 이전 국가: 미국을 포함한 Google의 글로벌 데이터 처리 시설 소재 국가\n이전 시점 및 방법: Analytics 수집 동의 후 앱 사용 이벤트가 발생할 때 네트워크를 통해 전송\n이전되는 항목: 앱 사용 이벤트, 앱 인스턴스 식별자 또는 기기 관련 식별자, 세션 정보, 앱 버전, 운영체제 정보, 기기 정보 및 대략적인 지역 정보\n이전 목적: 서비스 이용 통계 및 기능 개선\n보유기간: Google Analytics 속성의 사용자 및 이벤트 수준 데이터 보관기간인 2개월을 적용합니다. 집계된 통계 보고서는 Google의 정책에 따라 별도로 보관될 수 있습니다."
                     )
                     
-                    // 3. 권한 안내
+                    // 5. 권한 안내
                     PolicySectionView(
-                        title: "3. 권한 사용 안내",
+                        title: "5. 권한 사용 안내",
                         content: """
                             본 앱은 기능 수행을 위해 최소한의 권한만을 요청합니다.
                             
@@ -65,8 +77,13 @@ struct PersonalInfo: View {
                             위 권한은 사용자가 허용하지 않아도 앱의 기본 기능은 이용할 수 있습니다.
                             """
                     )
+
+                    PolicySectionView(
+                        title: "6. 정보주체의 권리 및 행사 방법",
+                        content: "정보주체는 본인의 개인정보에 대해 열람, 정정, 삭제 및 처리정지를 요청할 수 있습니다. 권리 행사는 아래 문의처로 요청할 수 있으며, 관련 법령에 따라 처리됩니다. Firebase Analytics 수집 동의 철회는 본 화면의 설정에서 즉시 변경할 수 있습니다."
+                    )
                     
-                    // 4. 문의처
+                    // 7. 문의처
                     ContactSectionView()
                 }
                 .padding(.horizontal)
@@ -104,6 +121,39 @@ struct PolicySectionView: View {
     }
 }
 
+private struct AnalyticsConsentSettingsSectionView: View {
+    @AppStorage(AnalyticsConsentStore.grantedKey) private var isAnalyticsConsentGranted = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("서비스 이용 분석 설정")
+                .font(.headline)
+                .foregroundStyle(Color.theme.textPrimary)
+
+            Toggle(
+                "Firebase Analytics 수집 허용",
+                isOn: Binding(
+                    get: { isAnalyticsConsentGranted },
+                    set: { newValue in
+                        AnalyticsConsentStore.setConsent(newValue)
+                        isAnalyticsConsentGranted = newValue
+                    }
+                )
+            )
+
+            Text("허용하면 앱 사용 이벤트와 앱·기기 관련 정보가 Firebase Analytics로 전송될 수 있습니다. 해제해도 앱의 기본 기능에는 영향이 없습니다.")
+                .font(.subheadline)
+                .foregroundStyle(Color.theme.textSecondary)
+                .lineSpacing(4)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(Color.theme.field)
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+    }
+}
+
 // 📧 문의처 섹션 (이메일 복사 기능 포함)
 struct ContactSectionView: View {
     let email = "ljh230c@naver.com"
@@ -111,11 +161,11 @@ struct ContactSectionView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("4. 문의처")
+            Text("7. 문의처")
                 .font(.headline)
                 .foregroundStyle(Color.theme.textPrimary)
             
-            Text("본 앱의 개인정보 처리와 관련하여 문의사항이 있으신 경우 아래 연락처로 문의해 주시기 바랍니다.")
+            Text("개인정보 보호업무 담당자: 알바타임 운영자\n\n본 앱의 개인정보 처리와 관련하여 문의사항이 있으신 경우 아래 연락처로 문의해 주시기 바랍니다.")
                 .font(.subheadline)
                 .foregroundStyle(Color.theme.textSecondary)
                 .lineSpacing(4)

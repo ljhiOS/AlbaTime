@@ -11,36 +11,39 @@ import Foundation
 @MainActor
 class AddWorkPlaceViewModel: ObservableObject {
     var session: WorkPlaceEditingSession
-    
+
     @Published var isAIImportPresented: Bool = false
     @Published var showAlert: Bool = false
     @Published var errorMessage: String = ""
-    
+
     private let originalWorkPlaceDraft: WorkPlaceDraft
-    
+
     // 실제 저장 UseCase는 Route/Composition에서 주입됩니다.
     private let workPlaceSaving: any WorkPlaceSaving
     private var hasSavedChanges: Bool = false
-    
+    private let analyticsTracker: any AnalyticsTracking
+
     let days = ["월", "화", "수", "목", "금", "토", "일"]
-    
+
     // MARK: - 초기화 (Init)
-    
+
     // 신규 생성 모드
-    init(type: WorkType, workPlaceSaving: any WorkPlaceSaving) {
+    init(type: WorkType, workPlaceSaving: any WorkPlaceSaving, analyticsTracker: any AnalyticsTracking) {
         let seed = WorkPlaceEditingSeed.new(type: type)
         self.session = WorkPlaceEditingSession(seed: seed)
         self.originalWorkPlaceDraft = seed.workPlaceDraft
         self.workPlaceSaving = workPlaceSaving
+        self.analyticsTracker = analyticsTracker
     }
-    
+
     // 수정 모드
-    init(editingSeed: WorkPlaceEditingSeed, workPlaceSaving: any WorkPlaceSaving) {
+    init(editingSeed: WorkPlaceEditingSeed, workPlaceSaving: any WorkPlaceSaving, analyticsTracker: any AnalyticsTracking) {
         self.session = WorkPlaceEditingSession(seed: editingSeed, editingWorkPlaceID: editingSeed.id)
         self.originalWorkPlaceDraft = editingSeed.workPlaceDraft
         self.workPlaceSaving = workPlaceSaving
+        self.analyticsTracker = analyticsTracker
     }
-    
+
     // MARK: - 유효성 검사 및 AI
     // TODO: 저장 검증과 AI 진입 전 기본 검증의 중복 조건 정리 검토
     func validateAndOpenAI() {
@@ -49,27 +52,29 @@ class AddWorkPlaceViewModel: ObservableObject {
             showAlert = true
             return
         }
-        
+
         if session.workPlaceDraft.hourlyWage <= 0 {
             errorMessage = "올바른 시급을 입력해주세요."
             showAlert = true
             return
         }
+
+        analyticsTracker.track(.aiScheduleOpened)
         isAIImportPresented = true
     }
-    
+
     // MARK: - 요일별 스케줄 로직
-    
+
     func getSchedule(for day: String) -> RegularScheduleDraft? {
         session.workPlaceDraft.regularSchedules.first { $0.dayOfWeek == day }
     }
-    
+
     // MARK: 스케줄 선택 및 취소
     func updateStartTime(for day: String, to newValue: Date) {
         guard let index = session.workPlaceDraft.regularSchedules.firstIndex(where: { $0.dayOfWeek == day }) else { return }
         session.workPlaceDraft.regularSchedules[index].startTime = newValue
     }
-    
+
     func updateEndTime(for day: String, to newValue: Date) {
         guard let index = session.workPlaceDraft.regularSchedules.firstIndex(where: { $0.dayOfWeek == day }) else { return }
         session.workPlaceDraft.regularSchedules[index].endTime = newValue
@@ -92,7 +97,7 @@ class AddWorkPlaceViewModel: ObservableObject {
 
     func resetAllDays() {
         let weekdays = ["월", "화", "수", "목", "금"]
-        
+
         session.workPlaceDraft.regularSchedules = weekdays.map { day in
             RegularScheduleDraft(
                 id: UUID(),
@@ -103,7 +108,7 @@ class AddWorkPlaceViewModel: ObservableObject {
             )
         }
     }
-    
+
     // MARK: 저장
     func save() -> Bool {
         do {
@@ -116,6 +121,16 @@ class AddWorkPlaceViewModel: ObservableObject {
                 )
             )
             hasSavedChanges = true
+
+            switch session.workPlaceDraft.workType {
+            case .fixed:
+                analyticsTracker.track(.fixedWorkplaceSaved)
+            case .flexible:
+                analyticsTracker.track(.flexibleWorkplaceSaved)
+            }
+
+            trackImportedScheduleSavedEventsIfNeeded()
+
             return true
         } catch {
             errorMessage = error.localizedDescription
@@ -123,7 +138,22 @@ class AddWorkPlaceViewModel: ObservableObject {
             return false
         }
     }
-    
+
+    private func trackImportedScheduleSavedEventsIfNeeded() {
+        guard session.editingWorkPlaceID == nil else { return }
+
+        let schedules = session.scheduleImportDraft.schedules
+            .filter { $0.changeState != .clean }
+
+        if schedules.contains(where: { $0.source == .aiImport }) {
+            analyticsTracker.track(.aiScheduleSaved)
+        }
+
+        if schedules.contains(where: { $0.source == .manual }) {
+            analyticsTracker.track(.manualScheduleSaved)
+        }
+    }
+
     // MARK: 백업
     func restoreEditsIfNeeded() {
         guard session.editingWorkPlaceID != nil else { return }

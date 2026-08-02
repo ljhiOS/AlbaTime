@@ -36,12 +36,16 @@ class ScheduleImportViewModel: ObservableObject {
     private let analyzeScheduleImage: any ScheduleImageAnalyzing
     private var selectedImageData: Data?
 
+    private let analyticsTracker: any AnalyticsTracking
+
     init(
         session: WorkPlaceEditingSession,
-        analyzeScheduleImage: any ScheduleImageAnalyzing
+        analyzeScheduleImage: any ScheduleImageAnalyzing,
+        analyticsTracker: any AnalyticsTracking
     ) {
         self.session = session
         self.analyzeScheduleImage = analyzeScheduleImage
+        self.analyticsTracker = analyticsTracker
     }
 
     var hasSavedSchedules: Bool {
@@ -263,15 +267,20 @@ class ScheduleImportViewModel: ObservableObject {
         targetWeekStart: Date? = nil
     ) -> Bool {
         do {
+            let draft = session.scheduleImportDraft.makeEditDraft(
+                state: .existingWorkPlaceAIImport,
+                targetWeekStart: targetWeekStart
+            )
+
             try scheduleSaving.execute(
                 .editDraft(
                     workPlaceID: session.editingWorkPlaceID,
-                    draft: session.scheduleImportDraft.makeEditDraft(
-                        state: .existingWorkPlaceAIImport,
-                        targetWeekStart: targetWeekStart
-                    )
+                    draft: draft
                 )
             )
+
+            trackSavedScheduleEvents(from: draft.items)
+
             return true
         } catch {
             errorMessage = error.localizedDescription
@@ -286,11 +295,24 @@ class ScheduleImportViewModel: ObservableObject {
     ) throws {
         if let editingWorkPlaceID = session.editingWorkPlaceID {
             try scheduleSaving.execute(.editDraft(workPlaceID: editingWorkPlaceID, draft: draft))
+            trackSavedScheduleEvents(from: draft.items)
             return
         }
 
         session.scheduleImportDraft.schedules = draft.items
             .filter { $0.changeState != .deleted }
+    }
+
+    private func trackSavedScheduleEvents(from items: [ScheduleEditItem]) {
+        let changedItems = items.filter { $0.changeState != .clean }
+
+        if changedItems.contains(where: { $0.source == .aiImport }) {
+            analyticsTracker.track(.aiScheduleSaved)
+        }
+
+        if changedItems.contains(where: { $0.source == .manual }) {
+            analyticsTracker.track(.manualScheduleSaved)
+        }
     }
 
     // MARK: preset 연관 메서드
