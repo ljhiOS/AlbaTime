@@ -9,20 +9,23 @@ import SwiftUI
 
 struct WorkCard: View {
     let state: WorkPlaceCardViewState
-    
+
     var onDelete: () -> Void
     var onPin: () -> Void
     var onToggleAlarm: () -> Void
     var onShowDetail: () -> Void
     var onShowEdit: () -> Void
-    
+
     @Environment(\.colorScheme) private var colorScheme
     private var cardBackgroundColor: Color {
         colorScheme == .dark ? Color.theme.field : Color.theme.surface
     }
+
+    @Environment(\.analyticsTracker) private var analyticsTracker
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            
+
             // 1. [상단 영역] 이름(좌) vs 시급+메뉴(우)
             HStack(alignment: .top) {
                 // (좌) 가게 이름
@@ -35,20 +38,20 @@ struct WorkCard: View {
                         .minimumScaleFactor(0.8)
                         .truncationMode(.tail)
                 }
-                
+
                 Spacer()
-                
+
                 // (우) 시급 + 메뉴 버튼
                 HStack {
                     Text("시급")
                         .font(.subheadline)
                         .foregroundColor(.gray)
-                    
+
                     Text("₩\(state.hourlyWage)")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.orange)
-                    
+
                     // 점 3개 메뉴
                     Image(systemName: "ellipsis")
                         .rotationEffect(.degrees(90))
@@ -74,17 +77,17 @@ struct WorkCard: View {
                 }
                 .layoutPriority(1)
             }
-            
+
             // 2. 구분선
             Rectangle()
                 .frame(height: 1)
                 .foregroundColor(Color.gray.opacity(0.3))
-            
+
             // 3. [정보 영역] 아이콘 + 그룹화된 스케줄 텍스트
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "clock")
                     .foregroundColor(.gray)
-                
+
                 // 요일 순으로 정렬된 스케줄 텍스트
                 Text(state.scheduleSummary)
                     .font(.subheadline)
@@ -92,7 +95,7 @@ struct WorkCard: View {
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
             }
-            
+
             // 4. [버튼 영역]
             HStack(spacing: 10) {
                 Button {
@@ -106,9 +109,10 @@ struct WorkCard: View {
                 }
                 .buttonStyle(.plain)
                 .spotlightTarget(.workPlaceListDetailButton)
-                
+
                 Button {
                     onShowEdit()
+                    analyticsTracker.track(.workplaceEdit)
                 } label: {
                     Text("근무 수정")
                         .font(.subheadline).fontWeight(.semibold).foregroundColor(.white)

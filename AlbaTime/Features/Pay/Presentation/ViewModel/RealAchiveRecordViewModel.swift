@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 class RealAchiveRecordViewModel: ObservableObject {
-    
+
     // 뷰와 연동될 상태 변수들
     @Published var isAdding: Bool = false
     @Published var selectedDate: Date = Date()
@@ -18,12 +18,16 @@ class RealAchiveRecordViewModel: ObservableObject {
     private let monthlyRecordSaving: any MonthlyRecordSaving
     private let monthlyRecordDeleting: any MonthlyRecordDeleting
 
+    private let analyticsTracker: any AnalyticsTracking
+
     init(
         monthlyRecordSaving: any MonthlyRecordSaving,
-        monthlyRecordDeleting: any MonthlyRecordDeleting
+        monthlyRecordDeleting: any MonthlyRecordDeleting,
+        analyticsTracker: any AnalyticsTracking
     ) {
         self.monthlyRecordSaving = monthlyRecordSaving
         self.monthlyRecordDeleting = monthlyRecordDeleting
+        self.analyticsTracker = analyticsTracker
     }
 
     // MARK: - Logic Functions
@@ -36,6 +40,7 @@ class RealAchiveRecordViewModel: ObservableObject {
                 amountString: amountString,
                 existingRecords: existingRecords
             )
+            analyticsTracker.track(.monthlyIncomeSaved)
             isAdding = false
             resetForm()
         } catch {

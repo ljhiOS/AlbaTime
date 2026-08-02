@@ -9,12 +9,12 @@ import SwiftUI
 
 struct FlexibleInfoGroup: View {
     @ObservedObject var session: WorkPlaceEditingSession
-    
+
     var estimatedWeeklyPay: Int {
         let draft = session.workPlaceDraft
         return Int(Double(draft.hourlyWage) * Double(draft.targetWeeklyCount) * draft.expectedDailyHours)
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             // 1. 주 몇 회 근무?
@@ -27,7 +27,7 @@ struct FlexibleInfoGroup: View {
                         .foregroundStyle(Color.theme.primary)
                 }
                 .font(.callout)
-                
+
                 HStack(spacing: 0) {
                     ForEach(1...7, id: \.self) { day in
                         Button {
@@ -48,9 +48,9 @@ struct FlexibleInfoGroup: View {
                     }
                 }
             }
-            
+
             Divider()
-            
+
             // 2. 하루 평균 몇 시간?
             VStack(alignment: .leading) {
                 HStack {
@@ -63,7 +63,7 @@ struct FlexibleInfoGroup: View {
                         .foregroundStyle(Color.theme.primary)
                 }
                 .font(.callout)
-                
+
                 Slider(value: $session.workPlaceDraft.expectedDailyHours, in: 1...12, step: 0.5) {
                     Text("Hours")
                 } minimumValueLabel: {
@@ -111,7 +111,11 @@ struct FlexibleInfoGroup: View {
 }
 
 #Preview {
-    let viewModel = AddWorkPlaceViewModel(type: .flexible, workPlaceSaving: PreviewFlexibleInfoWorkPlaceSaving())
+    let viewModel = AddWorkPlaceViewModel(
+        type: .flexible,
+        workPlaceSaving: PreviewFlexibleInfoWorkPlaceSaving(),
+        analyticsTracker: NoopAnalyticsTracker()
+    )
     viewModel.session.workPlaceDraft.hourlyWage = 10350
     viewModel.session.workPlaceDraft.targetWeeklyCount = 4
     viewModel.session.workPlaceDraft.expectedDailyHours = 6.5

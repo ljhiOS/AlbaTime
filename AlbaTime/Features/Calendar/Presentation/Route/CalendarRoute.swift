@@ -10,6 +10,7 @@ import SwiftUI
 
 struct CalendarRoute: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.analyticsTracker) private var analyticsTracker
 
     var body: some View {
         CalendarView(
@@ -19,7 +20,8 @@ struct CalendarRoute: View {
                 ),
                 workRecordSaving: CalendarFeatureComposition.makeWorkRecordSaving(
                     context: modelContext
-                )
+                ),
+                analyticsTracker: analyticsTracker
             )
         )
     }

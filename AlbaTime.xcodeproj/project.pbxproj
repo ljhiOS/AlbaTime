@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A12EC6ED301ECAA800065E9C /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A12EC6EC301ECAA800065E9C /* FirebaseAnalytics */; };
+		A12EC6EF301ECAA800065E9C /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = A12EC6EE301ECAA800065E9C /* FirebaseAnalyticsCore */; };
+		A12EC6F1301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = A12EC6F0301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport */; };
 		A1C427212F359C2C00441D23 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1C427202F359C2C00441D23 /* WidgetKit.framework */; };
 		A1C427232F359C2C00441D23 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1C427222F359C2C00441D23 /* SwiftUI.framework */; };
 		A1C427342F359C2C00441D23 /* AlbaTimeWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1C4271E2F359C2C00441D23 /* AlbaTimeWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -52,6 +55,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A12EC6E9301EC9FC00065E9C /* Exceptions for "AlbaTime" folder in "AlbaTimeTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"App/GoogleService-Info.plist",
+			);
+			target = A16722F82F137C5E00EFBBE9 /* AlbaTimeTests */;
+		};
+		A12EC6EA301EC9FC00065E9C /* Exceptions for "AlbaTime" folder in "AlbaTimeWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"App/GoogleService-Info.plist",
+			);
+			target = A1C4271D2F359C2C00441D23 /* AlbaTimeWidgetExtension */;
+		};
 		A144C1932F1356B20011E19B /* Exceptions for "AlbaTime" folder in "AlbaTime" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -73,6 +90,8 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				A144C1932F1356B20011E19B /* Exceptions for "AlbaTime" folder in "AlbaTime" target */,
+				A12EC6E9301EC9FC00065E9C /* Exceptions for "AlbaTime" folder in "AlbaTimeTests" target */,
+				A12EC6EA301EC9FC00065E9C /* Exceptions for "AlbaTime" folder in "AlbaTimeWidgetExtension" target */,
 			);
 			path = AlbaTime;
 			sourceTree = "<group>";
@@ -97,6 +116,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A12EC6ED301ECAA800065E9C /* FirebaseAnalytics in Frameworks */,
+				A12EC6EF301ECAA800065E9C /* FirebaseAnalyticsCore in Frameworks */,
+				A12EC6F1301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +193,9 @@
 			);
 			name = AlbaTime;
 			packageProductDependencies = (
+				A12EC6EC301ECAA800065E9C /* FirebaseAnalytics */,
+				A12EC6EE301ECAA800065E9C /* FirebaseAnalyticsCore */,
+				A12EC6F0301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport */,
 			);
 			productName = AlbaTime;
 			productReference = A16196882EE6C671008485EB /* AlbaTime.app */;
@@ -252,6 +277,9 @@
 			);
 			mainGroup = A161967F2EE6C671008485EB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A16196892EE6C671008485EB /* Products */;
 			projectDirPath = "";
@@ -474,6 +502,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0.1;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -513,6 +545,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0.1;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = junhee.AlbaTime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -679,6 +715,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A12EC6EC301ECAA800065E9C /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		A12EC6EE301ECAA800065E9C /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		A12EC6F0301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsIdentitySupport;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A16196802EE6C671008485EB /* Project object */;
 }

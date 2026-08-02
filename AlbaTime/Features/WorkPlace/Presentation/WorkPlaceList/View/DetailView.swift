@@ -15,6 +15,8 @@ struct DetailView: View {
 
     @State private var memo: String
 
+    @Environment(\.analyticsTracker) private var analyticsTracker
+
     init(
         state: WorkPlaceDetailViewState,
         onMemoChange: @escaping (String) -> Void = { _ in }
@@ -23,30 +25,33 @@ struct DetailView: View {
         self.onMemoChange = onMemoChange
         _memo = State(initialValue: state.memo)
     }
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
-                
+
                 WorkCardDetail(state: state)
                     .padding(.horizontal, 30)
-                
+
                 StaticDetailView(
                     totalDays: state.totalDays,
                     totalHours: state.accruedWorkHours,
                     totalWage: state.totalWage
                 )
                 .padding(.horizontal, 30)
-                
+
                 PlusInfo(memo: $memo)
                     .padding(.horizontal, 30)
-                
+
             } //:VStack
         } //:ScrollViewEnd
         .toolbar(.hidden, for: .tabBar)
         .background(Color.theme.surface)
         .navigationTitle("상세보기")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            analyticsTracker.track(.scheduleDetailViewed)
+        }
         .onChange(of: memo) { _, newValue in
             onMemoChange(newValue)
         }

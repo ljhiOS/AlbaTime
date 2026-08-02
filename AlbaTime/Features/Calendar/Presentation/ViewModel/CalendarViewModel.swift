@@ -34,30 +34,33 @@ struct CalendarScheduleState: Identifiable {
 class CalendarViewModel: ObservableObject {
     @Published var currentMonth: Date = Date()
     @Published var selectedDate: Date = Date()
-    
+
     @Published private(set) var dayStates: [Date: CalendarDayState] = [:]
     @Published private(set) var selectedDateSchedules: [CalendarScheduleState] = []
     @Published private(set) var selectedDateTotalPay: Int = 0
-    
+
     private var workPlaces: [WorkPlace] = []
     private var scheduleCache: [Date : [WorkPlace]] = [:]
     private let loadCalendarWorkPlaces: any CalendarWorkPlacesLoading
     private let workRecordSaving: any CalendarWorkRecordSaving
-    
+    private let analyticsTracker: any AnalyticsTracking
+
     init(
         loadCalendarWorkPlaces: any CalendarWorkPlacesLoading,
-        workRecordSaving: any CalendarWorkRecordSaving
+        workRecordSaving: any CalendarWorkRecordSaving,
+        analyticsTracker: any AnalyticsTracking
     ) {
         self.loadCalendarWorkPlaces = loadCalendarWorkPlaces
         self.workRecordSaving = workRecordSaving
+        self.analyticsTracker = analyticsTracker
     }
-    
+
     // 달력 날짜 생성
     func generateDaysInMonth() -> [Date?] {
         let start = currentMonth.startOfMonth()
         let daysInMonth = start.daysInMonth()
         let startDayOfWeek = start.startDayOfWeek()
-        
+
         var days: [Date?] = []
         for _ in 0..<(startDayOfWeek - 1) { days.append(nil) }
         for i in 0..<daysInMonth {
@@ -67,7 +70,7 @@ class CalendarViewModel: ObservableObject {
         }
         return days
     }
-    
+
     func load() {
         do {
             workPlaces = try loadCalendarWorkPlaces.execute()
@@ -76,31 +79,31 @@ class CalendarViewModel: ObservableObject {
             print("캘린더 데이터 로드 실패: \(error)")
         }
     }
-    
+
     func changeMonth(by value: Int) {
         if let newDate = Calendar.current.date(byAdding: .month, value: value, to: currentMonth) {
             currentMonth = newDate
             load()
         }
     }
-    
+
     func selectDate(_ date: Date) {
         selectedDate = date
         updateSelectedDateSchedules()
     }
-    
+
     func hasWork(on date: Date) -> Bool {
         let key = Calendar.current.startOfDay(for: date)
         return dayStates[key]?.hasWork ?? false
     }
-    
+
     func applyPickedYearMonth(year: Int, month: Int) {
         let calendar = Calendar.current
         var comp = calendar.dateComponents([.hour, .minute, .second], from: currentMonth)
         comp.year = year
         comp.month = month
         comp.day = 1
-        
+
         if let date = calendar.date(from: comp) {
             currentMonth = date
             load()
@@ -122,6 +125,9 @@ class CalendarViewModel: ObservableObject {
                     breakTime: schedule.breakTime
                 )
             )
+
+            analyticsTracker.track(.workTimeChanged)
+
             load()
         } catch {
             print("근무 시간 저장 실패: \(error)")
@@ -142,9 +148,9 @@ class CalendarViewModel: ObservableObject {
                 }
             }
         }
-        
+
         scheduleCache = newCache
-        
+
         dayStates = Dictionary(
             uniqueKeysWithValues: daysInMonth.map { date in
                 let key = calendar.startOfDay(for: date)
@@ -157,13 +163,13 @@ class CalendarViewModel: ObservableObject {
                 )
             }
         )
-        
+
         updateSelectedDateSchedules()
     }
-    
+
     private func updateSelectedDateSchedules() {
         let scheduled = getScheduledWorkPlaces(for: selectedDate)
-        
+
         selectedDateSchedules = scheduled.compactMap { workPlace in
             guard let resolved = ScheduleResolver.resolve(workPlace: workPlace, for: selectedDate) else {
                 return nil
@@ -186,18 +192,18 @@ class CalendarViewModel: ObservableObject {
                 hourlyWage: workPlace.hourlyWage
             )
         }
-        
+
         selectedDateTotalPay = selectedDateSchedules
             .map(\.estimatedPay)
             .reduce(0, +)
     }
-    
+
     // 캐시에서 즉시 조회 (매우 빠름)
     private func getScheduledWorkPlaces(for date: Date) -> [WorkPlace] {
         let startOfDay = Calendar.current.startOfDay(for: date)
         return scheduleCache[startOfDay] ?? []
     }
-    
+
     private func getEstimatedPay(
         workPlace: WorkPlace,
         startTime: Date,
@@ -217,5 +223,5 @@ class CalendarViewModel: ObservableObject {
             includeNightAllowance: workPlace.allowanceType.includesNight
         )
     }
-    
+
 }
