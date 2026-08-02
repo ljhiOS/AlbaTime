@@ -200,10 +200,11 @@ struct CalendarView: View {
     }
 }
 #Preview() {
-    return CalendarView(
+    CalendarView(
         viewModel: CalendarViewModel(
             loadCalendarWorkPlaces: PreviewCalendarWorkPlacesLoading(),
-            workRecordSaving: PreviewCalendarWorkRecordSaving()
+            workRecordSaving: PreviewCalendarWorkRecordSaving(),
+            analyticsTracker: NoopAnalyticsTracker()
         )
     )
 }

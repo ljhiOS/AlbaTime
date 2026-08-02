@@ -129,7 +129,11 @@ struct ScheduleGroup: View {
                 initialDefaultRestTime: 60
             )
 
-            vm = AddWorkPlaceViewModel(editingSeed: seed, workPlaceSaving: PreviewScheduleGroupWorkPlaceSaving())
+            vm = AddWorkPlaceViewModel(
+                editingSeed: seed,
+                workPlaceSaving: PreviewScheduleGroupWorkPlaceSaving(),
+                analyticsTracker: NoopAnalyticsTracker()
+            )
         }
 
         var body: some View {

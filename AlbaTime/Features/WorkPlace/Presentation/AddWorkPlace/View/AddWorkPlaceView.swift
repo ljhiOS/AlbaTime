@@ -10,7 +10,12 @@ import SwiftUI
 struct AddWorkPlaceView: View {
     @StateObject private var ajvm: AddWorkPlaceViewModel
     @Environment(\.dismiss) private var dismiss
+
     @AppStorage("onboarding.addWorkPlaceAICondition") private var hasSeenAIConditionOnboarding = false
+    @State private var didTrackCreateOpened = false
+
+    private let analyticsTracker: any AnalyticsTracking
+    private let selectedType: WorkType?
 
     var stateName: String
 
@@ -23,15 +28,31 @@ struct AddWorkPlaceView: View {
         stateName: String = "근무지 등록",
         editingSeed: WorkPlaceEditingSeed? = nil,
         selectedType: WorkType? = nil,
-        workPlaceSaving: any WorkPlaceSaving
+        workPlaceSaving: any WorkPlaceSaving,
+        analyticsTracker: any AnalyticsTracking = NoopAnalyticsTracker()
     ) {
+        self.analyticsTracker = analyticsTracker
+        self.selectedType = selectedType
+
         if let editingSeed {
             self.stateName = "근무지 수정"
-            _ajvm = StateObject(wrappedValue: AddWorkPlaceViewModel(editingSeed: editingSeed, workPlaceSaving: workPlaceSaving))
+            _ajvm = StateObject(
+                wrappedValue: AddWorkPlaceViewModel(
+                    editingSeed: editingSeed,
+                    workPlaceSaving: workPlaceSaving,
+                    analyticsTracker: analyticsTracker
+                )
+            )
         } else {
             self.stateName = stateName
             let type = selectedType ?? .fixed
-            _ajvm = StateObject(wrappedValue: AddWorkPlaceViewModel(type: type, workPlaceSaving: workPlaceSaving))
+            _ajvm = StateObject(
+                wrappedValue: AddWorkPlaceViewModel(
+                    type: type,
+                    workPlaceSaving: workPlaceSaving,
+                    analyticsTracker: analyticsTracker
+                )
+            )
         }
     }
 
@@ -115,6 +136,18 @@ struct AddWorkPlaceView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $ajvm.isAIImportPresented) {
             ScheduleImportRoute(session: ajvm.session)
+        }
+        .onAppear {
+            guard !didTrackCreateOpened, let selectedType else { return }
+            didTrackCreateOpened = true
+
+            switch selectedType {
+            case .fixed:
+                analyticsTracker.track(.fixedWorkplaceCreateOpened)
+
+            case .flexible:
+                analyticsTracker.track(.flexibleWorkplaceCreateOpened)
+            }
         }
         .onDisappear {
             ajvm.restoreEditsIfNeeded()

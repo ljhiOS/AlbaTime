@@ -9,10 +9,10 @@ import SwiftUI
 
 struct ScheduleImportResultList: View {
     @ObservedObject var sivm: ScheduleImportViewModel
-    
+
     // 키보드가 올라왔을 때 리스트 스크롤을 제어하기 위한 포커스 상태
     @FocusState private var focusedField: String?
-    
+
     var body: some View {
         List {
             // 1. 이미지 미리보기 섹션
@@ -27,7 +27,7 @@ struct ScheduleImportResultList: View {
                         .listRowBackground(Color.theme.field)
                 }
             }
-            
+
             // 2. 스케줄 리스트 섹션 (인라인 편집)
             Section {
                 if sivm.session.scheduleImportDraft.schedules.isEmpty {
@@ -44,7 +44,7 @@ struct ScheduleImportResultList: View {
                 }
             } header: {
                 VStack(alignment: .leading) {
-                    
+
                     HStack {
                         Text("인식된 스케줄 (\(sivm.session.scheduleImportDraft.schedules.count)건)")
                         Spacer()
@@ -72,12 +72,12 @@ struct ScheduleImportResultList: View {
             focusedField = nil
         }
     }
-    
+
     // MARK: - Actions
     private func deleteSchedule(at offsets: IndexSet) {
         sivm.session.scheduleImportDraft.schedules.remove(atOffsets: offsets)
     }
-    
+
     // MARK: - Subviews
     private var emptyStateView: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -94,7 +94,8 @@ struct ScheduleImportResultList: View {
 #Preview("데이터 없음") {
     let viewModel = ScheduleImportViewModel(
         session: WorkPlaceEditingSession(type: .fixed),
-        analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer()
+        analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer(),
+        analyticsTracker: NoopAnalyticsTracker()
     )
 
     return ScheduleImportResultList(sivm: viewModel)
@@ -103,7 +104,8 @@ struct ScheduleImportResultList: View {
 #Preview("데이터 있음") {
     let viewModel = ScheduleImportViewModel(
         session: WorkPlaceEditingSession(type: .fixed),
-        analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer()
+        analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer(),
+        analyticsTracker: NoopAnalyticsTracker()
     )
 
     let calendar = Calendar.current

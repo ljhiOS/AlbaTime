@@ -10,6 +10,8 @@ import SwiftUI
 
 struct AddWorkPlaceRoute: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.analyticsTracker) private var analyticsTracker
+
     let stateName: String
     let editingSeed: WorkPlaceEditingSeed?
     let selectedType: WorkType?
@@ -29,7 +31,8 @@ struct AddWorkPlaceRoute: View {
             stateName: stateName,
             editingSeed: editingSeed,
             selectedType: selectedType,
-            workPlaceSaving: WorkPlaceFeatureComposition.makeWorkPlaceSaving(context: modelContext)
+            workPlaceSaving: WorkPlaceFeatureComposition.makeWorkPlaceSaving(context: modelContext),
+            analyticsTracker: analyticsTracker
         )
     }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 struct ScheduleImportPresetGroup: View {
     @ObservedObject var sivm: ScheduleImportViewModel
     let preset: [TimePresetDraft]
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             VStack(alignment: .leading, spacing: 8) {
@@ -27,7 +27,7 @@ struct ScheduleImportPresetGroup: View {
                     sivm.deletePreset(preset)
                 }
             }
-            
+
             if sivm.isAddingPreset {
                 VStack(spacing: 10) {
                     TextField("타입 이름 (예: 오픈)", text: $sivm.newPresetLabel)
@@ -38,7 +38,7 @@ struct ScheduleImportPresetGroup: View {
                             RoundedRectangle(cornerRadius: 6)
                                 .stroke(Color.theme.border, lineWidth: 1)
                         )
-                    
+
                     HStack {
                         DatePicker("", selection: $sivm.newPresetStart, displayedComponents: .hourAndMinute)
                             .labelsHidden()
@@ -46,16 +46,16 @@ struct ScheduleImportPresetGroup: View {
                         DatePicker("", selection: $sivm.newPresetEnd, displayedComponents: .hourAndMinute)
                             .labelsHidden()
                     }
-                    
+
                     HStack {
                         Button("취소") {
                             withAnimation { sivm.isAddingPreset = false }
                         }
                         .foregroundStyle(.red)
                         .font(.caption)
-                        
+
                         Spacer()
-                        
+
                         Button("추가") { sivm.addNewPreset() }
                             .bold()
                             .foregroundStyle(Color.theme.primary)
@@ -94,7 +94,8 @@ struct ScheduleImportPresetGroup: View {
 #Preview("ScheduleImport Preset Group") {
     let viewModel = ScheduleImportViewModel(
         session: WorkPlaceEditingSession(type: .fixed),
-        analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer()
+        analyzeScheduleImage: WorkPlaceFeatureComposition.makeScheduleImageAnalyzer(),
+        analyticsTracker: NoopAnalyticsTracker()
     )
 
     viewModel.session.scheduleImportDraft.presetDrafts = [

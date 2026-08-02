@@ -11,6 +11,8 @@ import SwiftUI
 
 struct RealAchiveRecordRoute: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.analyticsTracker) private var analyticsTracker
+
     @Query(
         sort: [
             SortDescriptor(\MonthlyRecord.year, order: .reverse),
@@ -28,7 +30,8 @@ struct RealAchiveRecordRoute: View {
                 ),
                 monthlyRecordDeleting: PayFeatureComposition.makeMonthlyRecordDeleting(
                     context: modelContext
-                )
+                ),
+                analyticsTracker: analyticsTracker
             )
         )
     }
