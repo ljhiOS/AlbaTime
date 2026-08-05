@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A12EC6ED301ECAA800065E9C /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A12EC6EC301ECAA800065E9C /* FirebaseAnalytics */; };
 		A12EC6EF301ECAA800065E9C /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = A12EC6EE301ECAA800065E9C /* FirebaseAnalyticsCore */; };
-		A12EC6F1301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = A12EC6F0301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport */; };
 		A1C427212F359C2C00441D23 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1C427202F359C2C00441D23 /* WidgetKit.framework */; };
 		A1C427232F359C2C00441D23 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1C427222F359C2C00441D23 /* SwiftUI.framework */; };
 		A1C427342F359C2C00441D23 /* AlbaTimeWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1C4271E2F359C2C00441D23 /* AlbaTimeWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -116,9 +114,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A12EC6ED301ECAA800065E9C /* FirebaseAnalytics in Frameworks */,
 				A12EC6EF301ECAA800065E9C /* FirebaseAnalyticsCore in Frameworks */,
-				A12EC6F1301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,9 +189,7 @@
 			);
 			name = AlbaTime;
 			packageProductDependencies = (
-				A12EC6EC301ECAA800065E9C /* FirebaseAnalytics */,
 				A12EC6EE301ECAA800065E9C /* FirebaseAnalyticsCore */,
-				A12EC6F0301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport */,
 			);
 			productName = AlbaTime;
 			productReference = A16196882EE6C671008485EB /* AlbaTime.app */;
@@ -612,7 +606,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = AlbaTimeWidget/AlbaTimeWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AlbaTimeWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "알바타임";
@@ -647,7 +641,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = AlbaTimeWidget/AlbaTimeWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AlbaTimeWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "알바타임";
@@ -728,20 +722,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A12EC6EC301ECAA800065E9C /* FirebaseAnalytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalytics;
-		};
 		A12EC6EE301ECAA800065E9C /* FirebaseAnalyticsCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalyticsCore;
-		};
-		A12EC6F0301ECAA800065E9C /* FirebaseAnalyticsIdentitySupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A12EC6EB301ECAA800065E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalyticsIdentitySupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
