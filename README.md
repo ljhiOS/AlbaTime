@@ -1,128 +1,103 @@
-## AlbaTime (알바타임)
-AlbaTime은 아르바이트 근무 일정을 관리하고, 근무지별 급여 계산(기본급, 주휴수당, 야간수당, 세금 공제)을 자동으로 처리하여 예상 월급과 현재 누적 급여를 시각화해 주는 iOS 애플리케이션입니다.
+# AlbaTime (알바타임)
+
+AlbaTime은 여러 아르바이트 근무지를 관리하고, 일정과 근무 조건을 바탕으로 월 예상 급여와 현재까지 확정된 누적 급여를 보여 주는 iOS 앱입니다. 고정·비고정 근무, 날짜별 일정 조정, 이미지 기반 일정 가져오기, 알림 및 다음 근무 위젯을 지원합니다.
 
 ## 주요 기능 (Key Features)
 
-```text
-1. 정교한 급여 계산 (Salary Calculation)
-사용자가 설정한 근무지 정보를 바탕으로 월 예상 급여와 현재 시점 기준 누적 급여를 계산합니다. (SalaryCalculator.swift)
-기본급 계산: 시급 × 실제 근무 시간
-주휴수당 자동 적용: 주 15시간 이상 근무 시 주휴수당 산정
-야간 수당: 22:00 ~ 06:00 사이 근무 시 야간 가산분 반영
-누적 급여 계산: 근무 종료 시각이 지난 스케줄만 현재 누적 금액에 반영
-예상 급여 계산: 실제 기록과 고정/자율 근무 설정을 함께 사용해 월 예상 금액 계산
+### 1. 급여 계산 (Salary Calculation)
 
-세금 공제 시뮬레이션:
-미적용
-3.3% (사업소득세)
-9.32% (4대보험 근로자 부담분)
-```
-```text
-2. 근무지 및 일정 관리 (Workplace Management)
-다중 근무지 지원: 여러 개의 아르바이트 근무지를 등록하고 개별 관리 가능
-고정 근무 지원: 요일별 근무 시간, 휴게 시간, 시급, 수당/세금 설정 가능
-자율 근무 지원: 주간 목표 횟수와 일 평균 근무 시간을 기반으로 예상 급여 계산
-AI/수동 스케줄 우선 반영: 저장된 개별 스케줄을 고정 패턴보다 우선 적용
-SwiftData 기반 로컬 저장: 근무지, 정규 스케줄, 개별 근무 스케줄, 월별 실제 수령액 영구 저장
-```
-```text
-3. AI OCR 스케줄 가져오기 (AI Schedule Import)
-Apple Vision 기반 OCR 엔진을 사용하여 스케줄 이미지를 분석합니다.
-멀티패스 OCR: 기본 OCR 결과가 부족할 경우 전처리 이미지를 병렬 분석
-이미지 전처리: 흑백화, 확대, 대비 조정, 선명도 보정으로 인식률 개선
-위치 기반 분석: OCR 텍스트 박스를 행 단위로 묶어 표/리스트 형태 스케줄 해석
-스케줄 파싱: 날짜, 요일, 시간 범위, 근무 프리셋 라벨을 조합해 근무 일정 생성
-편집 후 저장: 인식 결과를 바로 저장하지 않고 사용자가 수정한 뒤 반영 가능
-```
-```text
-4. 위젯 및 알림 (Widget & Notification)
-다음 근무 정보 위젯: 가장 가까운 근무 시작 시간과 남은 시간을 표시
-App Group 동기화: 앱의 근무 데이터를 위젯과 공유
-WidgetKit Timeline 갱신: 근무지 저장/수정/삭제 이후 위젯 데이터 자동 갱신
-근무 알림: 출근 15분 전 알림과 근무 종료 알림 등록
-근무지별 알림 설정: 각 근무지마다 알림 on/off 관리 가능
-```
-```text
-5. 설계 및 기술 스택 (Architecture & Tech Stack)
-Language: Swift 6
-Framework: SwiftUI, SwiftData, WidgetKit, UserNotifications, Vision
-Architecture: MVVM + UseCase + Protocol-based Layering
-Database: SwiftData
-Widget Sync: App Groups + WidgetCenter Timeline Reload
-Minimum Target: iOS 17.6
-Project Version: 2.0.0
-Tools: Xcode 16+
-```
-```text
-6. 아키텍처 및 데이터 흐름 (Architecture & Data Flow)
-이 프로젝트는 SwiftUI 기반 MVVM 구조에서 출발하여, v2.0.0 기준으로 기능별 Feature 구조와 Protocol-Oriented Clean Architecture 형태로 정리했습니다.
-WorkPlace, Calendar, Pay, Setting 기능은 Presentation / Application / Data / Composition 계층을 기준으로 구성하고, WorkPlace처럼 기능 내부 상태가 복잡한 경우에만 Feature 내부 Domain 계층을 둡니다.
-ViewModel은 화면 상태와 사용자 액션을 담당하고, 저장/수정/삭제/조회 같은 비즈니스 흐름은 UseCase와 Protocol을 통해 처리합니다.
-SwiftData 접근은 각 Feature의 Data 계층으로 모으고, 화면에서 필요한 의존성은 Composition에서 조립하도록 정리했습니다.
+- 근무지별 시급, 휴게 시간, 주휴·야간수당 적용 여부, 세금 유형을 기준으로 급여를 계산합니다.
+- 누적 급여는 기준 시점까지 **근무 종료 시각이 지난** 일정만 반영합니다.
+- 월 예상 급여는 날짜별 실제/조정 기록, 저장된 개별 일정, 고정 근무 패턴 순으로 일정을 해석합니다. 비고정 근무는 주간 목표 횟수와 일 평균 근무 시간을 이용해 부족분을 예측합니다.
+- 주휴수당을 선택한 근무지는 주별 누적 근무시간이 15시간 이상일 때 산정하며, 야간수당은 22:00~06:00 근무분에만 반영합니다.
+- 세금 공제 시뮬레이션은 미적용, 3.3% 사업소득세, 약 9.32% 4대보험 근로자 부담분을 지원합니다.
 
-폴더 구조 (Folder Structure)
+### 2. 근무지·일정·캘린더 관리 (Workplace & Schedule Management)
 
+- 여러 근무지를 등록하고, 근무지별 고정 요일·시간 또는 비고정 근무 목표를 관리합니다.
+- AI/OCR 또는 수동으로 저장한 날짜별 일정은 고정 패턴보다 우선 적용됩니다. 캘린더에서 조정한 날짜별 실제 근무 기록은 그보다도 우선합니다.
+- 캘린더 상세 카드에서 선택 날짜의 근무 시간을 조정하면 급여 계산, 알림, 다음 근무 위젯에 같은 일정 해석 결과가 반영됩니다.
+- 근무지, 정규 일정, 날짜별 일정·실제 기록, 시간 프리셋, 월별 실제 수령액을 SwiftData에 기기 로컬로 저장합니다.
+
+### 3. 이미지 기반 일정 가져오기 (Apple Vision OCR)
+
+- Apple Vision OCR로 근무표 이미지를 텍스트 박스로 인식합니다. 흐릿하거나 복잡한 이미지에 대비해 전처리한 변형 이미지를 포함한 멀티패스 인식을 수행합니다.
+- 텍스트 위치를 행 단위로 분석한 뒤, 표/리스트·이름 블록·요일 매트릭스 형식을 해석합니다. 날짜, 시간 범위, 근무 프리셋 라벨을 조합해 일정 초안을 생성합니다.
+- 인식 결과는 즉시 저장하지 않습니다. 사용자가 일정 초안을 편집한 뒤 저장하며, 신규 근무지 생성 중의 초안은 해당 편집 세션 안에서만 유지됩니다.
+
+### 4. 위젯 및 알림 (Widget & Notification)
+
+- 다음 근무 위젯은 가장 가까운 근무의 시작 시각, 남은 시간, 예정 근무시간을 표시합니다.
+- 앱은 App Group UserDefaults에 다음 30일의 예정 근무 데이터를 동기화하고 `WidgetCenter`로 타임라인을 갱신합니다.
+- 근무지 저장·수정·삭제 또는 캘린더의 근무시간 조정 후, 근무지별 출근 15분 전 및 근무 종료 알림을 다시 계산합니다. 앱 전체 및 근무지별 알림 설정을 모두 반영합니다.
+
+### 5. 온보딩·분석 동의 (Onboarding & Analytics Consent)
+
+- 근무지 등록, 이미지 일정 가져오기, 캘린더 탐색·근무시간 조정, 급여 상세의 주요 조작에는 스포트라이트 온보딩을 제공합니다.
+- 첫 실행 시 Firebase Analytics 이용 동의를 받습니다. 동의하지 않아도 핵심 기능은 사용할 수 있으며, 앱이 전송하는 분석 이벤트에는 급여·근무지·메모 등 사용자가 입력한 값을 담지 않습니다.
+
+## 설계 및 기술 스택 (Architecture & Tech Stack)
+
+- Language: Swift 6
+- Framework: SwiftUI, SwiftData, WidgetKit, UserNotifications, Vision, Firebase Analytics
+- Architecture: MVVM + Feature-oriented Presentation / Application / Data / Composition layering + Protocol ports
+- Persistence: SwiftData (on-device local storage)
+- Widget Sync: App Groups UserDefaults + WidgetCenter timeline reload
+- Minimum Target: iOS 17.6
+- Project Version: 2.0.2 (build 2)
+- Tools: Xcode 16+
+
+## 아키텍처 및 데이터 흐름 (Architecture & Data Flow)
+
+각 Feature는 화면과 상태를 맡는 Presentation, 유스케이스와 Port를 두는 Application, SwiftData/시스템 어댑터를 구현하는 Data, 의존성을 조립하는 Composition으로 나뉩니다. WorkPlace Feature에는 편집 초안과 저장 검증을 위한 Feature 내부 Domain도 있습니다.
+
+명령성 변경은 기본적으로 `View → ViewModel → UseCase → Protocol port → SwiftData writer`로 흐릅니다. WorkPlace writer와 Calendar writer는 저장 성공 후 알림 갱신 및 다음 근무 위젯 동기화를 수행합니다. 이미지 일정 가져오기는 `ViewModel → AnalyzeScheduleImage → OCR/Parser adapter → Vision OCR·layout analyzer·schedule parser → 편집 초안` 순서이며, 사용자의 저장 요청에서만 영속화됩니다.
+
+설계상 유의할 점도 있습니다. 이 프로젝트는 Protocol 기반의 실용적 Feature 레이어링이며, 엄격히 분리된 순수 Clean Architecture는 아닙니다. `WorkPlace` 등 공용 도메인 엔티티는 SwiftData `@Model`이고, WorkPlace·Pay·Setting의 일부 Route는 화면에 표시할 읽기 데이터를 `@Query`로 직접 주입합니다. Calendar 조회는 Reader UseCase를 통해 수행합니다.
+
+### 폴더 구조 (Folder Structure)
+
+```text
 AlbaTime
 ├── App
-│   ├── AlbaTimeApp.swift              # 앱 진입점, SwiftData ModelContainer 설정, 알림 권한 요청
-│   ├── MainTabView.swift              # 캘린더 / 근무지 / 급여 / 설정 탭 구성
-│   └── SplashView.swift               # 스플래시 화면
-├── Domain
-│   ├── Payroll
-│   │   ├── Model                      # SalaryBreakdown, MonthlyRecord
-│   │   └── Service                    # SalaryCalculator
-│   └── Schedule
-│       ├── Model                      # Workplace, WorkSchedule, RegularSchedule, WorkTimePreset
-│       ├── Service                    # ScheduleResolver
-│       └── Type                       # WorkType, TaxType, AllowanceType
-├── Features
-│   ├── Calendar
-│   │   ├── Presentation               # 캘린더 화면, 날짜 셀, 상세 카드, Route, ViewModel
-│   │   ├── Application                # 캘린더 조회 UseCase 및 Protocol
-│   │   ├── Data                       # SwiftData 기반 근무지 Reader
-│   │   └── Composition                # CalendarFeatureComposition 의존성 조립
-│   ├── Pay
-│   │   ├── Presentation               # 급여 대시보드, 실제 수령액 기록 화면, Route, ViewModel
-│   │   ├── Application                # 월별 수령액 저장/삭제 UseCase 및 Protocol
-│   │   ├── Data                       # SwiftData 기반 월별 기록 Writer
-│   │   └── Composition                # PayFeatureComposition 의존성 조립
-│   ├── Setting
-│   │   ├── Presentation               # 설정 홈, 앱 정보, 도움말, 개인정보 화면
-│   │   ├── Application                # 앱 알림 설정 UseCase 및 Protocol
-│   │   ├── Data                       # NotificationManager Adapter
-│   │   └── Composition                # SettingFeatureComposition 의존성 조립
-│   └── WorkPlace
-│       ├── Presentation               # AddWorkPlace, WorkPlaceList, ScheduleImport 화면/ViewModel/컴포넌트
-│       ├── Application                # WorkPlace 저장/수정/삭제/스케줄 분석 UseCase 및 Protocol
-│       ├── Domain                     # WorkPlaceDraft, ScheduleDraft, 저장 검증 정책
-│       ├── Data                       # SwiftData Writer, Mapper, SideEffect Adapter
-│       └── Composition                # WorkPlaceFeatureComposition 의존성 조립
-├── InfraStructure
-│   ├── AIEngine                       # OCRService, TextLayoutAnalyzer, ScheduleParser
-│   ├── Notifications                  # NotificationManager
-│   └── WidgetSync                     # NextShiftSyncService, SharedShift
-├── Shared
+│   ├── AlbaTimeApp.swift              # Firebase 초기화, SwiftData ModelContainer, 알림 권한 요청
+│   ├── SplashView.swift               # 스플래시 및 분석 동의 화면
+│   └── MainTabView.swift              # 캘린더 / 근무지 / 급여 / 설정 Route 진입점
+├── Core
 │   ├── DesignSystem                   # Color Theme
+│   ├── Onboarding                     # 스포트라이트 온보딩 상태·UI
 │   ├── UI                             # 공통 UI 컴포넌트
 │   └── Util                           # Date, Haptics, KeyboardUX
+├── Domain
+│   ├── Payroll                        # SalaryBreakdown, MonthlyRecord, 급여 계산 서비스
+│   └── Schedule                       # WorkPlace, 일정 모델, ScheduleResolver, 수당·세금 타입
+├── Features
+│   ├── Calendar                       # 조회·근무시간 조정 UseCase, SwiftData Reader/Writer, Route/ViewModel
+│   ├── Pay                            # 급여 대시보드·월별 실제 수령액 저장/삭제
+│   ├── Setting                        # 앱 알림 설정, 앱 정보·도움말·개인정보 화면
+│   └── WorkPlace                      # 등록·수정·목록·이미지 일정 가져오기, Draft/Policy, Writer/Mapper/Side Effect
+├── InfraStructure
+│   ├── AIEngine                       # OCRService, TextLayoutAnalyzer, ScheduleParser
+│   ├── FirebaseAnalytics              # 동의 상태, 이벤트, Firebase tracker
+│   ├── Notifications                  # NotificationManager
+│   └── WidgetSync                     # NextShiftSyncService, SharedShift
+├── Document
+│   └── PRIVACY.md                     # 개인정보처리방침 원문
 └── Resources
-    └── Assets.xcassets                # 앱 아이콘, 컬러, 이미지 리소스
+    └── Assets.xcassets                # 앱 아이콘, 색상, 이미지 리소스
 
 AlbaTimeWidget
-├── Widget
-│   ├── AlbaTimeWidgetBundle.swift     # 위젯 번들 진입점
-│   ├── NextShiftWidget.swift          # 다음 근무 위젯
-│   ├── Provider                       # Timeline Provider
-│   ├── Repository                     # App Group 데이터 읽기
-│   ├── View / ViewModel               # 위젯 UI 및 표시 로직
-│   └── Model                          # Widget Entry / Model
-└── Assets.xcassets
+└── Widget                             # 다음 근무 위젯, Timeline Provider, App Group Repository, View/ViewModel
 
 AlbaTimeTests
-└── WorkPlaceDataFlowTests.swift       # WorkPlace 기능 UseCase/ViewModel 데이터 흐름 테스트
+├── WorkPlaceDataFlowTests.swift       # WorkPlace UseCase/ViewModel/초안 흐름
+├── SalaryCalculatorTests.swift        # 급여·주휴·일정 우선순위 계산
+└── OnboardingStoreTests.swift         # 온보딩 상태 저장·초기화
 ```
 
 ## 아키텍처 / 데이터 플로우
+
+아래 이미지는 현재 구조를 설명하는 개념도입니다. 코드와 비교했을 때 두 흐름의 핵심은 일치하지만, 첫 번째 그림은 `AlbaTimeApp → SplashView → 분석 동의 → MainTabView` 진입 단계와 Route의 `@Query` 기반 읽기 주입을 생략합니다. 또한 Calendar의 근무시간 조정 writer도 WorkPlace writer와 동일하게 저장 뒤 알림·위젯을 갱신합니다.
 
 ### App Architecture Flow
 <img width="900" alt="AlbaTime App Architecture Flow" src="READMEAssets/architecture-flow.png" />
@@ -294,4 +269,34 @@ AlbaTimeTests
    5-2) AI Engine을 AIEngine으로 정리
    5-3) Infrastructure를 실제 폴더명인 InfraStructure 기준으로 문서화
    5-4) WorkPlaceDataFlowTests 기준으로 테스트 문서 최신화
+```
+
+## V2.0.2 개발기간
+2026.7.5 ~ 2026.8.6
+
+업데이트
+```text
+1. 캘린더 일정 조정 및 일관된 일정 해석
+   1-1) 캘린더 상세 카드에서 날짜별 근무 시작·종료 시간을 조정하고 WorkRecord로 저장하는 흐름 추가
+   1-2) 일정 우선순위를 날짜별 실제/조정 기록 → 저장된 개별 일정(AI·수동) → 고정 근무 패턴으로 통합
+   1-3) 근무시간 조정 후 급여, 출근·종료 알림, 다음 근무 위젯이 같은 해석 결과를 사용하도록 동기화
+
+2. 급여 계산 모듈화 및 계산 정책 보완
+   2-1) 월 급여 계산을 근무시간, 급여 금액, 주휴수당, 월별 계산 서비스로 분리
+   2-2) 고정·비고정 근무의 월 예상 금액과 종료된 근무만 반영하는 누적 금액을 각각 검증
+   2-3) 주별 근무시간에 따른 주휴수당 상한과 휴게시간·야간근무 반영을 테스트로 보완
+
+3. 온보딩 및 캘린더 탐색 경험 추가
+   3-1) 근무지, 이미지 일정 가져오기, 캘린더, 급여 상세의 주요 조작에 스포트라이트 온보딩 추가
+   3-2) 캘린더의 연·월 선택, 좌우 스와이프 이동, 날짜별 근무시간 조정 흐름 보완
+
+4. 분석 동의 및 개인정보 안내
+   4-1) Firebase Analytics를 연동하고 앱 시작 시 분석 이용 동의 화면 추가
+   4-2) 동의 여부에 따라 Analytics 수집을 제어하고, 사용자 입력값을 이벤트 파라미터로 전송하지 않도록 구성
+   4-3) 앱 내 개인정보처리방침 화면과 원문 문서 추가
+
+5. 구조·테스트 정리
+   5-1) 공통 UI/유틸리티와 온보딩 모듈을 Core로 정리
+   5-2) SalaryCalculatorTests에 누적·예상 급여, 주휴수당, 일정 우선순위 테스트 추가
+   5-3) WorkPlaceDataFlowTests에 저장된 AI/수동 일정과 신규 근무지 편집 세션 흐름 검증 추가
 ```
