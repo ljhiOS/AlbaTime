@@ -61,56 +61,41 @@ final class OCRService: Sendable {
             return all
         }
     }
+    
+    // TODO: CGRect -> NormalizedRect로 차후 OCR 엔진 최종 리팩 후 파이프라인 수정
+    private func recognizeVariant(_ imageData: UIImage, minimumTextHeight: Float) async throws -> [CandidateBox] {
+        guard let cgImageData = imageData.cgImage else { return [] }
+        
+        // 이미지 분석 요청 객체
+        var request = RecognizeTextRequest()
+        
+        let korean = Locale.Language(identifier: "ko-KR")
+        let english = Locale.Language(identifier: "en-US")
+        
+        // fast보단 정확도 선택
+        request.recognitionLevel = .accurate
+        // OCR 인식 언어
+        request.recognitionLanguages = [korean, english]
+        // 언어 보정 적용 여부
+        request.usesLanguageCorrection = true
+        // 이미지 높이 대비 OCR 대상 텍스트의 최소 높이 비율
+        request.minimumTextHeightFraction = minimumTextHeight
+        
+        // OCR 결과물 배열
+        let results = try await request.perform(on: cgImageData)
 
-    private func recognizeVariant(_ image: UIImage, minimumTextHeight: Float) async throws -> [CandidateBox] {
-        guard let cgImage = image.cgImage else { return [] }
+        return results.compactMap { observation -> CandidateBox? in
+            guard let candidate = observation.topCandidates(1).first else { return nil }
+            guard candidate.confidence >= 0.18 else { return nil }
 
-        // 콜백 기반 Vision API를 async/await으로 감쌈
-        // why?
-        return try await withCheckedThrowingContinuation { cont in
-            // OCR 요청 객체
-            let request = VNRecognizeTextRequest { req, error in
-                if let error {
-                    cont.resume(throwing: error)
-                    return
-                }
+            let text = candidate.string.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { return nil }
 
-                // VNRecognizedTextObservation 타입 캐스팅
-                let boxes = (req.results as? [VNRecognizedTextObservation])?
-                // 조건에 안맞는 결과 버리기 위해서 compactMap 사용
-                    .compactMap { observation -> CandidateBox? in
-                        // 애플 비전이 정한 가장 신뢰도 높은 OCR 결과 채택
-                        guard let candidate = observation.topCandidates(1).first else { return nil }
-                        guard candidate.confidence >= 0.18 else { return nil }
-
-                        let text = candidate.string.trimmingCharacters(in: .whitespacesAndNewlines)
-                        guard !text.isEmpty else { return nil }
-
-                        return CandidateBox(
-                            text: text,
-                            boundingBox: observation.boundingBox,
-                            confidence: candidate.confidence
-                        )
-                    } ?? []
-
-                cont.resume(returning: boxes)
-            }
-
-            // OCR 인식 언어
-            request.recognitionLanguages = ["ko-KR", "en-US"]
-            // 정확도 우선
-            request.recognitionLevel = .accurate
-            // 이름/한글 문장 인식 안정성을 위해 교정을 켠다.
-            request.usesLanguageCorrection = true
-            request.minimumTextHeight = minimumTextHeight
-
-            // OCR 엔진 돌리기
-            do {
-                let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-                try handler.perform([request])
-            } catch {
-                cont.resume(throwing: error)
-            }
+            return CandidateBox(
+                text: text,
+                boundingBox: observation.boundingBox.cgRect,
+                confidence: candidate.confidence
+            )
         }
     }
 
