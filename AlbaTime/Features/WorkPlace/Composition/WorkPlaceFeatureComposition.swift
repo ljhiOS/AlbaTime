@@ -42,10 +42,6 @@ enum WorkPlaceFeatureComposition {
     }
     
     static func makeScheduleImageAnalyzer() -> any ScheduleImageAnalyzing {
-        if #available(iOS 27.0, *) {
-            return AgentScheduleImageAnalyzer()
-        }
-
         return AnalyzeScheduleImage(
             textRecognizer: OCRScheduleImageTextRecognizer(),
             textParser: ScheduleParserWorkPlaceAdapter()

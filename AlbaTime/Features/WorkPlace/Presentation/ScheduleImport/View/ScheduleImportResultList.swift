@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ScheduleImportResultList: View {
     @ObservedObject var sivm: ScheduleImportViewModel
+    @ObservedObject var session: WorkPlaceEditingSession
+    let targetWeekStart: Date?
 
     // 키보드가 올라왔을 때 리스트 스크롤을 제어하기 위한 포커스 상태
     @FocusState private var focusedField: String?
@@ -30,12 +32,12 @@ struct ScheduleImportResultList: View {
 
             // 2. 스케줄 리스트 섹션 (인라인 편집)
             Section {
-                if sivm.session.scheduleImportDraft.schedules.isEmpty {
+                if session.scheduleImportDraft.schedules.isEmpty {
                     emptyStateView
                         .listRowBackground(Color.theme.field)
                 } else {
                     // 배열 Binding으로 각 행을 인라인 편집한다.
-                    ForEach($sivm.session.scheduleImportDraft.schedules) { scheduleBinding in
+                    ForEach($session.scheduleImportDraft.schedules) { scheduleBinding in
                         InlineEditRow(schedule: scheduleBinding)
                             .focused($focusedField, equals: scheduleBinding.wrappedValue.id.uuidString)
                             .listRowBackground(Color.theme.field)
@@ -46,18 +48,18 @@ struct ScheduleImportResultList: View {
                 VStack(alignment: .leading) {
 
                     HStack {
-                        Text("인식된 스케줄 (\(sivm.session.scheduleImportDraft.schedules.count)건)")
+                        Text("인식된 스케줄 (\(session.scheduleImportDraft.schedules.count)건)")
                         Spacer()
                         // 헤더에 [+] 버튼 배치
                         Button {
-                            sivm.addNewSchedule()
+                            sivm.addNewSchedule(targetWeekStart: targetWeekStart)
                         } label: {
                             Label("추가", systemImage: "plus")
                                 .font(.caption)
                                 .fontWeight(.bold)
                         }
                     }
-                    if !sivm.session.scheduleImportDraft.schedules.isEmpty {
+                    if !session.scheduleImportDraft.schedules.isEmpty {
                         Text("시간을 터치하여 수정하고, 왼쪽으로 밀어서 삭제하세요.")
                             .font(.footnote)
                     }
@@ -75,7 +77,7 @@ struct ScheduleImportResultList: View {
 
     // MARK: - Actions
     private func deleteSchedule(at offsets: IndexSet) {
-        sivm.session.scheduleImportDraft.schedules.remove(atOffsets: offsets)
+        session.scheduleImportDraft.schedules.remove(atOffsets: offsets)
     }
 
     // MARK: - Subviews
@@ -98,7 +100,7 @@ struct ScheduleImportResultList: View {
         analyticsTracker: NoopAnalyticsTracker()
     )
 
-    return ScheduleImportResultList(sivm: viewModel)
+    return ScheduleImportResultList(sivm: viewModel, session: viewModel.session, targetWeekStart: nil)
 }
 
 #Preview("데이터 있음") {
@@ -139,5 +141,5 @@ struct ScheduleImportResultList: View {
         )
     ]
 
-    return ScheduleImportResultList(sivm: viewModel)
+    return ScheduleImportResultList(sivm: viewModel, session: viewModel.session, targetWeekStart: base)
 }

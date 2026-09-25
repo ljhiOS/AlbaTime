@@ -113,7 +113,11 @@ private extension ScheduleImportView {
             ScheduleImportLoadingView(targetName: myName)
 
         case .result:
-            ScheduleImportResultList(sivm: sivm)
+            ScheduleImportResultList(
+                sivm: sivm,
+                session: sivm.session,
+                targetWeekStart: ssvm.selectedWeekStart
+            )
         }
     }
 
