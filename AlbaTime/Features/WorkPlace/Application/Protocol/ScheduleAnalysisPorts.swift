@@ -10,14 +10,14 @@
 import Foundation
 
 protocol ScheduleImageTextRecognizing: Sendable {
-    func recognize(from imageData: Data) async throws -> [RawTextBox]
+    func recognize(from imageData: Data, customWords: [String]) async throws -> [RawTextBox]
 }
 
 protocol ScheduleTextParsing: Sendable {
     func parse(
         rows: [TextRow],
         presets: [TimePresetDraft],
-        targetName: String
+        targetName: String,
+        referenceDate: Date
     ) -> [ParsedSchedule]
 }
-

@@ -224,7 +224,11 @@ final class WorkPlaceDataFlowTests: XCTestCase {
 
     func testAddWorkPlaceViewModelSavesThroughWorkPlaceSavingProtocol() {
         let saving = SpyWorkPlaceSaving()
-        let viewModel = AddWorkPlaceViewModel(type: .fixed, workPlaceSaving: saving)
+        let viewModel = AddWorkPlaceViewModel(
+            type: .fixed,
+            workPlaceSaving: saving,
+            analyticsTracker: NoopAnalyticsTracker()
+        )
 
         XCTAssertTrue(viewModel.save())
         XCTAssertEqual(saving.receivedCommands.count, 1)
@@ -233,7 +237,11 @@ final class WorkPlaceDataFlowTests: XCTestCase {
 
     func testAddWorkPlaceViewModelShowsAlertWhenWorkPlaceSavingProtocolThrows() {
         let saving = SpyWorkPlaceSaving(error: SaveWorkPlaceError.invalidWage)
-        let viewModel = AddWorkPlaceViewModel(type: .fixed, workPlaceSaving: saving)
+        let viewModel = AddWorkPlaceViewModel(
+            type: .fixed,
+            workPlaceSaving: saving,
+            analyticsTracker: NoopAnalyticsTracker()
+        )
 
         XCTAssertFalse(viewModel.save())
         XCTAssertTrue(viewModel.showAlert)
@@ -283,7 +291,8 @@ final class WorkPlaceDataFlowTests: XCTestCase {
         )
         let viewModel = ScheduleImportViewModel(
             session: session,
-            analyzeScheduleImage: StubScheduleImageAnalyzer()
+            analyzeScheduleImage: StubScheduleImageAnalyzer(),
+            analyticsTracker: NoopAnalyticsTracker()
         )
         let saving = SpyScheduleSaving()
 
@@ -302,7 +311,8 @@ final class WorkPlaceDataFlowTests: XCTestCase {
         let session = WorkPlaceEditingSession(type: .flexible)
         let viewModel = ScheduleImportViewModel(
             session: session,
-            analyzeScheduleImage: StubScheduleImageAnalyzer()
+            analyzeScheduleImage: StubScheduleImageAnalyzer(),
+            analyticsTracker: NoopAnalyticsTracker()
         )
         let saving = SpyScheduleSaving()
         let kept = makeScheduleDraftItem(changeState: .inserted)
@@ -400,7 +410,8 @@ private struct StubScheduleImageAnalyzer: ScheduleImageAnalyzing {
     func execute(
         imageData: Data,
         targetName: String,
-        presets: [TimePresetDraft]
+        presets: [TimePresetDraft],
+        referenceDate: Date
     ) async throws -> [ParsedSchedule] {
         []
     }

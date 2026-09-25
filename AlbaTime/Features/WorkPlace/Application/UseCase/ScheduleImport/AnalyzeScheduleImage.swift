@@ -22,15 +22,20 @@ struct AnalyzeScheduleImage: ScheduleImageAnalyzing, Sendable {
     func execute(
         imageData: Data,
         targetName: String,
-        presets: [TimePresetDraft]
+        presets: [TimePresetDraft],
+        referenceDate: Date
     ) async throws -> [ParsedSchedule] {
-        let rawBoxes = try await textRecognizer.recognize(from: imageData)
+        let name = targetName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let customWords = ([name] + presets.map(\.label)).filter { !$0.isEmpty }
+        let rawBoxes = try await textRecognizer.recognize(from: imageData, customWords: customWords)
+        try Task.checkCancellation()
         let textRows = TextLayoutAnalyzer.groupByRow(rawBoxes)
 
         return textParser.parse(
             rows: textRows,
             presets: presets,
-            targetName: targetName
+            targetName: name,
+            referenceDate: referenceDate
         )
     }
 }

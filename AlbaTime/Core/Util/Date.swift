@@ -117,4 +117,20 @@ extension Date {
         let now = Date()
         return Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: now) ?? now
     }
+    
+    static func parse(
+        _ value: String,
+        format: String
+    ) -> Date? {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = .current
+        formatter.dateFormat = format
+        formatter.isLenient = false
+        
+        return formatter.date(
+            from: value.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+    }
 }

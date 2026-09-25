@@ -26,12 +26,12 @@ struct OCRScheduleImageTextRecognizer: ScheduleImageTextRecognizing {
         self.service = service
     }
 
-    func recognize(from imageData: Data) async throws -> [RawTextBox] {
+    func recognize(from imageData: Data, customWords: [String]) async throws -> [RawTextBox] {
         guard let image = UIImage(data: imageData) else {
             throw ScheduleImageRecognitionError.invalidImageData
         }
 
-        return try await service.recognize(from: image)
+        return try await service.recognize(from: image, customWords: customWords)
     }
 }
 
@@ -45,18 +45,14 @@ struct ScheduleParserWorkPlaceAdapter: ScheduleTextParsing {
     func parse(
         rows: [TextRow],
         presets: [TimePresetDraft],
-        targetName: String
+        targetName: String,
+        referenceDate: Date
     ) -> [ParsedSchedule] {
         parser.parse(
             rows: rows,
-            presets: presets.map {
-                WorkTimePreset(
-                    label: $0.label,
-                    startTime: $0.startTime,
-                    endTime: $0.endTime
-                )
-            },
-            targetName: targetName
+            presets: presets,
+            targetName: targetName,
+            referenceDate: referenceDate
         )
     }
 }

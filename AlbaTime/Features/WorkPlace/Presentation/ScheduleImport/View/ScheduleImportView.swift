@@ -59,7 +59,11 @@ struct ScheduleImportView: View {
         }
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
-                await sivm.processSelectedPhoto(item: newItem, targetName: myName)
+                await sivm.processSelectedPhoto(
+                    item: newItem,
+                    targetName: myName,
+                    referenceDate: ssvm.selectedWeekStart ?? Date()
+                )
                 selectedPhotoItem = nil
             }
         }

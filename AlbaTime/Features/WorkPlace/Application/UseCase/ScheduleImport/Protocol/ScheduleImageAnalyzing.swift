@@ -12,6 +12,7 @@ protocol ScheduleImageAnalyzing {
     func execute(
         imageData: Data,
         targetName: String,
-        presets: [TimePresetDraft]
+        presets: [TimePresetDraft],
+        referenceDate: Date
     ) async throws -> [ParsedSchedule]
 }

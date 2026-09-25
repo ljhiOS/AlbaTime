@@ -89,7 +89,7 @@ class ScheduleImportViewModel: ObservableObject {
     }
 
     // 뷰에서 .onChange로 뷰 상태 변경시 호출
-    func processSelectedPhoto(item: PhotosPickerItem?, targetName: String) async {
+    func processSelectedPhoto(item: PhotosPickerItem?, targetName: String, referenceDate: Date) async {
         guard let item else { return }
 
         phase = .loading
@@ -101,7 +101,7 @@ class ScheduleImportViewModel: ObservableObject {
 
                 self.selectedImage = image
                 self.selectedImageData = data
-                self.analyzeImage(targetName: targetName)
+                self.analyzeImage(targetName: targetName, referenceDate: referenceDate)
             } else {
                 self.errorMessage = "이미지 데이터를 불러올 수 없어요."
                 self.showAlert = true
@@ -113,7 +113,7 @@ class ScheduleImportViewModel: ObservableObject {
         }
     }
 
-    func analyzeImage(targetName: String = "") {
+    func analyzeImage(targetName: String = "", referenceDate: Date) {
         guard let imageData = selectedImageData else { return }
 
         phase = .loading
@@ -124,7 +124,8 @@ class ScheduleImportViewModel: ObservableObject {
                 let schedules = try await analyzeScheduleImage.execute(
                     imageData: imageData,
                     targetName: targetName,
-                    presets: session.scheduleImportDraft.presetDrafts
+                    presets: session.scheduleImportDraft.presetDrafts,
+                    referenceDate: referenceDate
                 )
 
                 self.session.scheduleImportDraft.schedules = schedules.map {

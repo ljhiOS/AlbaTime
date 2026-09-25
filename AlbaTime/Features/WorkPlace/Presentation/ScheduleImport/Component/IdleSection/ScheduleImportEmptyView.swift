@@ -11,7 +11,7 @@ struct ScheduleImportEmptyView: View {
     var body: some View {
         VStack(spacing: 20) {
             ContentUnavailableView("",
-                systemImage: "photo.badge.arrow.down",
+                systemImage: "photo.badge.plus",
                 description: Text("우측 상단 앨범 버튼을 눌러\n근무표 사진을 선택하면 자동으로 분석합니다.")
             )
         }
